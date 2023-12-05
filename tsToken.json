@@ -1,0 +1,8 @@
+{
+  "access_token": "eGlhc2xv...MHJMaA",
+  "refresh_token": "eGlhc2xv...wGVFPQ",
+  "id_token": "vozT2Ix...wGVFPQ",
+  "token_type": "Bearer",
+  "scope": "openid profile MarketData ReadAccount Trade Crypto offline_access",
+  "expires_in": 1200
+}
