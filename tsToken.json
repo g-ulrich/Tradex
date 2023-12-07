@@ -4,5 +4,6 @@
   "id_token": "vozT2Ix...wGVFPQ",
   "token_type": "Bearer",
   "scope": "openid profile MarketData ReadAccount Trade Crypto offline_access",
+  "timeStamp": 1701801229091,
   "expires_in": 1200
 }

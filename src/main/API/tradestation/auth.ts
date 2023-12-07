@@ -1,6 +1,9 @@
 import { BrowserWindow} from 'electron';
 import axios from 'axios';
 import fs from 'fs'; // saves file to root.
+import { setInterval } from 'timers';
+
+
 interface fullTokenResponse {
   access_token: string;
   refresh_token: string;
@@ -35,6 +38,7 @@ const SINGIN_URL = 'https://signin.tradestation.com/';
 const TOKEN_URL = `${SINGIN_URL}oauth/token`;
 const API_KEY = process.env.TS_CLIENT_ID;
 const SECRET_KEY = process.env.TS_CLIENT_SECRET;
+
 const GET_AUTH_URL = () => {
     // for redirect
     // https://api.tradestation.com/docs/fundamentals/authentication/auth-code
@@ -45,13 +49,20 @@ const GET_AUTH_URL = () => {
 export async function triggerRefresh() {
     try {
         if (isTokenExpired()) {
-            const tokenDataFromStore = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
-            const newData = await getTokenFromRefresh(tokenDataFromStore?.refresh_token);
-            const success : boolean = await updateTSTokenData(newData);
-            console.log('Update success:', success);
+          console.log("Refreshing Tradestation Token.");
+        //     const tokenDataFromStore = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
+        //     const newData = await getTokenFromRefresh(tokenDataFromStore?.refresh_token);
+        //     const success : boolean = await updateTSTokenData(newData);
+          const tokenObj = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
+          return tokenObj;
+      } else {
+            const tokenObj = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
+            return tokenObj;
         }
     } catch (error) {
-      console.error('Error:', error);
+          console.error(error);
+          const tokenObj = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
+          return tokenObj;
     }
   }
 
@@ -95,7 +106,7 @@ export async function getTokenFromRefresh(refresh_token:string) : Promise<rawRef
         );
 
       console.log('Token Response:', response.data);
-        
+
       return response.data;
     } catch (error) {
       console.error('Error getting token:', error);
@@ -107,7 +118,7 @@ export async function getAuthCode(): Promise<void> {
     let authWindow = new BrowserWindow({
         width: 800,
         height: 600,
-        show: false, 
+        show: false,
         'node-integration': false,
         'web-security': false
     });
@@ -135,7 +146,7 @@ export function writeTokenResponseToJSONFile(data: rawAuthTokenResponse, fileNam
       return false;
     }
   }
-  
+
   export function readTokenResponseFromJSONFile(fileName: string): rawAuthTokenResponse | null {
     try {
       const data = fs.readFileSync(fileName, 'utf-8');
@@ -177,6 +188,7 @@ export function updateTSTokenData(refreshTokenData: rawRefreshTokenResponse): bo
     const tokenDataFromStore = readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
     if (tokenDataFromStore === null) {
         console.error("Need auth code and refresh token from Tradestation");
+        return false;
     } else {
         try {
             const updatedObject: fullTokenResponse = {
@@ -192,5 +204,6 @@ export function updateTSTokenData(refreshTokenData: rawRefreshTokenResponse): bo
         } catch (error) {
             return false;
         }
+      return false;
     }
 }

@@ -14,8 +14,8 @@ import { setupTitlebar, attachTitlebarToWindow } from "custom-electron-titlebar/
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { resolveHtmlPath, TSTokenfileProcess } from './util';
-import {authBrowser} from './API/tradestation/auth';
+import { resolveHtmlPath } from './util';
+import {triggerRefresh} from './API/tradestation/auth';
 
 setupTitlebar();
 
@@ -29,18 +29,10 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  // const msgTemplate = (pingPong: String) => {key: pingPong};
-  // console.log(event, {key: arg});
-  authBrowser('https://www.w3schools.com/html/');
 
-  event.reply('ipc-example', {key: TSTokenfileProcess()});
-});
-
-ipcMain.on('auth-code', (event, authCode) => {
-  // Handle the auth code in the main process
-  // Make API requests or perform further authentication steps
-  console.log("auth", authCode);
+ipcMain.on('refreshToken', async (event, _) => {
+  const tokenObj = await triggerRefresh();
+  event.reply('refreshToken', tokenObj);
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -97,7 +89,7 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
-    
+
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));

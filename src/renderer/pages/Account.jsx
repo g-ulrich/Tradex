@@ -1,19 +1,14 @@
-import React from 'react';
-import TSEndpoints from '../components/tradestation/endpoints';
+import React, { useEffect, useState } from 'react';
+import TS from '../components/tradestation/main';
 
 function Account() {
-    const tsEndpoints = new TSEndpoints();
-    console.log(tsEndpoints.baseURL);
+  const ts = new TS();
+  ts.getAccessToken()
+
     return (
     <div>
        <div className="text-lg">Account</div>
-       <iframe
-        title="External Content"
-        src="https://www.phind.com/"
-        width="100%"
-        height="500px"
-        frameBorder="0"
-      />
+       <p>{ts.endpoints.baseURL}</p>
     </div>
     );
 }
