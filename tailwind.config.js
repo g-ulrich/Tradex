@@ -2,14 +2,16 @@ module.exports = {
   purge: {
     enabled: true,
     content: ['./src/renderer/**/*.{js,jsx,ts,tsx}'],
-    },  
+    },
   content: ['./src/renderer/**/*.{js,jsx,ts,tsx}'],
     theme: {
-      extend: { 
+      extend: {
         colors: {
           discord: {
             red: '#ED4245',
-            green: '#57F287',
+            softRed: 'rgba(237,66,69,.5)',
+            green: 'rgb(87,242,135)',
+            softGreen: 'rgba(87,242,135, .5)',
             white: '#f2f3f5',
             white2: '#d9dadc',
             blurple: '#7289DA',

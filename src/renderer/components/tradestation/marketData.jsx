@@ -33,10 +33,36 @@ class marketData {
     }
   }
 
+  validateDate(date, paramName) {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+    if (!dateRegex.test(date)) {
+      throw new Error(`Invalid ${paramName} value: ${date}. It should be formatted as YYYY-MM-DDTHH:mm:ssZ.`);
+    }
+  }
+
+  validateSessionTemplate(sessiontemplate) {
+    const validSessionTemplates = ['USEQPre', 'USEQPost', 'USEQPreAndPost', 'USEQ24Hour', 'Default'];
+
+    if (sessiontemplate && !validSessionTemplates.includes(sessiontemplate)) {
+      throw new Error(`Invalid sessiontemplate: ${sessiontemplate}. Valid values are ${validSessionTemplates.join(', ')}.`);
+    }
+  }
+
   async fetchMarketData(symbol, interval = '1', unit = 'Daily', barsback = '1', firstdate, lastdate, sessiontemplate) {
     this.validateInterval(interval, unit);
     this.validateBarsBack(barsback);
     this.validateUnit(unit);
+
+    if (firstdate) {
+      this.validateDate(firstdate, 'firstdate');
+    }
+
+    if (lastdate) {
+      this.validateDate(lastdate, 'lastdate');
+    }
+
+    this.validateSessionTemplate(sessiontemplate);
 
     const url = `https://api.tradestation.com/v3/marketdata/barcharts/${symbol}`;
     const token = 'Bearer TOKEN';
@@ -69,9 +95,9 @@ class marketData {
 // Example usage:
 const marketDataInstance = new marketData();
 
-// Example with invalid interval and unit combination
+// Example with invalid date format
 try {
-  marketDataInstance.fetchMarketData('MSFT', '5', 'Daily', '5', '2020-12-05T21:00:00Z', '2020-12-06T21:00:00Z', 'USEQPreAndPost');
+  marketDataInstance.fetchMarketData('MSFT', '1', 'Daily', '5', '2020-12-05', '2020-12-06T21:00:00Z', 'USEQPreAndPost');
 } catch (error) {
   console.error(error.message);
 }

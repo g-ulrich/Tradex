@@ -1,9 +1,50 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faXmark, faMoneyBillTrendUp, faBuildingColumns, faGear, faEllipsisVertical, faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons'
+import { faEllipsis, faAnglesRight, faAnglesLeft, faAngleRight, faAngleLeft, faFilter, faTrash, faCoins, faPerson, faArrowsRotate, faXmark, faMoneyBillTrendUp, faBuildingColumns, faGear, faEllipsisVertical, faAngleDown, faAngleUp, faCode } from '@fortawesome/free-solid-svg-icons'
+
+export function IconEllipsis(){
+  return(<><FontAwesomeIcon icon={faEllipsis} /></>);
+}
+
+export function IconAnglesR(){
+  return(<><FontAwesomeIcon icon={faAnglesRight} /></>);
+}
+
+export function IconAnglesL(){
+  return(<><FontAwesomeIcon icon={faAnglesLeft} /></>);
+}
+
+export function IconAngleR(){
+  return(<><FontAwesomeIcon icon={faAngleRight} /></>);
+}
+
+export function IconAngleL(){
+  return(<><FontAwesomeIcon icon={faAngleLeft} /></>);
+}
+
+export function IconTrash(){
+  return(<><FontAwesomeIcon icon={faTrash} /></>);
+}
+
+export function IconFilter(){
+  return(<><FontAwesomeIcon icon={faFilter} /></>);
+}
+
+
+export function IconCrypto(){
+  return(<><FontAwesomeIcon icon={faCoins} /></>);
+}
+
+export function IconPerson(){
+  return(<><FontAwesomeIcon icon={faPerson} /></>);
+}
 
 export function IconMenu(){
     return(<><FontAwesomeIcon icon={faEllipsisVertical} /></>);
+}
+
+export function IconRefresh(){
+  return(<><FontAwesomeIcon icon={faArrowsRotate} /></>);
 }
 
 export function IconCog(){
@@ -28,4 +69,8 @@ export function IconTrade(){
 
 export function IconX(){
     return(<><FontAwesomeIcon icon={faXmark} /></>);
+}
+
+export function IconCode(){
+  return(<><FontAwesomeIcon icon={faCode} /></>);
 }

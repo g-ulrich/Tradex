@@ -1,7 +1,7 @@
 import { BrowserWindow} from 'electron';
 import axios from 'axios';
 import fs from 'fs'; // saves file to root.
-import { setInterval } from 'timers';
+import {currentESTDatetime} from '../../util';
 
 
 interface fullTokenResponse {
@@ -32,7 +32,7 @@ interface rawRefreshTokenResponse {
 }
 
 const TOKEN_FILE_NAME = 'tsToken.json';
-const CALLBACK_URL = 'http://localhost';
+const CALLBACK_URL = 'http://localhost:3001';
 const API_URL = 'https://api.tradestation.com';
 const SINGIN_URL = 'https://signin.tradestation.com/';
 const TOKEN_URL = `${SINGIN_URL}oauth/token`;
@@ -49,7 +49,14 @@ const GET_AUTH_URL = () => {
 export async function triggerRefresh() {
     try {
         if (isTokenExpired()) {
-          console.log("Refreshing Tradestation Token.");
+          console.log(`${currentESTDatetime()} [INFO] Refreshing Tradestation Token.`);
+          updateTSTokenData({
+            access_token: 'exmaple3449204',
+            id_token: 'exmaple3449204',
+            token_type: 'bearer',
+            scope: 'chicken wings',
+            expires_in: 1200
+        }); // temp
         //     const tokenDataFromStore = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
         //     const newData = await getTokenFromRefresh(tokenDataFromStore?.refresh_token);
         //     const success : boolean = await updateTSTokenData(newData);

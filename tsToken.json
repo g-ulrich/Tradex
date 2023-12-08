@@ -1,9 +1,9 @@
 {
-  "access_token": "eGlhc2xv...MHJMaA",
+  "access_token": "exmaple3449204",
   "refresh_token": "eGlhc2xv...wGVFPQ",
-  "id_token": "vozT2Ix...wGVFPQ",
-  "token_type": "Bearer",
+  "id_token": "exmaple3449204",
+  "token_type": "bearer",
   "scope": "openid profile MarketData ReadAccount Trade Crypto offline_access",
-  "timeStamp": 1701801229091,
+  "timeStamp": 1702070277620,
   "expires_in": 1200
 }

@@ -1,13 +1,14 @@
 import React, {useState} from 'react';
 import MainView from './MainView';
-import { IconCog, IconBank, IconTrade } from '../Icons';
+import { IconCog, IconBank, IconTrade, IconCode} from '../Icons';
 import SettingsLinkDialog from './SettingsLinkDialog';
 
 
 function Routing(heightOffset) {
     const links = [
         {title:"account", extraClasses: "", icon: <IconBank />},
-        {title:"trade", extraClasses: "", icon: <IconTrade />}];
+        {title:"trade", extraClasses: "", icon: <IconTrade />},
+        {title:"code", extraClasses: "", icon: <IconCode />}];
     const [page, setPage] = useState('account');
 
     const handlePageChange = (pageName) => {

@@ -9,14 +9,18 @@ class TS {
   }
 
   getTokenObj(){
-    const objString = Cookies.get('TSTokenObj');
-    const obj = JSON.parse(objString);
-    return obj;
+    if (Cookies.get('TSTokenObj')) {
+      const objString = Cookies.get('TSTokenObj');
+      const obj = JSON.parse(objString);
+      return obj;
+    }else{
+      return null;
+    }
   }
 
   getAccessToken(){
     const obj = this.getTokenObj();
-    return obj.access_token;
+    return obj?.access_token;
   }
 
 
