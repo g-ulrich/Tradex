@@ -5,6 +5,26 @@ export const getHeightFromClass = (classStr) => {
     return ele.offsetHeight;
 }
 
+export const findObjectByVal = (jsonArray, desiredValue, keyToCheck) => {
+  for (let i = 0; i < jsonArray.length; i++) {
+    if (jsonArray[i][keyToCheck] === desiredValue) {
+      return jsonArray[i];
+    }
+  }
+  return null; // Return null if no match is found
+}
+
+export const currentESTTime = () => {
+  const dt = new Date();
+  return dt.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    timeZone: 'EST',
+  });
+}
+
 export const currentESTDatetime = () => {
   // '12/06/2023, 11:39:12 AM'
   const dt = new Date();
@@ -15,29 +35,33 @@ export const formatCurrency = (amount) => {
   return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 }
 
-export const generateRandomData = (count) => {
+export const randNum = (start, finish) => {
+  const range = finish - start + 1;
+  return Math.floor(Math.random() * range) + start;
+}
+
+export const generateRandomData = () => {
   const symbols = ["AAPL", "GOOGL", "AMZN", "MSFT", "TSLA", "FB", "NFLX", "NVDA", "V", "PYPL", "INTC", "AMD", "CSCO", "IBM", "ORCL", "QCOM", "GS", "JPM", "BA", "MMM", "DIS", "XOM", "CVX", "PFE", "WMT", "KO", "PEP", "HD", "CAT", "MRK", "VZ", "AAP", "BA", "C", "DOW", "GS", "IBM", "JNJ", "MCD", "NKE", "PG", "TRV", "UNH", "VZ", "WBA", "WMT", "XOM"];  const randomData = [];
 
-  for (let i = 0; i < count; i++) {
-    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+  for (let i = 0; i < symbols.length; i++) {
     const randomObject = {
-      Symbol: symbol,
-      Open: (Math.random() * 200 + 100).toFixed(2),
-      PreviousClose: (Math.random() * 200 + 100).toFixed(2),
-      Last: (Math.random() * 200 + 100).toFixed(2),
-      Ask: (Math.random() * 200 + 100).toFixed(2),
-      AskSize: Math.floor(Math.random() * 500) + 100,
-      Bid: (Math.random() * 200 + 100).toFixed(2),
-      BidSize: Math.floor(Math.random() * 500) + 100,
-      NetChange: ((Math.random() - 0.5) * 10).toFixed(2),
-      NetChangePct: ((Math.random() - 0.5) * 2).toFixed(3),
-      High52Week: (Math.random() * 100 + 200).toFixed(2),
+      Symbol: symbols[i],
+      Open: randNum(1, 2),
+      PreviousClose: randNum(1, 2),
+      Last: randNum(1, 5),
+      Ask: randNum(1, 2),
+      AskSize: randNum(1, 2),
+      Bid: randNum(1, 2),
+      BidSize: randNum(1, 2),
+      NetChange: randNum(1, 2),
+      NetChangePct: randNum(-10, 10),
+      High52Week: randNum(1, 2),
       High52WeekTimestamp: "2022-01-10T00:00:00Z", // Replace with actual date logic if needed
-      Low52Week: (Math.random() * 100).toFixed(2),
+      Low52Week: randNum(1, 2),
       Low52WeekTimestamp: "2022-06-20T00:00:00Z", // Replace with actual date logic if needed
-      Volume: Math.floor(Math.random() * 10000000) + 1000000,
-      PreviousVolume: Math.floor(Math.random() * 30000000) + 10000000,
-      Close: (Math.random() * 200 + 100).toFixed(2),
+      Volume:  randNum(1, 2),
+      PreviousVolume: randNum(1, 2),
+      Close: randNum(1, 2),
       DailyOpenInterest: Math.floor(Math.random() * 1000),
       TradeTime: new Date().toISOString(), // Current timestamp
       TickSizeTier: Math.floor(Math.random() * 3), // Assuming 0, 1, 2 as possible values

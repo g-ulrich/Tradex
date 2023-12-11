@@ -1,5 +1,6 @@
 // Pagination.js
 import React from 'react';
+import {currentESTTime} from '../util';
 import { IconEllipsis, IconAnglesL, IconAnglesR, IconAngleR, IconAngleL } from '../Icons';
 
 const Pagination = ({ totalItems, itemsPerPage, currentPage, totalPages, onPageChange, onItemsPerPageChange }) => {
@@ -21,7 +22,7 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, totalPages, onPageC
           <option value="100">100</option>
         </select>
         </div>
-        <div className="text-gray-500">00:00:00</div>
+        <div className="text-gray-500">{currentESTTime()}</div>
         <div className="grow flex justify-end space-x-2">
           <button key={pages[0]} onClick={() => onPageChange(pages[0])}><IconAnglesL/></button>
           <button onClick={() => onPageChange(currentPage === 1 ? currentPage : currentPage - 1)}><IconAngleL/></button>

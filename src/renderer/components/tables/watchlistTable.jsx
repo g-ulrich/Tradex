@@ -2,9 +2,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { orderBy } from 'lodash';
 import Pagination from './pagination'; // Adjust the path based on your project structure
-import { IconRefresh } from '../Icons';
+import { IconRefresh, IconTriangleDown, IconTriangleUp } from '../Icons';
+import {findObjectByVal} from '../util';
 
-const WatchlistTable = ({ data, columns, title, searchKey }) => {
+const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryKey }) => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchInput, setSearchInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +28,7 @@ const WatchlistTable = ({ data, columns, title, searchKey }) => {
 
     // Filter data based on search input
     const filteredData = sortedData.filter((item) => {
-      const symbol = item[searchKey] || ""; // Handle possible undefined symbol
+      const symbol = item[primaryKey] || ""; // Handle possible undefined symbol
       return symbol.toLowerCase().includes(searchInput.toLowerCase());
     });
 
@@ -35,6 +36,15 @@ const WatchlistTable = ({ data, columns, title, searchKey }) => {
   };
 
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+
+  const isDiff = (row, col) => {
+    const prev_row = findObjectByVal(prevData, row.Symbol, 'Symbol');
+    if (prev_row != null) {
+      return prev_row[col.key] != row[col.key] ? true : false;
+    } else {
+      return false;
+    }
+  }
 
   return (
     <>
@@ -51,14 +61,11 @@ const WatchlistTable = ({ data, columns, title, searchKey }) => {
               <input
                 type="search"
                 className="block text-discord-white outline-none w-full py-[4px] px-2 ps-10 text-sm border border-none rounded bg-discord-darkerGray"
-                placeholder={`${searchKey} Search`}
+                placeholder={`${primaryKey} Search`}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
           </div>
-          <a href="#" className="text-sm font-medium text-discord-blurple2">
-            <IconRefresh />
-          </a>
         </div>
         <div class="overflow-x-auto max-h-[400px] overflow-y-auto bg-discord-darkestGray">
         <table className="w-full divide-y divide-discord-darkerGray">
@@ -89,9 +96,18 @@ const WatchlistTable = ({ data, columns, title, searchKey }) => {
             {paginateData().map((row, index) => (
               <tr key={index}>
                 {columns.map((column) => (
-                  <td key={column.key} className="px-2 py-[4px] whitespace-nowrap">
-                    {column.prefix}{row[column.key]}
-                  </td>
+                  column.key === primaryKey ? (
+                    <td key={column.key}
+                    className={`px-2 py-[4px] whitespace-nowrap ${row[secondaryKey] >= 0 ? 'text-discord-softGreen' : row[secondaryKey] < 0 ? 'text-discord-softRed' : ''} sticky left-0 z-[99] bg-discord-darkestGray shadow-lg shadow-right`}>
+                    {row[secondaryKey] >= 0 ? (<IconTriangleUp />):(<IconTriangleDown/>) } {row[column.key]}
+                    </td>
+                  ) : (
+                    <td key={column.key}
+                    className={`px-2 py-[4px] whitespace-nowrap ${isDiff(row, column) ? 'bg-discord-softBlurple2' : ''}`}>
+                      {column.prefix}{row[column.key]}
+                    </td>
+                  )
+
                 ))}
               </tr>
             ))}

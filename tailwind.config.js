@@ -16,6 +16,7 @@ module.exports = {
             white2: '#d9dadc',
             blurple: '#7289DA',
             blurple2: '#5865f2',
+            softBlurple2: 'rgba(88,101,242,.2)',
             darkGray: '#424549',
             darkerGray: '#36393E',
             darkestGray: '#282B30',

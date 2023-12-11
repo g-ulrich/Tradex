@@ -1,6 +1,14 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEllipsis, faAnglesRight, faAnglesLeft, faAngleRight, faAngleLeft, faFilter, faTrash, faCoins, faPerson, faArrowsRotate, faXmark, faMoneyBillTrendUp, faBuildingColumns, faGear, faEllipsisVertical, faAngleDown, faAngleUp, faCode } from '@fortawesome/free-solid-svg-icons'
+import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight, faAnglesLeft, faAngleRight, faAngleLeft, faFilter, faTrash, faCoins, faPerson, faArrowsRotate, faXmark, faMoneyBillTrendUp, faBuildingColumns, faGear, faEllipsisVertical, faAngleDown, faAngleUp, faCode } from '@fortawesome/free-solid-svg-icons'
+
+export function IconTriangleDown(){
+  return(<><FontAwesomeIcon icon={faCaretDown} /></>);
+}
+
+export function IconTriangleUp(){
+  return(<><FontAwesomeIcon icon={faCaretUp} /></>);
+}
 
 export function IconEllipsis(){
   return(<><FontAwesomeIcon icon={faEllipsis} /></>);
