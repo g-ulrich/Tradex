@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { skeletonGraph } from '../skeletons';
+// import { skeletonGraph } from '../skeletons';
 import { initChart, initCandleSeries, initHistogramVolSeries,getCandleDataFromQuotes, subscribeCrossHair, formatVolumeText, subscribeRangeChange } from './chartTools';
-import { getCurrentTime, isCurTimeDivisibleByMinsWithTolerance, generateAlphaNumString, YTDInDays, GMTtoEST, ESTToGMT, getIndexByVal } from '../tools';
+import { getCurrentTime, isCurTimeDivisibleByMinsWithTolerance, generateAlphaNumString, YTDInDays, GMTtoEST, ESTToGMT, getIndexByVal } from '../util';
 import axios from 'axios';
 
-const FinanceChart = ({ props }) => {
+const FinanceChart = ( props ) => {
     const chartHeight = props.height || '400px';
     const chartContainerRef = useRef(null);
     const chartRef = useRef(null);
@@ -50,20 +50,20 @@ const FinanceChart = ({ props }) => {
     const getTimeseriesData = async () => {
         try {
             console.log(timeFrameValInDays);
-            const days = timeFrameValInDays || timeFrames[selectedTimeFrameKey];
-            const isDaily = days > 31 * 6;
-            const payLoad = {
-                symbol: props.symbol,
-                minute: selectedTimeFrameKey == 'Live' ? 1 : selectedTimeFrameKey == '3M' || selectedTimeFrameKey == '6M' ? 30 : selectedTimeFrameKey == '5D' ? 5 : timeFrameValInDays,
-                days: days,
-                from_last_close: false,
-                ext: false,
-                current: false,
-                max: false
-            };
-            const response = await axios.post(isDaily ? 'daily_history' : 'intraday_history', { data: payLoad });
-            const data = JSON.parse(response.data.df);
-            return data;
+            // const days = timeFrameValInDays || timeFrames[selectedTimeFrameKey];
+            // const isDaily = days > 31 * 6;
+            // const payLoad = {
+            //     symbol: props.symbol,
+            //     minute: selectedTimeFrameKey == 'Live' ? 1 : selectedTimeFrameKey == '3M' || selectedTimeFrameKey == '6M' ? 30 : selectedTimeFrameKey == '5D' ? 5 : timeFrameValInDays,
+            //     days: days,
+            //     from_last_close: false,
+            //     ext: false,
+            //     current: false,
+            //     max: false
+            // };
+            // const response = await axios.post(isDaily ? 'daily_history' : 'intraday_history', { data: payLoad });
+            // const data = JSON.parse(response.data.df);
+            return [];
         } catch (error) {
             console.log(error);
         }
@@ -86,7 +86,7 @@ const FinanceChart = ({ props }) => {
                     candlesSeries.setData(existingCandles);
                     existingVolumes.push({ time: GMTtoEST(lastBar.datetime), value: lastBar.volume, color: lastBar.open < lastBar.close ? volumeColors.up : volumeColors.down })
                     volumeSeries.setData(existingVolumes);
-                    
+
                 } else {
                     console.log('update candle');
                     const response = await axios.post('get_quote', { data: {symbol: props.symbol} });

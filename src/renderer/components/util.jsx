@@ -1,8 +1,13 @@
-import React, {} from 'react';
+import React from 'react';
+
 
 export const getHeightFromClass = (classStr) => {
     const ele = document.getElementsByClassName(classStr)[0];
     return ele.offsetHeight;
+}
+
+export const titleBarheight = () => {
+  return getHeightFromClass("cet-titlebar");
 }
 
 export const findObjectByVal = (jsonArray, desiredValue, keyToCheck) => {
@@ -30,6 +35,16 @@ export const currentESTDatetime = () => {
   const dt = new Date();
   return dt.toLocaleString('en-US', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'EST'});
 }
+
+export const getCurrentTime = () => {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
 
 export const formatCurrency = (amount) => {
   return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -81,4 +96,59 @@ export const generateRandomData = () => {
 
 export const strHas = (str, substr) => {
   return str.indexOf(substr) !== -1;
+}
+
+export const isCurTimeDivisibleByMinsWithTolerance = (min, sec) => {
+  const currentDate = new Date();
+  const currentMinute = currentDate.getMinutes();
+  const currentSecond = currentDate.getSeconds();
+
+  if (currentSecond >= 30 && currentSecond <= 30+sec) {
+    return currentMinute % min === 0;
+  }
+
+  return false;
+}
+
+
+export const generateAlphaNumString = (n) => {
+  const alphanumericChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let randomString = '';
+
+  for (let i = 0; i < n; i++) {
+    const randomIndex = Math.floor(Math.random() * alphanumericChars.length);
+    randomString += alphanumericChars[randomIndex];
+  }
+
+  return randomString;
+}
+
+export const  YTDInDays = () => {
+  var currentDate = new Date();
+  var currentYear = currentDate.getFullYear();
+  var beginningOfYear = new Date(currentYear, 0, 1);
+  var differenceInMilliseconds = currentDate - beginningOfYear;
+  var differenceInDays = Math.round(differenceInMilliseconds / (24 * 60 * 60 * 1000));
+  return differenceInDays;
+}
+
+export const ESTToGMT = (timestamp) => {
+  return (timestamp + 5 * 60 * 60 * 1000) / 1000;
+}
+
+export const GMTtoEST = (timestamp) => {
+  return (timestamp - 5 * 60 * 60 * 1000) / 1000;
+}
+
+
+export const getIndexByVal = (jsonArr, key, val) => {
+  let index = -1;
+
+for (let i = 0; i < jsonArr.length; i++) {
+  if (jsonArr[i][key] === val) {
+    index = i;
+    break;
+  }
+}
+return index;
 }

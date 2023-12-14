@@ -2,9 +2,10 @@ import React, {useState} from 'react';
 import MainView from './MainView';
 import { IconCog, IconBank, IconTrade, IconCode} from '../Icons';
 import SettingsLinkDialog from './SettingsLinkDialog';
+import {titleBarheight} from '../util';
 
 
-function Routing(heightOffset) {
+function Routing() {
     const links = [
         {title:"account", extraClasses: "", icon: <IconBank />},
         {title:"trade", extraClasses: "", icon: <IconTrade />},
@@ -17,7 +18,7 @@ function Routing(heightOffset) {
 
     return (
       <div className="flex">
-        <div className="flex-none bg-discord-black border-[1px] border-discord-darkestGray" style={{'height': `calc(100vh - ${heightOffset.val}px)`}}>
+        <div className={`flex-none bg-discord-black border-[1px] border-discord-darkestGray max-h-screen `} >
           <div className="grid grid-cols-1">
             {links.map((obj, i) => (
                 <div key={`${obj.title}_routing`} className="block text-center my-[4px]">
@@ -29,7 +30,7 @@ function Routing(heightOffset) {
             <SettingsLinkDialog />
           </div>
         </div>
-        <div className="grow h-full scrollable overflow-y-auto p-2">
+        <div className={`grow scrollable overflow-y-auto p-2`} style={{'height': `calc(100vh - ${titleBarheight()}px)`}}>
           <MainView selectedPage={page}/>
         </div>
       </div>

@@ -32,7 +32,7 @@ let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('refreshToken', async (event, _) => {
   const tokenObj = await triggerRefresh();
-  event.reply('refreshToken', tokenObj);
+  event.reply('refreshToken', {ts: tokenObj, alpha: process.env.ALPHA_VANTAGE_API_1});
 });
 
 if (process.env.NODE_ENV === 'production') {

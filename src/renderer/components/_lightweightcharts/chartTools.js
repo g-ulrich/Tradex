@@ -1,5 +1,5 @@
 import React from 'react';
-import { GMTtoEST } from '../tools';
+import { GMTtoEST } from '../util';
 import { createChart, ColorType, CrosshairMode } from 'lightweight-charts';
 
 export const initChart = (containerRef, colorsObj) => {
@@ -115,7 +115,7 @@ export const subscribeCrossHair = (chartRef, legendRef, props, candleColors, can
                 const main_legend = ['open', 'high', 'low', 'close']
                     .map((item) => `${item.charAt(0).toUpperCase()}<span style='color: ${color}'>${candle[item].toFixed(2)}</span> `)
                     .join('') + ` ${arrow} <span style="color: ${color}">${pl}</span>`;
-    
+
                 legendRef.innerHTML = `<b>${props.symbol}</b> <span style='font-size: 12px;'>${main_legend} Vol <span style='color: ${color}'>${formatVolumeText(volume.value)}</span></span>`;
             } catch (error) {
                 console.log(error);

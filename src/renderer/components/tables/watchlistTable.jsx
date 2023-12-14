@@ -46,9 +46,10 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
     }
   }
 
+
   return (
     <>
-      <div className="w-full bg-discord-darkestGray border border-discord-black rounded shadow-lg">
+      <div className="w-full  bg-discord-darkestGray border border-discord-black rounded shadow-lg">
         <div className="flex p-2 items-center justify-between">
           <h5 className="text-xl font-bold leading-none text-discord-white">{title}</h5>
 
@@ -67,7 +68,7 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
               />
           </div>
         </div>
-        <div class="overflow-x-auto max-h-[400px] overflow-y-auto bg-discord-darkestGray">
+        <div class="overflow-x-auto max-h-[700px] overflow-y-auto bg-discord-darkestGray">
         <table className="w-full divide-y divide-discord-darkerGray">
           <thead className="bg-discord-darkestGray">
             <tr>
@@ -98,8 +99,9 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
                 {columns.map((column) => (
                   column.key === primaryKey ? (
                     <td key={column.key}
-                    className={`px-2 py-[4px] whitespace-nowrap ${row[secondaryKey] >= 0 ? 'text-discord-softGreen' : row[secondaryKey] < 0 ? 'text-discord-softRed' : ''} sticky left-0 z-[99] bg-discord-darkestGray shadow-lg shadow-right`}>
+                    className={`px-2 py-[4px] whitespace-nowrap  sticky left-0 z-[99] bg-discord-darkestGray shadow-lg shadow-right`}>
                     {row[secondaryKey] >= 0 ? (<IconTriangleUp />):(<IconTriangleDown/>) } {row[column.key]}
+                    {/* ${row[secondaryKey] >= 0 ? 'text-discord-softGreen' : row[secondaryKey] < 0 ? 'text-discord-softRed' : ''} */}
                     </td>
                   ) : (
                     <td key={column.key}
