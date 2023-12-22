@@ -147,6 +147,15 @@ class LightWeight {
     this.ref.legend.innerHTML = `<div class="overflow-hidden truncate w-[90%] absolute z-[9999] left-[10px]">${html}</div>`;
   }
 
+  getCandleInfo(incomingObj, indexedStudy){
+    var isCandle = indexedStudy.type === 'candle';
+    var arrow = !isCandle ? '' : incomingObj.open > incomingObj.close ? '▼' : '▲';
+    var color = !isCandle ? '' : incomingObj.open < incomingObj.close ? 'text-green-700' : 'text-red-700';
+    return {isCandle: isCandle, arrow: arrow, color: color,
+      pl: !isCandle ? '' :
+      `<span class="${color}">$${(incomingObj.close-incomingObj.open).toFixed(2)} ${arrow} ${(incomingObj.close/incomingObj.open).toFixed(2)}%</span>`};
+  }
+
   addCrosshairListener(){
     this.chart.subscribeCrosshairMove((obj) => {
         const seriesMap = obj.seriesData;
@@ -160,20 +169,16 @@ class LightWeight {
           let index = 0;
           seriesMap.forEach((valObj, key) => {
               var study = this.chartStudies[index].study;
-              var isCandle = study.type === 'candle';
-              var arrow = !isCandle ? '' : valObj.open > valObj.close ? '▼' : '▲';
-              var color = !isCandle ? '' : valObj.open < valObj.close ? 'text-green-700' : 'text-red-700';
+              var candle = this.getCandleInfo(valObj, study);
               var valKeys = Object.keys(valObj);
               var line = '';
               valKeys.forEach((k) => {
                 if (k !== 'time' && k !== 'color') {
                   var value = `${study.pre}${valObj[k].toFixed(2)}${study.post}`;
-                  line += `${k !== 'value' ? k[0].toUpperCase() : ''}<span class="${color}">${value}</span> `;
+                  line += `${k !== 'value' ? k[0].toUpperCase() : ''}<span class="${candle.color}">${value}</span> `;
                 }
               });
-              var pl = !isCandle ? '' :
-              `<span class="${color}">$${(valObj.close-valObj.open).toFixed(2)} ${arrow} ${(valObj.close/valObj.open).toFixed(2)}%</span>`;
-              html += `${study.title} ${line}${pl}@`;
+              html += `${study.title} ${line}${candle.pl}@`;
             index += 1;
           });
           this.updateLegend(html.replaceAll('@', '<br/>'))
