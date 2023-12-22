@@ -1,5 +1,15 @@
 import React from 'react';
 
+export const renameKey = (jsonArray, oldKey, newKey) => {
+  return jsonArray.map(obj => {
+    if (obj.hasOwnProperty(oldKey)) {
+      obj[newKey] = obj[oldKey];
+      delete obj[oldKey];
+    }
+    return obj;
+  });
+}
+
 
 export const getHeightFromClass = (classStr) => {
     const ele = document.getElementsByClassName(classStr)[0];
@@ -151,4 +161,105 @@ for (let i = 0; i < jsonArr.length; i++) {
   }
 }
 return index;
+}
+
+
+export const generateLineData = (n, freq) => {
+  var jsonArray = [];
+  var currentTime = new Date().getTime();
+  var lastVal = 0;
+  for (var i = 0; i < n; i++) {
+    var timestamp = Math.floor(currentTime / 1000); // Convert milliseconds to seconds
+    var randomValue = Math.random() * 100; // generates a random float between 0 and 100
+    lastVal += 1;
+    var dataPoint = {
+      time: timestamp,
+      value: randomValue - lastVal
+    };
+
+    jsonArray.push(dataPoint);
+
+    // Decrease the time by the specified frequency (in minutes)
+    currentTime -= freq * 60 * 1000; // Convert minutes to milliseconds
+  }
+
+  return jsonArray.reverse(); // Reverse the array to match the provided data order
+}
+
+
+export const generateCandleData = (n, freq, forChart) => {
+  const chart = typeof forChart !== 'undefined' ? forChart : true;
+
+  const jsonArray = [];
+  var timestamp = new Date().getTime() / 1000;
+  var lastClose = 0;
+  const randomValue = Math.random() * 100;
+  for (let i = 0; i < n; i++) {
+    timestamp += 1000 * 60 * freq;
+
+    lastClose += 1;
+    const open = randomValue + lastClose;
+    const high = open + .5;
+    const low = open - .5;
+    const close = open + .1;
+    const volume = Math.random() * 1000;
+
+    const dataPoint = {
+      time: timestamp,
+      close: close,
+      open: open,
+      high: high,
+      low: low,
+      volume: volume
+    };
+
+    jsonArray.push(dataPoint);
+    lastClose = close;
+  }
+
+  return jsonArray;
+}
+
+
+
+export const convertJSONArrayToJSON = (jsonArray) => {
+  var jsonObject = {};
+
+  jsonArray.forEach(function(item) {
+    for (var key in item) {
+      if (item.hasOwnProperty(key)) {
+        if (!jsonObject[key]) {
+          jsonObject[key] = [];
+        }
+        jsonObject[key].push(item[key]);
+      }
+    }
+  });
+
+  return jsonObject;
+}
+
+export const jsonArrayToArrayByKey = (jsonArray, key) => {
+  const extractedData = [];
+  jsonArray.forEach((obj, i) => {
+    extractedData.push(obj[key]);
+  });
+  return extractedData;
+}
+
+export const arrayToJsonArray = (arr, keyName) => {
+  const jsonArray = [];
+  arr.forEach(function (item) {
+    jsonArray.push({ [keyName]: item });
+  });
+  return jsonArray;
+}
+
+
+export const isSubStr = (string, substring) => {
+  if (string.indexOf(substring) !== -1) {
+      return true;
+  } else {
+      return false;
+  }
 }

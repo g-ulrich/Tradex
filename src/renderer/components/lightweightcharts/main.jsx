@@ -1,92 +1,192 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType, CrosshairMode } from 'lightweight-charts';
+import { createChart, ColorType, createWatermark, CrosshairMode } from 'lightweight-charts';
+import {generateLineData} from '../util';
 
+const chartColors = {
+  white: '#ffffff',
+  softDarkGray: 'rgba(49,53,59, 0.9)',
+  softWhite: 'rgba(100,100,100, 0.4)',
+  softRed: 'rgba(200, 97, 100, .5)',
+  softGreen: 'rgba(39, 157, 130, .5)',
+  discord: {
+    red: '#ED4245',
+    softRed: 'rgba(237,66,69,.5)',
+    green: 'rgb(87,242,135)',
+    softGreen: 'rgba(87,242,135, .5)',
+    white: '#f2f3f5',
+    white2: '#d9dadc',
+    blurple: '#7289DA',
+    blurple2: '#5865f2',
+    softBlurple2: 'rgba(88,101,242,.2)',
+    darkGray: '#424549',
+    darkerGray: '#36393E',
+    darkestGray: '#282B30',
+    black: '#1E2124',
+  }
+}
 
 const chartDefaultOptions = {
-  width: 800, // Default width of the chart
-  height: 400, // Default height of the chart
+  width: 500,
+  height: 400,
   layout: {
-    backgroundColor: '#FFFFFF', // Default background color of the chart
-    textColor: '#000000', // Default text color of the chart
-    fontSize: 12, // Default font size of the chart
+      textColor: chartColors.white,
+      background: {
+          color: chartColors.discord.darkestGray,
+          type: ColorType.Solid,
+      },
+      fontSize: 12,
+  },
+  rightPriceScale: {
+      scaleMargins: { top: 0.2, bottom: 0.2 },
+  },
+  timeScale: { timeVisible: true, secondsVisible: false },
+  crosshair: {
+      mode: CrosshairMode.FinanceChart,
+      vertLine: {
+          labelBackgroundColor: chartColors.discord.darkerGray,
+      },
+      horzLine: {
+          labelBackgroundColor: chartColors.discord.darkerGray,
+      },
   },
   grid: {
-    vertLines: {
-      color: '#D3D3D3', // Default color of vertical grid lines
-    },
-    horzLines: {
-      color: '#D3D3D3', // Default color of horizontal grid lines
-    },
+      vertLines: { color: chartColors.softDarkGray },
+      horzLines: { color: chartColors.softDarkGray },
   },
-  crosshair: {
-    mode: 'normal', // Default crosshair mode
-    vertLine: {
-      labelBackgroundColor: 'rgb(46, 46, 46)', // Default label background color for vertical crosshair line
-    },
-    horzLine: {
-      labelBackgroundColor: 'rgb(55, 55, 55)', // Default label background color for horizontal crosshair line
-    },
-  },
-  priceScale: {
-    position: 'right', // Default position of the price scale
-    scaleMargins: {
-      top: 0.3, // Default top scale margin for right price scale
-      bottom: 0.25, // Default bottom scale margin for right price scale
-    },
-  },
-  timeScale: {
-    timeVisible: true, // Default visibility of time scale
-    secondsVisible: false, // Default visibility of seconds in time scale
-  },
-  handleScroll: {
-    vertTouchDrag: true, // Default enablement of vertical touch dragging for scrolling
-  },
+  handleScroll: { vertTouchDrag: true },
 };
 
 
-class Chart {
-  constructor(options){
-    this.container = useRef(null);
-    this.options = options;
-    this.checkProps();
+class LightWeight {
+  constructor(opt){
+    this.options = this.optionsCheck(opt);
+    this.ref = this.options?.ref;
+    this.chart = createChart(this.ref.body, chartDefaultOptions);
+    this.chartStudies = [];
   }
 
-  checkProps(){
-    this.options = {
-      width: containerRef.clientWidth || 500,
-      height: containerRef.clientHeight,
-      layout: {
-          textColor: colorsObj.color,
-          background: {
-              color: colorsObj.backgroundColor,
-              type: ColorType.Solid,
-          },
-          fontSize: 12,
-      },
-      rightPriceScale: {
-          scaleMargins: { top: 0.3, bottom: 0.25 },
-      },
-      timeScale: { timeVisible: true, secondsVisible: false },
-      crosshair: {
-          mode: CrosshairMode.FinanceChart,
-          vertLine: {
-              labelBackgroundColor: 'rgb(46, 46, 46)',
-          },
-          horzLine: {
-              labelBackgroundColor: 'rgb(55, 55, 55)',
-          },
-      },
-      grid: {
-          vertLines: { color: '#424549' },
-          horzLines: { color: '#424549' },
-      },
-      handleScroll: { vertTouchDrag: true },
-  };
+  optionsCheck(opt){
+    const options = {};
+    for (const key in chartDefaultOptions) {
+      if (key in opt) {
+        options[key] = opt[key];
+      }
+    }
+    options.ref = opt?.ref;
+    return options;
   }
 
-  initChart(){
-    this.chart = createChart(this.container, this.options);
-    return this.chart;
+  updateWaterMark(str){
+    this.chart.applyOptions({
+      watermark: {
+        color: chartColors.softWhite,
+        visible: true,
+        text: str,
+        fontSize: 40
+      }
+    });
+  }
+
+  chartResize(w, h){
+    try {
+      if (typeof w !== 'undefined' || typeof h !== 'undefined') {
+        this.chart.resize(w, h);
+        this.options.width = w;
+        this.options.height = h;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  addVolume(jsonArray){
+    if (typeof jsonArray[0]?.volume !== 'undefined') {
+
+        const volumeData = jsonArray.map((candle) => ({
+          time: candle.time,
+          value: candle.volume,
+          color: candle.open > candle.close ? chartColors.softRed : chartColors.softGreen,
+        }));
+
+        const chartStudy = this.addChartStudy({pre: '', post: '', type: 'hist', title: 'Vol', data: volumeData},
+                  {priceFormat: { type: 'volume' }, overlay: true, priceScaleId: 'volume_scale'});
+        chartStudy.seriesObj.priceScale().applyOptions({
+          scaleMargins: { top: 0.8, bottom: 0 },
+        });
+    }
+  }
+
+  addChartStudy(study, options){
+    if (typeof study !== 'undefined' && typeof options !== 'undefined') {
+        const type = typeof study?.type !== 'undefined' ? study?.type : 'line';
+        const data = typeof study?.data !== 'undefined' ? study?.data : generateLineData(100, 5);
+
+        var seriesType;
+        if (type === 'line') {
+          var seriesObj = this.chart.addLineSeries(options);
+          seriesObj.setData(study?.data);
+        } else if (type === 'candle') {
+          var seriesObj = this.chart.addCandlestickSeries(options);
+          seriesObj.setData(study?.data);
+        } else if (type === 'hist') {
+          var seriesObj = this.chart.addHistogramSeries(options);
+          seriesObj.setData(study?.data);
+        }
+        const chartStudy = {
+          study: study,
+          options: options,
+          seriesObj: seriesObj,
+          id: this.chartStudies.length,
+        };
+        this.chartStudies.push(chartStudy);
+        return chartStudy;
+    }
+  }
+
+  updateLegend(html){
+    this.ref.legend.innerHTML = `<div class="overflow-hidden truncate w-[90%] absolute z-[9999] left-[10px]">${html}</div>`;
+  }
+
+  addCrosshairListener(){
+    this.chart.subscribeCrosshairMove((obj) => {
+        const seriesMap = obj.seriesData;
+        /*
+        TODO add entry for subsequent charts and other
+        non chartOverlay indicators.
+        */
+        if (seriesMap.size > 0 && this.chartStudies.length > 0) {
+          const JsonArr = [];
+          var html = '';
+          let index = 0;
+          seriesMap.forEach((valObj, key) => {
+              var study = this.chartStudies[index].study;
+              var isCandle = study.type === 'candle';
+              var arrow = !isCandle ? '' : valObj.open > valObj.close ? '▼' : '▲';
+              var color = !isCandle ? '' : valObj.open < valObj.close ? 'text-green-700' : 'text-red-700';
+              var valKeys = Object.keys(valObj);
+              var line = '';
+              valKeys.forEach((k) => {
+                if (k !== 'time' && k !== 'color') {
+                  var value = `${study.pre}${valObj[k].toFixed(2)}${study.post}`;
+                  line += `${k !== 'value' ? k[0].toUpperCase() : ''}<span class="${color}">${value}</span> `;
+                }
+              });
+              var pl = !isCandle ? '' :
+              `<span class="${color}">$${(valObj.close-valObj.open).toFixed(2)} ${arrow} ${(valObj.close/valObj.open).toFixed(2)}%</span>`;
+              html += `${study.title} ${line}${pl}@`;
+            index += 1;
+          });
+          this.updateLegend(html.replaceAll('@', '<br/>'))
+        }
+    });
+  }
+
+  kill(){
+    if (this.chart != null) {
+      this.chart.remove();
+    }
   }
 
 }
+
+export default LightWeight;

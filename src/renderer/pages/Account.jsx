@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import TS from '../components/tradestation/main';
 import AccountsList from '../components/cards/AccountList';
 import NewsList from '../components/cards/NewsList';
 import WatchlistTable from '../components/tables/watchlistTable';
 import { IconPerson, IconCrypto } from '../components/Icons';
 import { generateRandomData, strHas, titleBarheight } from '../components/util';
-import FinanceChart from '../components/lightweightcharts/financeChartWidget';
+// import FinanceChart from '../components/lightweightcharts/financeChartWidget';
+
+import Chart from '../components/lightweightcharts/chartComponent';
 
 function Account() {
   const [data, setData] = useState(generateRandomData());
@@ -40,16 +42,27 @@ function Account() {
   return (
     <>
     <div className="flex gap-2">
-      <div className="flex-none max-w-md border-2 border-discord-blurple" >
-        <div class="grid grid-cols-1 gap-2">
+      <div className="min-w-[350px] max-w-[400px] sm:w-[50%]">
         <AccountsList title={'Accounts'} itemArr={accountsArr} />
-        <WatchlistTable data={data} prevData={prevData} columns={columns} title={'Watchlist'} primaryKey={'Symbol'} secondaryKey={'NetChangePct'}/>
-        </div>
       </div>
-      <div className="grow border-2 border-discord-blurple">
-        <FinanceChart symbol={'QQQ'} height={'500px'} timeFrame={'3M'}/>
+      <div className="min-w-[300px] sm:w-[100%]">
+        <Chart/>
       </div>
+
     </div>
+
+
+  {/* <div className=" w-[400px] sm:w-full">
+    <AccountsList title={'Accounts'} itemArr={accountsArr} />
+  </div>
+  <div className="bg-gray-200">
+    <Chart/>
+  </div>
+  <div className="w-[400px] sm:w-full">
+    <WatchlistTable data={data} prevData={prevData} columns={columns} title={'Watchlist'} primaryKey={'Symbol'} secondaryKey={'NetChangePct'}/>
+  </div> */}
+
+
 
       {/* <div className="w-full">
         <NewsList title={'News'} symbols={'AAPL,ASPN'}/>
