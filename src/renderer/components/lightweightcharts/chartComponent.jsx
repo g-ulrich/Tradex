@@ -4,7 +4,7 @@ import { createChart, ColorType, CrosshairMode } from 'lightweight-charts';
 import LightWeight from '../lightweightcharts/main';
 import * as talib from '../lightweightcharts/talib';
 import {convertArrayToJsonArrayForChart, csvToJsonArray, indicatorToLineChart} from '../lightweightcharts/util';
-import {getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey} from '../util';
+import {getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey, isSubStr} from '../util';
 import {data} from './exampleData';
 import {IconEye, IconEyeSlash, IconFlask} from '../Icons';
 import Slide from '@mui/material/Slide';
@@ -17,10 +17,12 @@ function Chart() {
   const chartBodyRef = useRef(null);
   const chartFooterRef = useRef(null);
   const [showStudy, setShowStudy] = useState(false);
+  const [talibFuncs, setTalibFuncs] = useState(getAllFunctions(talib));
 
 
   useEffect(() => {
-    console.log(getAllFunctions(talib));
+    // setTalibFuncs(getAllFunctions(talib));
+    console.log(talibFuncs);
     const chartHeight = 500;
     const lwc = new LightWeight({
       ref: {container: containerRef.current,
@@ -76,9 +78,28 @@ function Chart() {
         <div className="relative" ref={chartBodyRef}>
             <Slide  direction="down" in={showStudy} mountOnEnter unmountOnExit >
               <div className="p-2 z-[9999] ml-2 mt-[4px] absolute inset-0 rounded border-discord-black border shadow-lg bg-discord-black h-[200px] scroll-container overflow-y-auto max-w-[300px]">
-                {
 
-                }
+                {talibFuncs.map((obj, i) => {
+                  if (isSubStr(obj.name, 'get')) {
+                    return (
+                      <div key={i} className="flex">
+                        <div className="flex">{obj.name.replace('get', '')}</div>
+                        <div className="grow text-right">
+                          {obj.parameters.map((item, j) => {
+                            if (item !== 'obj') {
+                              return (
+                                <div key={j} className="float-right flex">{item}</div>
+                              )
+                            }
+                          }
+                          )}
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return null;
+                  }
+                  })}
               </div>
             </Slide>
         </div>
