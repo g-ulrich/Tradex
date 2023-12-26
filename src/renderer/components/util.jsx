@@ -10,7 +10,6 @@ export const renameKey = (jsonArray, oldKey, newKey) => {
   });
 }
 
-
 export const getHeightFromClass = (classStr) => {
     const ele = document.getElementsByClassName(classStr)[0];
     return ele.offsetHeight;
@@ -255,7 +254,6 @@ export const arrayToJsonArray = (arr, keyName) => {
   return jsonArray;
 }
 
-
 export const isSubStr = (string, substring) => {
   if (string.indexOf(substring) !== -1) {
       return true;
@@ -263,3 +261,38 @@ export const isSubStr = (string, substring) => {
       return false;
   }
 }
+
+export const getAllFunctions = (file) => {
+  const functions = [];
+
+  for (const property in file) {
+    if (typeof file[property] === 'function' && !property.startsWith('render')) {
+      const functionInfo = {
+        name: property,
+        parameters: getFunctionParameters(file[property])
+      };
+      functions.push(functionInfo);
+    }
+  }
+
+  return functions;
+}
+
+export const getFunctionParameters = (func) => {
+  const parameterNames = [];
+  const functionString = func.toString();
+
+  const parameterRegex = /\(([^\)]*)\)\s*=>/;
+  const match = functionString.match(parameterRegex);
+
+  if (match && match[1]) {
+    const parameters = match[1].split(',');
+    for (const parameter of parameters) {
+      const paramName = parameter.trim();
+        parameterNames.push(paramName);
+    }
+  }
+
+  return parameterNames;
+}
+

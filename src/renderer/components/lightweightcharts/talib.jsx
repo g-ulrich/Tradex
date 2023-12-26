@@ -66,7 +66,6 @@ import {
 
 export const transformIncomeData = (obj) => {
   if (typeof obj.length === 'number') {
-    console.log("not an object");
     return convertJSONArrayToJSON(obj);
   } else {
     return obj;

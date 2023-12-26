@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createChart, ColorType, createWatermark, CrosshairMode } from 'lightweight-charts';
 import {generateLineData} from '../util';
+import { IconEye } from '../Icons';
 
 const chartColors = {
   white: '#ffffff',
@@ -24,6 +25,7 @@ const chartColors = {
     black: '#1E2124',
   }
 }
+
 
 const chartDefaultOptions = {
   width: 500,
@@ -55,7 +57,6 @@ const chartDefaultOptions = {
   },
   handleScroll: { vertTouchDrag: true },
 };
-
 
 class LightWeight {
   constructor(opt){
@@ -144,7 +145,7 @@ class LightWeight {
   }
 
   updateLegend(html){
-    this.ref.legend.innerHTML = `<div class="overflow-hidden truncate w-[90%] absolute z-[9999] left-[10px]">${html}</div>`;
+    this.ref.legend.innerHTML = `<div class="overflow-hidden text-gray-300 truncate w-[90%] absolute z-[9999] left-[10px]">${html}</div>`;
   }
 
   getCandleInfo(incomingObj, indexedStudy){
@@ -165,24 +166,51 @@ class LightWeight {
         */
         if (seriesMap.size > 0 && this.chartStudies.length > 0) {
           const JsonArr = [];
+
           var html = '';
           let index = 0;
           seriesMap.forEach((valObj, key) => {
-              var study = this.chartStudies[index].study;
-              var candle = this.getCandleInfo(valObj, study);
+              var chartStudy = this.chartStudies[index];
+              var study = chartStudy.study;
+              var info = this.getCandleInfo(valObj, study);
               var valKeys = Object.keys(valObj);
+              // function seriesClicked(){
+              //   this.isSeriesVisbile(chartStudy.seriesObj);
+              // }
               var line = '';
               valKeys.forEach((k) => {
                 if (k !== 'time' && k !== 'color') {
                   var value = `${study.pre}${valObj[k].toFixed(2)}${study.post}`;
-                  line += `${k !== 'value' ? k[0].toUpperCase() : ''}<span class="${candle.color}">${value}</span> `;
+                  line += `${k !== 'value' ? k[0].toUpperCase() : ''}<span class="${info.color}">${value}</span> `;
                 }
               });
-              html += `${study.title} ${line}${candle.pl}@`;
+              const lineColor = !info.isCandle && typeof chartStudy.options?.color !== 'undefined' ? `<b><span style="color:${chartStudy.options?.color}">—</span></b>` : '';
+              html += `${lineColor} ${study.title} ${line}${info.pl}<br/>`;
             index += 1;
           });
-          this.updateLegend(html.replaceAll('@', '<br/>'))
+          this.updateLegend(html);
         }
+    });
+  }
+
+  seriesClicked(i){
+    console.log(i);
+  }
+
+  isSeriesVisbile(series){
+    console.log('tre');
+    return series.options().visible;
+  }
+
+  hideSeries(series){
+    series.applyOptions({
+      visible: false,
+    });
+  }
+
+  showSeries(series){
+    series.applyOptions({
+      visible: true,
     });
   }
 
