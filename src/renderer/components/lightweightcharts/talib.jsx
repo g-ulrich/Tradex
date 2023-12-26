@@ -79,7 +79,7 @@ export const getADL = (obj) => {
 }; // Accumulation Distribution Line (ADL)
 
 // Average Directional Index (ADX)
-export const getADX = (obj, n) => {
+export const getADX = (obj, n=14) => {
   var data = transformIncomeData(obj);
   return ADX.calculate({ close: data.close, period: n });
 } // Average Directional Index (ADX)

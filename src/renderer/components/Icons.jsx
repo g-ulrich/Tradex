@@ -4,7 +4,12 @@ import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight,
    faAnglesLeft, faAngleRight, faAngleLeft, faFilter, faTrash,
     faCoins, faPerson, faArrowsRotate, faXmark, faMoneyBillTrendUp,
      faBuildingColumns, faGear, faEllipsisVertical, faAngleDown,
-      faAngleUp, faCode, faEye, faEyeSlash, faFlask } from '@fortawesome/free-solid-svg-icons'
+      faAngleUp, faCode, faEye, faEyeSlash, faFlask, faPlus } from '@fortawesome/free-solid-svg-icons'
+
+export function IconAdd(){
+  return(<><FontAwesomeIcon icon={faPlus} /></>);
+}
+
 
 export function IconFlask(){
   return(<><FontAwesomeIcon icon={faFlask} /></>);

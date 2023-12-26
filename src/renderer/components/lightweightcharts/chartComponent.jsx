@@ -6,7 +6,7 @@ import * as talib from '../lightweightcharts/talib';
 import {convertArrayToJsonArrayForChart, csvToJsonArray, indicatorToLineChart} from '../lightweightcharts/util';
 import {getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey, isSubStr} from '../util';
 import {data} from './exampleData';
-import {IconEye, IconEyeSlash, IconFlask} from '../Icons';
+import {IconEye, IconEyeSlash, IconFlask, IconAdd} from '../Icons';
 import Slide from '@mui/material/Slide';
 
 
@@ -18,6 +18,7 @@ function Chart() {
   const chartFooterRef = useRef(null);
   const [showStudy, setShowStudy] = useState(false);
   const [talibFuncs, setTalibFuncs] = useState(getAllFunctions(talib));
+  const [searchQuery, setSearchQuery] = useState('');
 
 
   useEffect(() => {
@@ -67,6 +68,17 @@ function Chart() {
     setShowStudy(!showStudy);
   }
 
+  const addStudy = (obj) => {
+    const params = obj.parameters;
+    params.forEach((item) => {
+      if (item !== 'obj') {
+        var ele = document.getElementById(`${obj.name}_${item}`);
+        console.log(item, ele.value);
+      }
+    });
+
+  }
+
   return (
     <>
       <div className="py-2 bg-discord-darkestGray border border-discord-black rounded shadow-lg"
@@ -77,18 +89,34 @@ function Chart() {
         <div className="relative" ref={chartLegendRef}></div>
         <div className="relative" ref={chartBodyRef}>
             <Slide  direction="down" in={showStudy} mountOnEnter unmountOnExit >
-              <div className="p-2 z-[9999] ml-2 mt-[4px] absolute inset-0 rounded border-discord-black border shadow-lg bg-discord-black h-[200px] scroll-container overflow-y-auto max-w-[300px]">
+              <div className="p-2 z-[9999] ml-2 mt-[4px] absolute inset-0 rounded border-discord-black border shadow-lg bg-discord-black max-h-[300px] min-h-[100px] scroll-container overflow-y-auto max-w-[400px]">
+                <div className="text-lg"><IconFlask/> Indicators ({talibFuncs.length})
 
+                <input
+                  type="text"
+                  placeholder="Search ..."
+                  className="ml-2 px-2 py-[4px] border border-discord-darkestgray bg-discord-darkestGray rounded text-discord-white"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+
+                </div>
                 {talibFuncs.map((obj, i) => {
-                  if (isSubStr(obj.name, 'get')) {
+                  if (isSubStr(obj.name, 'get') && isSubStr(obj.name, searchQuery)) {
                     return (
-                      <div key={i} className="flex">
-                        <div className="flex">{obj.name.replace('get', '')}</div>
-                        <div className="grow text-right">
+                      <div key={i} className="flex border-b border-gray-600 items-center">
+                        <div className="flex items-center justify-start">
+                          <button onClick={() => addStudy(obj)}
+                            className="mr-2 my-[4px] px-2 py-[4px] border border-discord-softGreen hover:bg-discord-softGreen rounded text-discord-softGreen hover:text-discord-white">
+                            <IconAdd/></button>
+                          {obj.name.replace('get', '')}</div>
+                        <div className="grow  justify-end">
                           {obj.parameters.map((item, j) => {
                             if (item !== 'obj') {
                               return (
-                                <div key={j} className="float-right flex">{item}</div>
+                                <div key={j} className="float-right flex pl-2 justify-end"><b className="">{item}</b>-
+                                  <input id={`${obj.name}_${item}`} type="number" class="border border-discord-darkestgray bg-discord-darkestGray px-[4px]  rounded w-[45px]" step="1" min="2" max="500"></input>
+                                </div>
                               )
                             }
                           }
