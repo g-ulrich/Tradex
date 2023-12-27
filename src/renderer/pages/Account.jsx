@@ -5,9 +5,11 @@ import NewsList from '../components/cards/NewsList';
 import WatchlistTable from '../components/tables/watchlistTable';
 import { IconPerson, IconCrypto } from '../components/Icons';
 import { generateRandomData, strHas, titleBarheight } from '../components/util';
+import {data as OHLCV} from '../components/lightweightcharts/exampleData';
 // import FinanceChart from '../components/lightweightcharts/financeChartWidget';
 
 import Chart from '../components/lightweightcharts/chartComponent';
+import {csvToJsonArray} from '../components/lightweightcharts/util';
 
 function Account() {
   const [data, setData] = useState(generateRandomData());
@@ -46,7 +48,7 @@ function Account() {
         <AccountsList title={'Accounts'} itemArr={accountsArr} />
       </div>
       <div className="min-w-[300px] sm:w-[100%]">
-        <Chart/>
+        <Chart jsonArray={csvToJsonArray(OHLCV)}/>
       </div>
 
     </div>

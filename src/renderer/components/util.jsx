@@ -288,11 +288,29 @@ export const getFunctionParameters = (func) => {
   if (match && match[1]) {
     const parameters = match[1].split(',');
     for (const parameter of parameters) {
-      const paramName = parameter.trim();
-        parameterNames.push(paramName);
+      const paramNameArr = parameter.trim().replaceAll(' ', '').split('=');
+        parameterNames.push({var: paramNameArr[0], val: paramNameArr[paramNameArr.length-1]});
     }
   }
 
   return parameterNames;
 }
 
+
+export const isFloat = (n) => {
+  if (typeof n === 'number' && !Number.isInteger(n)) {
+    return true;
+  } else {
+    return false
+  }
+}
+
+
+export const isStringInArray = (targetString, array) => {
+  for (let i = 0; i < array.length; i++) {
+      if (array[i] === targetString) {
+          return true;
+      }
+  }
+  return false;
+}

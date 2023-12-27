@@ -193,26 +193,31 @@ class LightWeight {
     });
   }
 
-  seriesClicked(i){
-    console.log(i);
+  getDataByIndex(index){
+    const series = this.chartStudies[index];
+    return series.seriesObj.data();
   }
 
-  isSeriesVisbile(series){
-    console.log('tre');
-    return series.options().visible;
-  }
+  // seriesClicked(i){
+  //   console.log(i);
+  // }
 
-  hideSeries(series){
-    series.applyOptions({
-      visible: false,
-    });
-  }
+  // isSeriesVisbile(series){
+  //   console.log('tre');
+  //   return series.options().visible;
+  // }
 
-  showSeries(series){
-    series.applyOptions({
-      visible: true,
-    });
-  }
+  // hideSeries(series){
+  //   series.applyOptions({
+  //     visible: false,
+  //   });
+  // }
+
+  // showSeries(series){
+  //   series.applyOptions({
+  //     visible: true,
+  //   });
+  // }
 
   kill(){
     if (this.chart != null) {
