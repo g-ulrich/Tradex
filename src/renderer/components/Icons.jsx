@@ -4,12 +4,45 @@ import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight,
    faAnglesLeft, faAngleRight, faAngleLeft, faFilter, faTrash,
     faCoins, faPerson, faArrowsRotate, faXmark, faMoneyBillTrendUp,
      faBuildingColumns, faGear, faEllipsisVertical, faAngleDown,
-      faAngleUp, faCode, faEye, faEyeSlash, faFlask, faPlus } from '@fortawesome/free-solid-svg-icons'
+      faAngleUp, faCode, faEye, faEyeSlash, faFlask, faFlaskVial,
+       faPlus, faChartColumn, faChartLine, faInfinity,
+       faChartGantt, faChartArea, faMagnifyingGlass, faArrowsLeftRightToLine } from '@fortawesome/free-solid-svg-icons'
+
+export function IconInifnity(){
+return(<><FontAwesomeIcon icon={faInfinity} /></>);
+}
+
+export function IconRangeArrows(){
+  return(<><FontAwesomeIcon icon={faArrowsLeftRightToLine} /></>);
+  }
+
+export function IconSearch(){
+  return(<><FontAwesomeIcon icon={faMagnifyingGlass} /></>);
+  }
+
+export function IconCandleChart(){
+  return(<><FontAwesomeIcon icon={faChartColumn} /></>);
+}
+
+export function IconAreaChart(){
+  return(<><FontAwesomeIcon icon={faChartArea} /></>);
+}
+
+export function IconBarChart(){
+  return(<><FontAwesomeIcon icon={faChartGantt} /></>);
+}
+
+export function IconLineChart(){
+  return(<><FontAwesomeIcon icon={faChartLine} /></>);
+}
 
 export function IconAdd(){
   return(<><FontAwesomeIcon icon={faPlus} /></>);
 }
 
+export function IconFlaskVial(){
+  return(<><FontAwesomeIcon icon={faFlaskVial} /></>);
+}
 
 export function IconFlask(){
   return(<><FontAwesomeIcon icon={faFlask} /></>);

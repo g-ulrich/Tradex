@@ -5,6 +5,20 @@ import Pagination from './pagination'; // Adjust the path based on your project 
 import { IconRefresh, IconTriangleDown, IconTriangleUp } from '../Icons';
 import {findObjectByVal} from '../util';
 
+/*
+ const columns = [
+    { key: 'Symbol', label: 'Symbol', prefix: '' },
+    { key: 'Last', label: 'Price', prefix: '$' },
+    { key: 'NetChange', label: 'DChange', prefix: '$' },
+    { key: 'NetChangePct', label: 'PChange', prefix: '%' },
+    { key: 'Volume', label: 'Volume', prefix: '' },
+    { key: 'Ask', label: 'Ask', prefix: '$' },
+    { key: 'AskSize', label: 'AskSize', prefix: '' },
+    { key: 'Bid', label: 'Bid', prefix: '$' },
+    { key: 'BidSize', label: 'BidSize', prefix: '' },
+  ];
+*/
+
 const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryKey }) => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchInput, setSearchInput] = useState("");

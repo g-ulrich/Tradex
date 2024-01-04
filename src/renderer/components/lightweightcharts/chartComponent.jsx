@@ -3,9 +3,8 @@ import React, {useRef, useEffect, useState} from 'react';
 import { createChart, ColorType, CrosshairMode } from 'lightweight-charts';
 import LightWeight from '../lightweightcharts/main';
 import * as talib from '../lightweightcharts/talib';
-// import {Classifications} from '../lightweightcharts/talib';
-import {convertArrayToJsonArrayForChart, indicatorToLineChart} from '../lightweightcharts/util';
-import {isStringInArray, getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey, isSubStr} from '../util';
+import {convertArrayToJsonArrayForChart, indicatorToLineChart, bollingerbandsToAreaSeriesJsonArr} from '../lightweightcharts/util';
+import {getRandomRGB, isStringInArray, getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey, isSubStr} from '../util';
 import {IconEye, IconEyeSlash, IconFlask, IconAdd} from '../Icons';
 import Slide from '@mui/material/Slide';
 import StudiesList from './studies';
@@ -34,24 +33,25 @@ function Chart({jsonArray}) {
       height: chartHeight
     });
 
+    const taResults = talib['getEMA'](jsonArray, 25);
+    lwc.newPane();
+
+    // lwc.addChartStudy(
+    //   {pre: '$', post: '',type: 'candle', title: 'QQQ', data: jsonArray },
+    //   {color: 'rgb(225, 0, 70)', visible: false, pane: 1});
+    lwc.addChartStudy({pre: '$', post: '', type: 'line', title: 'EMA (25)', data: indicatorToLineChart(jsonArray, taResults) },
+    {color: getRandomRGB(), lineWidth: 2, pane: 1})
+
     lwc.addChartStudy(
-      {pre: '$', post: '',type: 'candle', title: 'OHLC', data: jsonArray },
+      {pre: '$', post: '',type: 'candle', title: 'TSLA', data: jsonArray },
       {color: 'rgb(225, 0, 70)'});
 
     lwc.addVolume(jsonArray);
 
-    // const emas = [5, 10, 25, 50];
-    // for (let n of emas) {
-    //   var emaArray = talib.getEMA(jsonArray, n);
-    //   lwc.addChartStudy(
-    //     {pre: '$', post: '', type: 'line', title: `EMA (${n})`, data: indicatorToLineChart(jsonArray, emaArray) },
-    //     {color: `rgb(${225 - n}, ${n}, ${25+n})`, lineWidth: 2,});
-    // }
-
-
     lwc.chartResize(containerRef.current.clientWidth, chartHeight);
 
     lwc.addCrosshairListener();
+
 
     const listenerResize = () => {lwc.chartResize(containerRef.current.clientWidth, chartHeight)}
     window.addEventListener('resize', listenerResize);
@@ -67,40 +67,61 @@ function Chart({jsonArray}) {
     setShowStudy(!showStudy);
   }
 
-  const addStudy = (title, taResults) => {
+  const addStudy = (title, type, RGBcolor, taResults) => {
     LWC.addChartStudy(
       {pre: '$', post: '', type: 'line', title: title, data: indicatorToLineChart(jsonArray, taResults) },
-      {color: `rgb(225, 0, 25)`, lineWidth: 2,});
+      {color: RGBcolor, lineWidth: 2,});
   }
 
-  const addStudyCallback = (obj) => {
+  const addStudyCallback = (obj, RGBcolor) => {
+    console.log(RGBcolor, obj);
     const params = obj.parameters;
+
+    // needs variables
     if (params.length > 1) {
       var variables = [];
       params.forEach((item) => {
         if (item.var !== 'obj') {
           var ele = document.getElementById(`${obj.name}_${item.var}`);
           var val = isSubStr(ele.value, '.') ? parseFloat(ele.value) : parseInt(ele.value);
-          // console.log(obj.name, item.var + '=' + val );
           variables.push(val);
         }
       });
       const taResults = talib[obj.name](jsonArray, ...variables);
       const title = `${obj.name.replace('get', '')} (${variables.join(",")})`;
-      if (isStringInArray(obj.name, talib.Classifications.mainChart)) {
-        addStudy(title, taResults);
-      } else if (isStringInArray(obj.name, talib.Classifications.separateGraph)) {
+
+      if (isStringInArray(obj.name, talib.mainChart())) {
+        if (isSubStr(obj.name.toLowerCase(), 'bands')) { // bollingerbands
+          var bb = bollingerbandsToAreaSeriesJsonArr(jsonArray, taResults);
+          var upper = bb.map((item) => ({ time: item.time, value: item.upper}));
+          var lower = bb.map((item) => ({ time: item.time, value: item.lower}));
+
+          LWC.addChartStudy(
+            {pre: '$', post: '', type: 'series', title: 'bb upper', data: upper},
+            {color: RGBcolor, topColor: RGBcolor, bottomColor: RGBcolor, lineWidth: 2,});
+          LWC.addChartStudy(
+            {pre: '$', post: '', type: 'series', title: 'bb lower', data: lower},
+            {color: RGBcolor, topColor: RGBcolor, bottomColor: RGBcolor, lineWidth: 2,});
+        } else {
+          LWC.addChartStudy(
+            {pre: '$', post: '', type: 'line', title: title, data: indicatorToLineChart(jsonArray, taResults) },
+            {color: RGBcolor, lineWidth: 2,});
+        }
+      } else if (isStringInArray(obj.name, talib.separateGraph())) {
         console.log('Separate Graph');
       } else {
         console.log('Not on graph');
       }
 
+      // no variables
     }else{
       const taResults = talib[obj.name](jsonArray);
       const title = `${obj.name.replace('get', '')}`;
-      if (isStringInArray(obj.name, talib.Classifications.mainChart)) {
-        addStudy(title, taResults);
-      } else if (isStringInArray(obj.name, talib.Classifications.separateGraph)) {
+      if (isStringInArray(obj.name, talib.mainChart())) {
+        LWC.addChartStudy(
+          {pre: '$', post: '', type: 'line', title: title, data: indicatorToLineChart(jsonArray, taResults) },
+          {color: RGBcolor, lineWidth: 2,});
+      } else if (isStringInArray(obj.name, talib.separateGraph())) {
         console.log('Separate Graph');
       } else {
         console.log('Not on graph');

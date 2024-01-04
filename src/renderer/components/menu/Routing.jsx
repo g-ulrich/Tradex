@@ -7,10 +7,10 @@ import {titleBarheight} from '../util';
 
 function Routing() {
     const links = [
-        {title:"account", extraClasses: "", icon: <IconBank />},
+        {title:"equites", extraClasses: "", icon: <IconBank />},
         {title:"trade", extraClasses: "", icon: <IconTrade />},
         {title:"code", extraClasses: "", icon: <IconCode />}];
-    const [page, setPage] = useState('account');
+    const [page, setPage] = useState('equites');
 
     const handlePageChange = (pageName) => {
         setPage(pageName);

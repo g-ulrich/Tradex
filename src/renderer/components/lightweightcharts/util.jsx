@@ -1,5 +1,28 @@
 import {isSubStr, renameKey, jsonArrayToArrayByKey} from '../util';
 
+export const bollingerbandsToAreaSeriesJsonArr = (stockJsonArray, bollingerJsonArray) => {
+  const timestamp = jsonArrayToArrayByKey(stockJsonArray, 'time').reverse();
+  const oldBollingerData = bollingerJsonArray.reverse();
+  const newBollingerData = [];
+  oldBollingerData.forEach((obj, i) => {
+    newBollingerData.push({
+      time: timestamp[i],
+      // value: {
+        upper: obj.upper,
+        middle: obj.middle,
+        lower: obj.lower,
+      // }
+    });
+  });
+  return newBollingerData.reverse();
+}
+
+export const candleToLineChart = (candleJsonArray, candleKeyName="close") => {
+  const timestampArray = jsonArrayToArrayByKey(candleJsonArray, 'time');
+  const valuesArray = jsonArrayToArrayByKey(candleJsonArray, candleKeyName);
+  const newJsonArray = convertArrayToJsonArrayForChart(valuesArray, timestampArray);
+  return newJsonArray;
+}
 
 export const indicatorToLineChart = (stockJsonArray, indicatorValuesArray) => {
   const timestamp = jsonArrayToArrayByKey(stockJsonArray, 'time');
@@ -45,4 +68,9 @@ export const csvToJsonArray = (csvString) => {
   }
 
   return renameKey(jsonArray, "date", "time").reverse();
+}
+
+
+export const convertJsonArrayToArrayByKey = (jsonArray, key) => {
+  return jsonArray.map(item => item[key]);
 }

@@ -1,7 +1,7 @@
 import { BrowserWindow} from 'electron';
 import axios from 'axios';
 import fs from 'fs'; // saves file to root.
-import {currentESTDatetime} from '../../util';
+import {currentESTDatetime} from '../util';
 
 
 interface fullTokenResponse {

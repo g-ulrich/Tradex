@@ -314,3 +314,31 @@ export const isStringInArray = (targetString, array) => {
   }
   return false;
 }
+
+
+export const rgbColors = [
+  "rgb(255, 0, 0)",    // Red
+  "rgb(0, 255, 0)",    // Green
+  "rgb(0, 0, 255)",    // Blue
+  "rgb(255, 255, 0)",  // Yellow
+  "rgb(255, 0, 255)",  // Magenta
+  "rgb(0, 255, 255)",  // Cyan
+  "rgb(255, 128, 0)",  // Orange
+  "rgb(128, 0, 255)",  // Purple
+  "rgb(0, 255, 128)",  // Lime
+  "rgb(128, 255, 0)",  // Chartreuse
+  "rgb(255, 128, 128)",  // Light Red
+  "rgb(128, 255, 128)",  // Light Green
+  "rgb(128, 128, 255)",  // Light Blue
+  "rgb(255, 255, 128)",  // Light Yellow
+  "rgb(255, 128, 255)",  // Light Magenta
+  "rgb(128, 255, 255)",  // Light Cyan
+  "rgb(255, 165, 0)",  // Orange
+  "rgb(160, 32, 240)",  // Indigo
+  "rgb(0, 255, 192)",  // Turquoise
+  "rgb(255, 69, 0)"  // Orange-Red
+];
+
+export const getRandomRGB = () => {
+  return rgbColors[Math.floor(Math.random() * rgbColors.length)];
+}

@@ -1,4 +1,4 @@
-import Account from '../../pages/Account';
+import Equites from '../../pages/Equites';
 import Trade from '../../pages/Trade';
 import Code from '../../pages/Code';
 
@@ -7,8 +7,8 @@ export default function MainView(props) {
   return (
     <>
       {
-        page == 'account' ? (
-          <Account />
+        page == 'equites' ? (
+          <Equites />
         ) : (page == 'trade') ? (
           <Trade />
         ) : (page == 'code') ? (
