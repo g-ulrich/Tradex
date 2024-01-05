@@ -94,7 +94,6 @@ export default function StudiesList({ showStudy, addStudyCallback, toggleStudies
           className="w-full px-2 mb-2 border border-discord-darkestgray bg-discord-darkestGray rounded text-discord-white"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}/>
-
       </div>
 
         {talibFuncs.map((obj, i) => {

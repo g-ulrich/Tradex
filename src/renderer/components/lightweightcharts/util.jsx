@@ -74,3 +74,29 @@ export const csvToJsonArray = (csvString) => {
 export const convertJsonArrayToArrayByKey = (jsonArray, key) => {
   return jsonArray.map(item => item[key]);
 }
+
+
+export const formatVolume = (number) => {
+  const suffixes = ["", "K", "M", "B"];
+  const suffixNum = Math.floor(("" + number).length / 3);
+  let shortNumber = parseFloat((suffixNum !== 0 ? (number / Math.pow(1000, suffixNum)) : number).toPrecision(2));
+  if (shortNumber % 1 !== 0) {
+    shortNumber = shortNumber.toFixed(1);
+  }
+  return shortNumber + suffixes[suffixNum];
+}
+
+
+export const getVisRange = (candles, primaryChartRef) => {
+  if (primaryChartRef.current !== null) {
+    const chartRange = primaryChartRef.current.timeScale().getVisibleRange();
+    const fromIndex = candles.findIndex(
+      (item) => item["time"] === chartRange.from
+    );
+    const toIndex = candles.findIndex(
+      (item) => item["time"] === chartRange.to
+    );
+    return { from: fromIndex, to: toIndex };
+  }
+  return { from: 0, to: 1 };
+};

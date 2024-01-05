@@ -9,7 +9,7 @@ import {Chart, AreaSeries} from "lightweight-charts-react-wrapper";
 
 import {data as OHLCV} from '../components/lightweightcharts/exampleData';
 import {csvToJsonArray} from '../components/lightweightcharts/util';
-import FullChart from '../components/lightweightcharts/fullChart';
+import FullChart from '../components/lightweightcharts/fullChart/fullChart';
 import {chartColors, defaultSimpleChartOptions} from '../components/lightweightcharts/options';
 import SimpleCardChart from '../components/lightweightcharts/simpleCardChart';
 
