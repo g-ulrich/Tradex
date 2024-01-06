@@ -37,6 +37,12 @@ export const CHART_THEMES = {
   defaultSeries : {
     lineWidth: .5,
   },
+  dottedLine: {
+    lineStyle: LineStyle.Dotted,
+  },
+  nothingLine: {
+    lineStyle: LineStyle.Solid
+  },
   percentPriceLine : {
     lineWidth: 1,
     lineStyle: LineStyle.Dotted,

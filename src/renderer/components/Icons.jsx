@@ -6,7 +6,19 @@ import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight,
      faBuildingColumns, faGear, faEllipsisVertical, faAngleDown,
       faAngleUp, faCode, faEye, faEyeSlash, faFlask, faFlaskVial,
        faPlus, faChartColumn, faChartLine, faInfinity,
-       faChartGantt, faChartArea, faMagnifyingGlass, faArrowsLeftRightToLine } from '@fortawesome/free-solid-svg-icons'
+       faChartGantt, faChartArea, faMagnifyingGlass, faArrowsLeftRightToLine, faWallet, faClock, faPalette } from '@fortawesome/free-solid-svg-icons'
+
+export function IconWallet(){
+  return(<><FontAwesomeIcon icon={faWallet} /></>);
+}
+
+export function IconColor(){
+  return(<><FontAwesomeIcon icon={faPalette} /></>);
+}
+
+export function IconClock(){
+  return(<><FontAwesomeIcon icon={faClock} /></>);
+}
 
 export function IconInifnity(){
 return(<><FontAwesomeIcon icon={faInfinity} /></>);

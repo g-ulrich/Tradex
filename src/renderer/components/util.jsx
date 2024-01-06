@@ -342,3 +342,12 @@ export const rgbColors = [
 export const getRandomRGB = () => {
   return rgbColors[Math.floor(Math.random() * rgbColors.length)];
 }
+
+export const findObjectById = (jsonArray, key, value) => {
+  for (let i = 0; i < jsonArray.length; i++) {
+    if (jsonArray[i][key] === value) {
+      return jsonArray[i];
+    }
+  }
+  return null; // return null if no match is found
+}

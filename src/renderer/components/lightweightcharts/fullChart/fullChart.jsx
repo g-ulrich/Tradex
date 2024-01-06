@@ -22,13 +22,14 @@ import {
 import {
   convertArrayToJsonArrayForChart,
   indicatorToLineChart,
-  bollingerbandsToAreaSeriesJsonArr,
+  bollingerbandsToLineSeriesJsonArr,
+  ichimokucToAreaLineJsonArr,
   csvToJsonArray,
   candleToLineChart,
   formatVolume,
-  getVisRange
+  getVisRange,
 } from "../util";
-import { getAllFunctions, getRandomRGB } from "../../util";
+import { isStringInArray, isSubStr, getAllFunctions, getRandomRGB, findObjectById } from "../../util";
 import {
   IconFlask,
   IconFlaskVial,
@@ -37,8 +38,9 @@ import {
   IconAreaChart,
   IconLineChart,
   IconSearch,
+  IconWallet,
 } from "../../Icons";
-import StudiesList from "../studies";
+import {StudiesList} from "../studies";
 
 export default function FullChart({ dataCallBack }) {
   const marketType = "Equites";
@@ -68,15 +70,28 @@ export default function FullChart({ dataCallBack }) {
     };
   }, []);
 
-  const addStudyCallback = (obj, RGBcolor) => {
+  const addStudyCallback = (obj, RGBcolor, inputValues) => {
+    obj.id = `${obj.name}_${chartStudies.length}`;
     obj.color = RGBcolor; // update color from the rgbcolor val
     obj.variables = obj.parameters
-      .filter((parameter) => parameter.var !== "obj")
-      .map((parameter) => parseInt(parameter.val));
-    obj.data = indicatorToLineChart(
-      candles,
-      talib[obj.name](candles, ...obj.variables)
+    .filter((p) => p.var !== "obj")
+    .map((p) =>{
+    var n = document.getElementById(`${obj.name}_${p.var}`).value;
+    return isSubStr(n, '.') ? parseFloat(n) : parseInt(n);}
     );
+    obj.hidden = false;
+    if (isSubStr(obj.name, 'getBollingerBands')) {
+      obj.data = bollingerbandsToLineSeriesJsonArr(candles,
+        talib[obj.name](candles, ...obj.variables));
+    } else if (isSubStr(obj.name, 'getIchimokucloud')) {
+      obj.data = ichimokucToAreaLineJsonArr(candles,
+        talib[obj.name](candles, ...obj.variables));
+    } else {
+      obj.data = indicatorToLineChart(
+        candles,
+        talib[obj.name](candles, ...obj.variables)
+      );
+    }
     setChartStudies((prevChartStudies) => [...prevChartStudies, obj]);
   };
 
@@ -98,12 +113,37 @@ export default function FullChart({ dataCallBack }) {
     }
   };
 
+  const studyCallbackFunc = (action, studyObj) => {
+    if (action === 'vis') {
+      const updatedStudies = chartStudies.map(study => {
+        if (study.id === studyObj.id) {
+          return { ...study, hidden: !study.hidden };
+        }
+        return study;
+      });
+      setChartStudies(updatedStudies);
+    } else if (action === 'del') {
+      const updatedStudies = chartStudies.filter(study => study.id !== studyObj.id);
+      setChartStudies(updatedStudies);
+    } else if (action === 'set') {
+      // TODO make settings popup
+    }
+  }
+
+
 
 
   return (
     <>
-      <div ref={containerRef} className="grow min-w-[300px] sm:w-[100%]">
+
+      <div ref={containerRef} className="grow relative min-w-[300px] sm:w-[100%]">
+
         <div className="w-full h-[610px] bg-discord-darkestGray rounded py-2">
+        <StudiesList
+            showStudy={showStudy}
+            addStudyCallback={addStudyCallback}
+            toggleStudies={toggleStudies}
+          />
         {candles !== null && containerRef !== null ? (
           <>
           <div className="flex mx-2 pb-2 gap-2 items-center border-b border-discord-darkGray">
@@ -121,11 +161,12 @@ export default function FullChart({ dataCallBack }) {
             <ChartLegend candles={candles}
                   moveindex={crosshairIndex}
                   chartref={primaryChartRef}
-                  studies={chartStudies}/>
+                  studies={chartStudies}
+                  studycallback={studyCallbackFunc}/>
             </div>
             <div className="flex gap-2">
               <button className="rounded bg-discord-blurple2 hover:bg-discord-blurple px-2 py-[3px]">
-                Order
+                <IconWallet/> <span className="hidden lg:inline-block">Order</span>
               </button>
               <button
                 className={`${
@@ -137,7 +178,7 @@ export default function FullChart({ dataCallBack }) {
                   setChartType("bar");
                 }}
               >
-                <IconBarChart /> Bar
+                <IconBarChart /> <span className="hidden xl:inline-block">Bar</span>
               </button>
               <button
                 className={`${
@@ -149,7 +190,7 @@ export default function FullChart({ dataCallBack }) {
                   setChartType("candle");
                 }}
               >
-                <IconCandleChart /> Candle
+                <IconCandleChart /> <span className="hidden xl:inline-block">Candle</span>
               </button>
               <button
                 className={`${
@@ -161,7 +202,7 @@ export default function FullChart({ dataCallBack }) {
                   setChartType("line");
                 }}
               >
-                <IconLineChart /> Line
+                <IconLineChart /> <span className="hidden xl:inline-block">Line</span>
               </button>
               <button
                 className={`${
@@ -173,23 +214,23 @@ export default function FullChart({ dataCallBack }) {
                   setChartType("area");
                 }}
               >
-                <IconAreaChart /> Area
+                <IconAreaChart /> <span className="hidden xl:inline-block">Area</span>
               </button>
 
+              <span>
               <button
                 className={`${
                   showStudy ? "text-discord-blurple" : "text-discord-white"
                 } rounded bg-discord-darkerGray hover:bg-discord-darkGray px-2 py-[3px]`}
                 onClick={toggleStudies}
               >
-                {showStudy ? <IconFlaskVial /> : <IconFlask />} Indicators
-                <StudiesList
-                  showStudy={showStudy}
-                  addStudyCallback={addStudyCallback}
-                  toggleStudies={toggleStudies}
-                />
+                {showStudy ? <IconFlaskVial /> : <IconFlask />} <span className="hidden lg:inline-block">Indicators</span>
+
               </button>
+
+                </span>
             </div>
+
           </div>
 
 
@@ -197,9 +238,7 @@ export default function FullChart({ dataCallBack }) {
               ref={primaryChartRef}
               onCrosshairMove={(e) => {
                 setCrosshairIndex(
-                  e.logical >= 0 && e.logical <= candles.length - 1
-                    ? e.logical
-                    : candles.length - 1
+                  candles.findIndex(obj => obj.time === e.time || obj.time === candles[candles.length-1].time)
                 );
               }}
               {...defaultChartOptions({ width: chartWidth, height: 600 })}
@@ -265,14 +304,55 @@ export default function FullChart({ dataCallBack }) {
                 <CandlestickSeries data={candles} />
               )}
 
-              {chartStudies.map((obj, i) => (
-                <LineSeries
-                  key={i}
-                  lineWidth={1}
-                  color={obj.color}
-                  data={obj.data}
-                />
-              ))}
+                {chartStudies.map((obj, i) => (
+                  obj?.hidden ? (
+                    <></>
+                  ) : typeof obj?.data[0]?.value !== 'number' ? (
+
+                    isSubStr(obj?.name, 'getBollingerBands') ? (
+                      <>
+                      { candles &&
+                        ["upper", "middle", "lower"].map((keyName) => (
+                          <LineSeries
+                            key={`${i}_keyName`}
+                            lineWidth={keyName === 'middle' ? 1 : 1.5}
+                            color={obj.color}
+                            data={
+                              obj?.data.map((item) => ({ time: item.time, value: item[keyName]}))
+                            }
+                            lineStyle={keyName === 'middle' ? CHART_THEMES.dottedLine.lineStyle : CHART_THEMES.nothingLine.lineStyle}
+                          />
+                        ))
+                      }
+                      </>
+                    ) : isSubStr(obj?.name, 'getIchimokucloud') ? (
+                      <>
+                        {/* "conversion", "base", "spanA", "spanB"*/}
+                        { candles &&
+                          ["spanA", "spanB"].map((keyName) => (
+                            <LineSeries
+                              key={`${i}_${keyName}`}
+                              lineWidth={1.5}
+                              color={obj.color}
+                              data={
+                                obj?.data.map((item) => ({ time: item.time, value: item[keyName]}))
+                              }
+                            />
+                          ))
+                        }
+                      </>
+                    ) : (
+                      ''
+                    )
+                  ) : (
+                    <LineSeries
+                      key={i}
+                      lineWidth={1}
+                      color={obj.color}
+                      data={obj.data}
+                    />
+                  )
+                ))}
             </Chart>
             </>
           ) : (

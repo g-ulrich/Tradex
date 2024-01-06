@@ -4,7 +4,6 @@ import AccountsList from '../components/equites/AccountList';
 import WatchlistTable from '../components/tables/watchlistTable';
 import { IconPerson, IconCrypto } from '../components/Icons';
 import { generateRandomData, strHas, titleBarheight } from '../components/util';
-
 import {Chart, AreaSeries} from "lightweight-charts-react-wrapper";
 
 import {data as OHLCV} from '../components/lightweightcharts/exampleData';
@@ -197,7 +196,6 @@ export default function Equites() {
     <>
     <div className="flex gap-2">
     <div className=" mb-2 flex min-w-[350px] max-w-[400px] sm:w-[50%] rounded">
-
         <SimpleCardChart
         title={'Account #0089009'}
          watermarkText={accountVal}

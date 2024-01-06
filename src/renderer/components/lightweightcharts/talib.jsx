@@ -50,13 +50,13 @@ export const volumeProfile = (obj, n) => {
 
 /* single array return for separate chart */
 // Triple Exponentially Smoothed Average (TRIX).
-// export const getTRIX = (obj, n=18) => {
+// export const getTRIX = (obj, length=18) => {
 //   const data = transformIncomeData(obj);
 //   return trix({ values: data.close, period: n});
 // }
 
 // // Williams % R oscillator
-// export const getWilliamsR = (obj, n=14) => {
+// export const getWilliamsR = (obj, length=14) => {
 //   const data = transformIncomeData(obj);
 //   let input = {
 //     high: data.high,
@@ -77,27 +77,27 @@ export const getVWAP = (obj) => {
 }
 
 // Exponential Moving Average (EMA)
-export const getEMA = (obj, n=5) => {
+export const getEMA = (obj, length=5) => {
   const data = transformIncomeData(obj);
-  return ema({ values: data.close, period: n});
+  return ema({ values: data.close, period: length});
 }
 
 // Simple Moving Average (SMA)
-export const getSMA = (obj, n=5) => {
+export const getSMA = (obj, length=5) => {
   const data = transformIncomeData(obj);
-  return sma({ values: data.close, period: n});
+  return sma({ values: data.close, period: length});
 }
 
 // Weighted Exponential Moving Average (WEMA)
-export const getWEMA = (obj, n=5) => {
+export const getWEMA = (obj, length=5) => {
   const data = transformIncomeData(obj);
-  return wema({ values: data.close, period: n});
+  return wema({ values: data.close, period: length});
 }
 
 // Weighted Moving Average (WMA)
-export const getWMA = (obj, n=5) => {
+export const getWMA = (obj, length=5) => {
   const data = transformIncomeData(obj);
-  return wma({ values: data.close, period: n});
+  return wma({ values: data.close, period: length});
 }
 
 /*
@@ -105,23 +105,22 @@ multiple array return for chart
 */
 
 // bollinger bands
-export const getBollingerBands = (obj, n=20, k=2) => {
+export const getBollingerBands = (obj, length=20, stdDev=2) => {
   // {middle: 217.0, upper: 234.0, lower: 201.0, pb: 0.53}
   const data = transformIncomeData(obj);
-  return bollingerbands({ values: data.close, period: 20, stdDev: 2 });
+  return bollingerbands({ values: data.close, period: length, stdDev: stdDev });
 }
 
 // Ichimokucloud
-export const getIchimokucloud = (obj, con=9, base=26, span=52, displace=26) => {
-  // {conversion: 229.245, base: 226.09, spanA: 227.0, spanB: 220.3}
+export const getIchimokucloud = (obj, conversionLength=9, baseLength=26, spanLength=52, displacement=26) => {
   const data = transformIncomeData(obj);
   let input = {
     high  : data.high,
     low   :  data.low,
-    conversionPeriod: con,
-    basePeriod: base,
-    spanPeriod: span,
-    displacement: displace
+    conversionPeriod: conversionLength,
+    basePeriod: baseLength,
+    spanPeriod: spanLength,
+    displacement: displacement
   }
   return ichimokucloud(input);
 }

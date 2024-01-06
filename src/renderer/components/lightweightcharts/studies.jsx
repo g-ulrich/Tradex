@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { isSubStr, isFloat, getRandomRGB } from '../util';
+import Fade from '@mui/material/Fade';
 import Slide from '@mui/material/Slide';
-import { IconAdd, IconFlask, IconX, IconArrowDown, IconArrowUp } from '../Icons';
-import { MuiColorInput } from 'mui-color-input';
+import {
+  IconAdd,
+  IconFlask,
+  IconX,
+  IconArrowDown,
+  IconArrowUp,
+  IconSearch,
+  IconColor
+} from '../Icons';
 import * as talib from './talib';
+// import
+//   ColorPicker
+// from '../colorPicker';
+import { CompactPicker } from 'react-color';
 
 
 export const getAvailableTaFuncs = () => {
@@ -42,25 +54,28 @@ export const getFunctionParameters = (func) => {
   return parameterNames;
 }
 
-export default function StudiesList({ showStudy, addStudyCallback, toggleStudies }) {
+export const StudiesList = ({ showStudy, addStudyCallback, toggleStudies }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValues, setInputValues] = useState({});
   const [hideParam, setHideParam] = useState(null);
   const [colorVal, setColorVal] = useState(getRandomRGB());
+  const [toggleColorPicker, setToggleColorPicker] = useState(false);
   const talibFuncs = getAvailableTaFuncs();
 
   const handleColorChange = (val) => {
-    setColorVal(val)
+    setColorVal(val.hex)
   }
 
   const toggleParam = (obj) => {
     if (typeof hideParam?.name !== 'undefined' && hideParam?.name !== obj.name) {
       setHideParam(obj);
       setColorVal(getRandomRGB());
+      setToggleColorPicker(false);
     } else if (typeof hideParam?.name !== 'undefined') {
       setHideParam(null);
     } else {
       setHideParam(obj);
+      setToggleColorPicker(false);
       setColorVal(getRandomRGB());
     }
   }
@@ -73,12 +88,14 @@ export default function StudiesList({ showStudy, addStudyCallback, toggleStudies
     }));
   };
 
-
   return (
-    <Slide direction="down" in={showStudy} mountOnEnter unmountOnExit>
-      <div className="mt-[15px] ml-[-8px] text-white p-2 z-[999] absolute rounded border-discord-black border shadow-2xl bg-discord-black max-h-[300px] min-h-[100px] scroll-container overflow-y-auto w-[300px]">
+    <>
+     <Fade in={showStudy} timeout={800} easing="ease">
+    <div className={`${showStudy ? '' : 'hidden'}  flex items-center justify-center absolute z-[999]  w-full h-full`}>
+      <div onClick={toggleStudies} className={`${showStudy ? '' : 'hidden'} absolute z-[998] bg-discord-black bg-opacity-50 w-full h-full`}></div>
+      <div className="absolute z-[999] mt-2 text-white p-2 rounded border-discord-black border shadow-2xl bg-discord-black max-h-[300px] min-h-[100px] scroll-container overflow-y-auto w-[300px]">
       <div className="text-lg items-center bg-discord-black border-b border-discord-darkestGray shadow-lg" style={{ position: "sticky", top: -8 }}>
-        <div className="flex mb-2">
+        <div className="flex mb-2 z-[9999]">
           <div className="flex text-left text-2xl">
             <span>Indicators</span>
           </div>
@@ -88,10 +105,13 @@ export default function StudiesList({ showStudy, addStudyCallback, toggleStudies
             </span>
           </div>
         </div>
+        <div className="absolute  text-sm flex items-center ps-2 pt-[6px] pointer-events-none">
+          <IconSearch />
+        </div>
         <input
           type="search"
           placeholder={`Search...`}
-          className="w-full px-2 mb-2 border border-discord-darkestgray bg-discord-darkestGray rounded text-discord-white"
+          className="block w-full ps-8 mb-[4px] text-discord-white outline-none  py-[4px] px-2 text-sm border border-none rounded bg-discord-darkerGray hover:bg-discord-darkGray"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}/>
       </div>
@@ -112,27 +132,37 @@ export default function StudiesList({ showStudy, addStudyCallback, toggleStudies
                   <span title="View/Edit Params" className="mr-[2px] px-2 py-[4px] rounded cursor-pointer hover:bg-discord-black"
                   onClick={() => toggleParam(obj)}>{typeof hideParam?.name !== 'undefined' && obj.name === hideParam.name ? <IconArrowUp/> : <IconArrowDown/>}</span>
                 </div>
-                <div style={{background: colorVal}} className={`rounded p-2 w-full ${typeof hideParam?.name !== 'undefined' && obj.name === hideParam.name ? '' : 'hidden'}`}>
-                  {/* LOOP through variables */}
-                    <MuiColorInput value={colorVal} onChange={handleColorChange} />
-                    <div className="mt-[4px] flex flex-wrap">
+                <div className={`rounded bg-discord-black p-2 w-full ${typeof hideParam?.name !== 'undefined' && obj.name === hideParam.name ? '' : 'hidden'}`}>
+                    <div>
+                    <div className="mb-[4px] flex justify-center">
+                      <button onClick={() => setToggleColorPicker(!toggleColorPicker)} style={{background: colorVal}} className="border-2 hover:border-white text-center px-2 rounded">
+                        <IconColor/> Color Picker {toggleColorPicker ? <IconArrowUp/> : <IconArrowDown/>}</button>
+                    </div>
+                    <div className="w-full relative">
+                      <Fade in={toggleColorPicker} timeout={1000} easing="ease">
+                        <div className={`${toggleColorPicker ? '' : 'hidden'} mb-[4px] shadow-lg absolute w-full flex items-center justify-center`}>
+                              <CompactPicker style={{background: colorVal}} color={colorVal} onChange={handleColorChange} />
+                        </div>
+                      </Fade>
+                    </div>
                   {obj.parameters.map((item, j) => {
                     if (item.var !== 'obj') {
                       return (
-                        <span key={j} className="flex rounded text-discord-black mr-2">
-                          <b >{item.var}</b>-
-                          <input
-                            id={`${obj.name}_${item.var}`}
-                            value={inputValues[`${obj.name}_${item.var}`] || `${item.val}`}
-                            type="number"
-                            style={{background: colorVal}}
-                            className="m-[2px] border border-transparent hover:border-discord-black shadow-md px-[4px]  rounded w-[50px]"
-                            step={isSubStr(item.val, '.') ? '.01' : '1'}
-                            min={isSubStr(item.val, '.') ? '.01' : '1'}
-                            max="500"
-                            onChange={(e) => handleInputChange(e, obj, item)}
-                          ></input>
-                        </span>
+                        <div key={j} className="grid grid-cols-2">
+                          <div>{item.var}</div>
+                          <div>
+                            <input
+                              id={`${obj.name}_${item.var}`}
+                              value={inputValues[`${obj.name}_${item.var}`] || `${item.val}`}
+                              type="number"
+                              className="m-[2px] border border-transparent outline-none bg-discord-darkerGray hover:bg-discord-darkGray hover:border-discord-black shadow-md px-[4px] rounded w-50"
+                              step={isSubStr(item.val, '.') ? '.01' : '1'}
+                              min={isSubStr(item.val, '.') ? '.01' : '1'}
+                              max="500"
+                              onChange={(e) => handleInputChange(e, obj, item)}
+                            />
+                          </div>
+                        </div>
                       );
                     }
                   })}
@@ -146,6 +176,8 @@ export default function StudiesList({ showStudy, addStudyCallback, toggleStudies
           }
         })}
       </div>
-    </Slide>
+    </div>
+    </Fade>
+    </>
   );
 }
