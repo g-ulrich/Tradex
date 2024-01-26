@@ -66,22 +66,42 @@ export const csvToJsonArray = (csvString) => {
 
     for (let j = 0; j < headers.length; j++) {
       let convertedValue;
-      if (isSubStr(values[j], "/")) {
-        convertedValue = Date.parse(values[j]) / 1000;
-      } else if (!isNaN(parseFloat(values[j].replace(/"/g, "")))) {
+      // if (typeof values[j] === 'string'   ) {
+        if (headers[j] === 'time') {
+          const dateSeconds = new Date(parseInt(values[j]) )
+          convertedValue = parseInt(values[j]); //dateSeconds.getTime();
+        } else if (headers[j] !== 'volume') {
+          convertedValue = parseFloat(values[j]);
+        } else if (headers[j] === 'volume'){
+          convertedValue = parseInt(values[j]);
+        } else {
+          convertedValue = values[j];
+        }
+      // }else {
 
-        convertedValue = parseFloat(values[j].replace(/"/g, ""));
-      } else {
-        convertedValue = values[j];
+        // if (headers[j] === 'time') {
+        //   console.log(headers[j], values[j]);
+        //   const dateSeconds = new Date(timestampSeconds * 1000)
+        //   // const date = new Date(values[j] * 1000); // Convert to milliseconds
+        //   // convertedValue = date.getTime() / 1000; // UTC timeststamp
+        //   convertedValue = dateSeconds.toISOString().split('T')[0];
+        // } else {
+        //   convertedValue = values[j];
+        // }
+      //   convertedValue = values[j];
+
+      // }
+
+      if (headers[j] !== 'Volume MA'){
+        jsonObject[headers[j]] =  convertedValue;
       }
 
-      jsonObject[headers[j]] =  convertedValue;
     }
 
     jsonArray.push(jsonObject);
   }
 
-  return renameKey(jsonArray, "date", "time").reverse();
+  return jsonArray.sort((a, b) => a.time - b.time);// renameKey(jsonArray, "date", "time").reverse();
 }
 
 
@@ -115,6 +135,20 @@ export const getVisRange = (candles, primaryChartRef) => {
   return { from: 0, to: 1 };
 };
 
+export const getVisRangeTimestamps = (candles, primaryChartRef) => {
+  if (primaryChartRef.current !== null) {
+    const chartRange = primaryChartRef.current.timeScale().getVisibleRange();
+    const fromIndex = candles.findIndex(
+      (item) => item["time"] === chartRange.from
+    );
+    const toIndex = candles.findIndex(
+      (item) => item["time"] === chartRange.to
+    );
+    return { from: candles[fromIndex].time, to: candles[toIndex].time };
+  }
+  return { from: candles[0].time, to: candles[1].time };
+};
+
 
 export const getMarketOpenStatus = () => {
   const now = new Date();
@@ -131,4 +165,24 @@ export const getMarketOpenStatus = () => {
   } else if (hour >= 16 && hour < 20) {
     return "Post";
   }
+}
+
+
+export const filterJsonArrayByTimestamp = (candles, timestamp) => {
+  return candles.filter(obj => obj.time >= timestamp);
+}
+
+export const getTimestampNMinsAgo = (n) => {
+  var current = new Date();
+  var nMinutesAgo = new Date(current.getTime() - n * 60000); // Convert minutes to milliseconds
+  var linuxTimestamp = Math.floor(nMinutesAgo.getTime() / 1000); // Convert milliseconds to seconds
+  return linuxTimestamp;
+}
+
+export const getUtcTimestampNMinutesBack = (n, currentTimestamp) => {
+  var currentMillis = currentTimestamp * 1000; // Convert seconds to milliseconds
+  var current = new Date(currentMillis);
+  var nMinutesAgo = new Date(current.getTime() - n * 60000); // Convert minutes to milliseconds
+  var utcTimestamp = Math.floor(nMinutesAgo.getTime() / 1000); // Convert milliseconds to seconds
+  return utcTimestamp;
 }

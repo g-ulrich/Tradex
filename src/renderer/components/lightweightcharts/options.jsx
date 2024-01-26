@@ -83,7 +83,7 @@ export const CHART_THEMES = {
       visible: true,
       scaleMargins: { top: 0.2, bottom: 0.2 },
     },
-    timeScale: { timeVisible: true, secondsVisible: false },
+    timeScale: { timeVisible: true, secondsVisible: true },
     crosshair: {
       mode: CrosshairMode.FinanceChart,
       vertLine: {
@@ -144,7 +144,7 @@ export const defaultChartOptions = (opts) => {
     rightPriceScale: {
         scaleMargins: { top: 0.2, bottom: 0.2 },
     },
-    timeScale: { timeVisible: true, secondsVisible: false },
+    timeScale: { timeVisible: true, secondsVisible: true },
     crosshair: {
         mode: CrosshairMode.FinanceChart,
         vertLine: {

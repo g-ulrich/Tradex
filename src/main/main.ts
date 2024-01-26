@@ -15,7 +15,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import {triggerRefresh} from './tradestation/auth';
+import {triggerRefresh, getAuthCode, GET_AUTH_URL, CALLBACK_URL} from './tradestation/auth';
 
 setupTitlebar();
 
@@ -28,12 +28,14 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let loginWindow: BrowserWindow | null = null;
 
 
 ipcMain.on('refreshToken', async (event, _) => {
-  const tokenObj = await triggerRefresh();
-  event.reply('refreshToken', {ts: tokenObj, alpha: process.env.ALPHA_VANTAGE_API_1});
+    const tokenObj = await triggerRefresh();
+    event.reply('refreshToken', {ts: tokenObj, alpha: process.env.ALPHA_VANTAGE_API_1});
 });
+
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -124,6 +126,57 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+const createLoginWindow = async (event: any) => {
+  if (isDebug) {
+    await installExtensions();
+  }
+
+  const RESOURCES_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(__dirname, '../../assets');
+
+  const getAssetPath = (...paths: string[]): string => {
+    return path.join(RESOURCES_PATH, ...paths);
+  };
+
+  loginWindow = new BrowserWindow({
+    show: false,
+    width: 600,
+    height: 800,
+    icon: getAssetPath('icon.png'),
+    backgroundColor: '#36393E',
+  });
+  loginWindow.loadURL(GET_AUTH_URL());
+
+  loginWindow.on('ready-to-show', () => {
+    if (!loginWindow) {
+      throw new Error('"loginWindow" is not defined');
+    }else{
+      loginWindow.show();
+    }
+  });
+
+  loginWindow.on('closed', () => {
+    mainWindow = null;
+  });
+
+  // Open urls in the user's browser
+  loginWindow.webContents.setWindowOpenHandler((edata) => {
+    shell.openExternal(edata.url);
+    return { action: 'deny' };
+  });
+
+  loginWindow.webContents.on('will-redirect', (callback) => {
+    if (callback.url.includes(CALLBACK_URL)) {
+        getAuthCode(callback.url);
+        event.reply('open-login-window', {url: callback.url, success: true});
+        if (loginWindow) {
+          loginWindow.close();
+        }
+    }
+  });
+}
+
 /**
  * Add event listeners...
  */
@@ -140,10 +193,14 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+    ipcMain.on('open-login-window', (event, _) => {
+      createLoginWindow(event);
+    });
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
+
     });
   })
   .catch(console.log);

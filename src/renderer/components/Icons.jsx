@@ -6,7 +6,12 @@ import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight,
      faBuildingColumns, faGear, faEllipsisVertical, faAngleDown,
       faAngleUp, faCode, faEye, faEyeSlash, faFlask, faFlaskVial,
        faPlus, faChartColumn, faChartLine, faInfinity,
-       faChartGantt, faChartArea, faMagnifyingGlass, faArrowsLeftRightToLine, faWallet, faClock, faPalette } from '@fortawesome/free-solid-svg-icons'
+       faChartGantt, faChartArea, faMagnifyingGlass,
+       faArrowsLeftRightToLine, faWallet, faClock, faPalette, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
+
+export function IconWarning(){
+return(<><FontAwesomeIcon icon={faTriangleExclamation} /></>);
+}
 
 export function IconWallet(){
   return(<><FontAwesomeIcon icon={faWallet} /></>);

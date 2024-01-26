@@ -1,4 +1,5 @@
 import React from 'react';
+import Cookies from 'js-cookie';
 
 export const renameKey = (jsonArray, oldKey, newKey) => {
   return jsonArray.map(obj => {
@@ -12,7 +13,11 @@ export const renameKey = (jsonArray, oldKey, newKey) => {
 
 export const getHeightFromClass = (classStr) => {
     const ele = document.getElementsByClassName(classStr)[0];
-    return ele.offsetHeight;
+    if (typeof ele !== 'undefined'){
+      return ele.length > 0 ? ele.offsetHeight : 30;
+    }else {
+      return 30;
+    }
 }
 
 export const titleBarheight = () => {
@@ -350,4 +355,15 @@ export const findObjectById = (jsonArray, key, value) => {
     }
   }
   return null; // return null if no match is found
+}
+
+
+export const refreshToken = () => {
+  window.electron.ipcRenderer.sendMessage('refreshToken', '');
+    window.electron.ipcRenderer.once('refreshToken', (arg) => {
+      const objString = JSON.stringify(arg.ts);
+      Cookies.set('TSTokenObj', objString);
+      Cookies.set('AlphaAPI', arg.alpha);
+      console.log(arg.ts);
+    });
 }

@@ -3,7 +3,7 @@ import TSEndpoints from './endpoints';
 import Cookies from 'js-cookie';
 
 
-class TS {
+export class TS {
   constructor() {
     this.endpoints = new TSEndpoints();
   }

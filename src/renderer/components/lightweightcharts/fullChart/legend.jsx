@@ -27,7 +27,7 @@ export default function ChartLegend({candles, chartref, moveindex, studies, stud
   const zIndexVal = '996';
 
   const marginMult=(n=0)=>{
-    const mainMargin=40;
+    const mainMargin=0;
     const spacing=20;
     return mainMargin + spacing * n;
   }
@@ -41,6 +41,7 @@ export default function ChartLegend({candles, chartref, moveindex, studies, stud
       }
     });
   };
+
 
   const isHiddenIdExists = (index) => {
     return hiddenStudies.includes(index);
@@ -121,7 +122,6 @@ export default function ChartLegend({candles, chartref, moveindex, studies, stud
             className={`pl-[6px] absolute z-[${zIndexVal}]`}>
             <IconRangeArrows /> {getLegendVals(moveindex).range}
           </span>
-          <br />
           <span style={{margin: `${marginMult(2)}px 0px`}} className={`pl-[6px] absolute z-[${zIndexVal}]`}>
             Vol
             <span
@@ -134,15 +134,14 @@ export default function ChartLegend({candles, chartref, moveindex, studies, stud
                     : chartColors.discord.red,
               }}>
               {formatVolume(candles[moveindex].volume)}
-
             </span>
           </span>
           </>
+
           ) : (
             ''
           )
         }
-      <br />
       {/* START OF INDICATORS IN USE*/}
       {studies.map((obj, i) => (
         <span

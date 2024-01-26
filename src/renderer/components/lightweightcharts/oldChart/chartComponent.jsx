@@ -1,13 +1,13 @@
 import React, {useRef, useEffect, useState} from 'react';
 // import ta from 'trading-signals';
 import { createChart, ColorType, CrosshairMode } from 'lightweight-charts';
-import LightWeight from '../lightweightcharts/main';
-import * as talib from '../lightweightcharts/talib';
-import {convertArrayToJsonArrayForChart, indicatorToLineChart, bollingerbandsToAreaSeriesJsonArr} from '../lightweightcharts/util';
-import {getRandomRGB, isStringInArray, getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey, isSubStr} from '../util';
-import {IconEye, IconEyeSlash, IconFlask, IconAdd} from '../Icons';
+import LightWeight from './main';
+import * as talib from '../talib';
+import {convertArrayToJsonArrayForChart, indicatorToLineChart, bollingerbandsToAreaSeriesJsonArr} from '../util';
+import {getRandomRGB, isStringInArray, getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey, isSubStr} from '../../util';
+import {IconEye, IconEyeSlash, IconFlask, IconAdd} from '../../Icons';
 import Slide from '@mui/material/Slide';
-import StudiesList from './studies';
+import StudiesList from '../studies';
 
 
 function Chart({jsonArray}) {
@@ -89,6 +89,7 @@ function Chart({jsonArray}) {
       });
       const taResults = talib[obj.name](jsonArray, ...variables);
       const title = `${obj.name.replace('get', '')} (${variables.join(",")})`;
+
 
       if (isStringInArray(obj.name, talib.mainChart())) {
         if (isSubStr(obj.name.toLowerCase(), 'bands')) { // bollingerbands
