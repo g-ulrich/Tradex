@@ -3,10 +3,12 @@ import {chartColors, seriesColors, CHART_THEMES, defaultChartOptions, defaultSim
 import {Chart, AreaSeries} from "lightweight-charts-react-wrapper";
 import {IconEye, IconEyeSlash} from "../Icons";
 import { theme } from '../../../../tailwind.config';
+import {currentESTTime} from '../util';
 
 export default function SimpleCardChart({title, watermarkText, seriesData}) {
   const [toggleView, setToggleView] = useState(false);
   const [chartWidth, setChartWidth] = useState(null);
+  const series = useRef(null);
 
   const containerRef = useRef(null);
 
@@ -49,6 +51,7 @@ export default function SimpleCardChart({title, watermarkText, seriesData}) {
                 <span onClick={()=>{setToggleView(!toggleView)}}
                 className={`hidden px-2 mr-[4px] cursor-pointer bg-discord-darkGray rounded`}>{toggleView ? (<IconEye/>) : (<IconEyeSlash/>)}</span>
                 {title}</h3>
+                <span className="float-right px-2 text-gray-500">{currentESTTime()}</span>
               <Chart width={chartWidth} height={150}
                 {...toggleChartOptions()}
                   watermark={watermark(watermarkText)}>
@@ -56,7 +59,9 @@ export default function SimpleCardChart({title, watermarkText, seriesData}) {
                   topColor={seriesData[0].value <= seriesData[seriesData.length -1].value ? seriesColors.green.top : seriesColors.red.top}
                   bottomColor={seriesData[0].value <= seriesData[seriesData.length -1].value ? seriesColors.green.bottom : seriesColors.red.bottom}
                   lineColor={seriesData[0].value <= seriesData[seriesData.length -1].value ? seriesColors.green.line : seriesColors.red.line}
-                  lineWidth={.5}/>
+                  lineWidth={.5}
+                  reactive={true}
+                  ref={series}/>
               </Chart>
 
             </div>

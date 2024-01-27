@@ -1,13 +1,14 @@
 import React, {useState, useEffect} from 'react';
 import {refreshToken, isSubStr} from '../components/util';
 import {IconWarning, IconAngleR, IconCog, IconCode} from '../components/Icons';
-import {TS} from '../components/tradestation/main';
+import {TS} from '../api/tradestation/main';
 
 function Code() {
   const ts = new TS();
 
   const [lastTimestamp, setLastTimestamp] = useState('');
   const [tokenMsg, setTokenMsg] = useState(null);
+  const [tokenidMsg, setTokenidMsg] = useState(null);
   const [tokenLoading, setTokenLoading] = useState(false);
   const [revealTokens, setRevealTokens] = useState(false);
 
@@ -26,6 +27,14 @@ function Code() {
     window.electron.ipcRenderer.sendMessage('open-login-window', '');
     window.electron.ipcRenderer.once('open-login-window', (obj) => {
       setTokenMsg(obj.url);
+    });
+  }
+
+  const getAccessToken = () => {
+    setTokenLoading(true);
+    window.electron.ipcRenderer.sendMessage('new-access-token', '');
+    window.electron.ipcRenderer.once('new-access-token', (obj) => {
+      setTokenLoading(!tokenLoading);
     });
   }
 
@@ -63,6 +72,10 @@ function Code() {
         <div className={`${revealTokens ? '' : 'hidden'} my-2 p-2 rounded bg-discord-black text-white overflow-x-auto`}>
           <pre>{JSON.stringify(ts.getTokenObj(), null, 2)}</pre>
         </div>
+
+        <p className="text-gray-500">Getting a new access token will trigger the getNewAccessToken method without checking if its expired.</p>
+        <button className="px-2 rounded border-none hover:bg-discord-red bg-discord-softRed active:bg-discord-softRed" onClick={getAccessToken}><IconWarning/> {tokenLoading ? 'Loading...' : 'Get New Access Token'} <IconAngleR/></button>
+
         <p className="text-gray-500">Getting a new refresh token will open a new login window to the Tradestation authorize endpoint.</p>
         <button className="px-2 rounded border-none hover:bg-discord-red bg-discord-softRed active:bg-discord-softRed" onClick={getAuthCode}><IconWarning/> {tokenLoading ? 'Loading...' : 'Get New Refresh Token'} <IconAngleR/></button>
         {
@@ -71,7 +84,7 @@ function Code() {
               {isSubStr(tokenMsg, 'code') ? `Success! ${tokenMsg}` : 'Failed to get tokens.'}
             </p>
           ) : (
-            <p></p>
+            <></>
           )
         }
 

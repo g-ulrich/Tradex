@@ -305,12 +305,17 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
    * @param {string} symbols - List of valid symbols in a comma-separated format.
    * @returns {Promise<Quotes>} - Promise resolving to the snapshot of the latest Quote.
    */
-  getQuoteSnapshots(symbols) {
+  async getQuoteSnapshots(symbols) {
     const url = `${this.baseUrl}/quotes/${symbols}`;
     return axios.get(url, {
       headers: {
         Authorization: `Bearer ${this.token}`,
       },
+    })
+    .then(response => response.data.Quotes)
+    .catch(error => {
+      console.error('Error fetching account balances:', error);
+      throw error;
     });
   }
 
@@ -325,8 +330,16 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
       headers: {
         Authorization: `Bearer ${this.token}`,
         Accept: 'application/vnd.tradestation.streams.v2+json',
-      },
-      responseType: 'stream',
+      }
+    }).then(response => {
+      response.data.on('data', function(data) {
+        console.log(data.toString());
+      }).on('error', function(err) {
+        console.error(err);
+      });
+    })
+    .catch(error => {
+      console.error(error);
     });
   }
 

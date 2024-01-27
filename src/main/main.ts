@@ -15,7 +15,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import {triggerRefresh, getAuthCode, GET_AUTH_URL, CALLBACK_URL} from './tradestation/auth';
+import {triggerRefresh, getNewAccessToken, getAuthCode, GET_AUTH_URL, CALLBACK_URL} from './tradestation/auth';
 
 setupTitlebar();
 
@@ -34,6 +34,12 @@ let loginWindow: BrowserWindow | null = null;
 ipcMain.on('refreshToken', async (event, _) => {
     const tokenObj = await triggerRefresh();
     event.reply('refreshToken', {ts: tokenObj, alpha: process.env.ALPHA_VANTAGE_API_1});
+});
+
+
+ipcMain.on('new-access-token', async (event, _) => {
+  const tokenObj = await getNewAccessToken();
+  event.reply('new-access-token', {ts: tokenObj});
 });
 
 

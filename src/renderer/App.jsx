@@ -1,20 +1,17 @@
 import './App.css';
-import React, {useEffect} from 'react';
+import React from 'react';
 import Routing from './components/menu/Routing';
-import {refreshToken} from './components/util';
-
+import {TS} from './api/tradestation/main';
 
 export default function App() {
+  const ts = new TS(); // inits the refresh token
 
-  useEffect(() => {
-    refreshToken();
-    const interval = setInterval(refreshToken, 30000);
-    return () => {clearInterval(interval);};
-  }, []);
   document.body.classList.add('bg-discord-darkerGray', 'text-discord-white');
   return (
-    <div className={`bg-discord-darkerGray`}>
+    <>
+      <div className={`bg-discord-darkerGray`}>
         <Routing/>
-    </div>
+      </div>
+    </>
   );
 }

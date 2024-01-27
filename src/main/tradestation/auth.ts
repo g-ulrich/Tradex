@@ -48,20 +48,30 @@ export const GET_AUTH_URL = () => {
   return `${SINGIN_URL}authorize?response_type=code&client_id=${API_KEY}&redirect_uri=${encodedRedirectUrl}&audience=${encodedApiUrl}&scope=${encodedScope}`;
 }
 
+export async function getNewAccessToken(){
+  try {
+    console.log(`${currentESTDatetime()} [INFO] - Refreshing Tradestation Token.`);
+    const tokenDataFromStore = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
+    if (typeof tokenDataFromStore?.refresh_token !== 'undefined') {
+      const newData = await getTokenFromRefresh(tokenDataFromStore?.refresh_token);
+      const success : boolean = await updateTSTokenData(newData);
+      console.log(`${currentESTDatetime()} [INFO] - Token Refreshed ${success ? 'Successfully!' : 'Un-successfully.'}.`);
+    }else{
+      console.error(`${currentESTDatetime()} [ERROR] triggerRefresh() - refresh_token is undefined.`);
+    }
+    const tokenObj = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
+    return tokenObj;
+  } catch (error) {
+    console.error(`${currentESTDatetime()} [ERROR] getNewAccessToken() - ${error}`);
+      const tokenObj = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
+      return tokenObj;
+  }
+}
+
 export async function triggerRefresh() {
     try {
         if (isTokenExpired()) {
-            console.log(`${currentESTDatetime()} [INFO] - Refreshing Tradestation Token.`);
-            const tokenDataFromStore = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
-            if (typeof tokenDataFromStore?.refresh_token !== 'undefined') {
-              const newData = await getTokenFromRefresh(tokenDataFromStore?.refresh_token);
-              const success : boolean = await updateTSTokenData(newData);
-              console.log(`${currentESTDatetime()} [INFO] - Token Refreshed ${success ? 'Successfully!' : 'Un-successfully.'}.`);
-            }else{
-              console.error(`${currentESTDatetime()} [ERROR] triggerRefresh() - refresh_token is undefined.`);
-            }
-          const tokenObj = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
-          return tokenObj;
+            return await getNewAccessToken();
         } else {
               const tokenObj = await readTokenResponseFromJSONFile(TOKEN_FILE_NAME);
               return tokenObj;

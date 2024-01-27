@@ -356,14 +356,3 @@ export const findObjectById = (jsonArray, key, value) => {
   }
   return null; // return null if no match is found
 }
-
-
-export const refreshToken = () => {
-  window.electron.ipcRenderer.sendMessage('refreshToken', '');
-    window.electron.ipcRenderer.once('refreshToken', (arg) => {
-      const objString = JSON.stringify(arg.ts);
-      Cookies.set('TSTokenObj', objString);
-      Cookies.set('AlphaAPI', arg.alpha);
-      console.log(arg.ts);
-    });
-}

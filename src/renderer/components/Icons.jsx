@@ -7,11 +7,19 @@ import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight,
       faAngleUp, faCode, faEye, faEyeSlash, faFlask, faFlaskVial,
        faPlus, faChartColumn, faChartLine, faInfinity,
        faChartGantt, faChartArea, faMagnifyingGlass,
-       faArrowsLeftRightToLine, faWallet, faClock, faPalette, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
+       faArrowsLeftRightToLine, faWallet, faClock, faPalette, faTriangleExclamation, faPlay, faPause } from '@fortawesome/free-solid-svg-icons'
 
 export function IconWarning(){
 return(<><FontAwesomeIcon icon={faTriangleExclamation} /></>);
 }
+
+export function IconPause(){
+  return(<><FontAwesomeIcon icon={faPause} /></>);
+  }
+
+export function IconPlay(){
+  return(<><FontAwesomeIcon icon={faPlay} /></>);
+  }
 
 export function IconWallet(){
   return(<><FontAwesomeIcon icon={faWallet} /></>);

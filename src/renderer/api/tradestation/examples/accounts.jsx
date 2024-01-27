@@ -2,10 +2,10 @@ import {Accounts} from '../accounts';
 
 
 // Example usage:
-const orders = new Orders('YOUR_ACCESS_TOKEN');
+const accounts = new Accounts('YOUR_ACCESS_TOKEN');
 
 // Fetch brokerage accounts
-orders.getAccounts()
+accounts.getAccounts()
   .then(accounts => {
     console.log('Brokerage Accounts:', accounts);
   })
