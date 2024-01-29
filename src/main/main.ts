@@ -15,7 +15,9 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import {triggerRefresh, getNewAccessToken, getAuthCode, GET_AUTH_URL, CALLBACK_URL} from './tradestation/auth';
+import {TSAuthentication} from './tradestation/authClass';
+
+const tsAuth = new TSAuthentication();
 
 setupTitlebar();
 
@@ -32,13 +34,13 @@ let loginWindow: BrowserWindow | null = null;
 
 
 ipcMain.on('refreshToken', async (event, _) => {
-    const tokenObj = await triggerRefresh();
+    const tokenObj = await tsAuth.triggerRefresh();
     event.reply('refreshToken', {ts: tokenObj, alpha: process.env.ALPHA_VANTAGE_API_1});
 });
 
 
 ipcMain.on('new-access-token', async (event, _) => {
-  const tokenObj = await getNewAccessToken();
+  const tokenObj = await tsAuth.getNewAccessToken();
   event.reply('new-access-token', {ts: tokenObj});
 });
 
@@ -152,7 +154,7 @@ const createLoginWindow = async (event: any) => {
     icon: getAssetPath('icon.png'),
     backgroundColor: '#36393E',
   });
-  loginWindow.loadURL(GET_AUTH_URL());
+  loginWindow.loadURL(tsAuth.getAuthUrl());
 
   loginWindow.on('ready-to-show', () => {
     if (!loginWindow) {
@@ -173,8 +175,8 @@ const createLoginWindow = async (event: any) => {
   });
 
   loginWindow.webContents.on('will-redirect', (callback) => {
-    if (callback.url.includes(CALLBACK_URL)) {
-        getAuthCode(callback.url);
+    if (callback.url.includes(tsAuth.callBackUrl)) {
+        tsAuth.getAuthCode(callback.url);
         event.reply('open-login-window', {url: callback.url, success: true});
         if (loginWindow) {
           loginWindow.close();
