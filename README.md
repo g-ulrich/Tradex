@@ -31,7 +31,7 @@ To run this project, you will need to add the following environment variables:
 
 **Tradestation:**
 
-`TS_CLIENT_ID`
+ `TS_CLIENT_ID` (e.g. api_key)
 
 `TS_CLIENT_SECRET`
 
