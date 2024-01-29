@@ -1,5 +1,5 @@
 
-<img src="assets/icon.png" alt="Tradex" height="30" width="30"> # Tradex
+<img src="assets/icon.png" alt="Tradex" height="30" width="30"> #Tradex
 
 Tradex is an open-source app that utilizes Electron and ReactJS to create a user-friendly platform for algorithmic trading. It integrates with the Tradestation API, allowing traders to automate their strategies and access real-time market data.
 
