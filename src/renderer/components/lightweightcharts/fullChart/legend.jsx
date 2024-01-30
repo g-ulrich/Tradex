@@ -7,7 +7,7 @@ import {
   IconClock,
   IconCog,
   IconEyeSlash,
-} from "../../Icons";
+} from "../../../api/Icons";
 import {
   chartColors,
 } from "../options";
@@ -18,7 +18,7 @@ import {
 } from "../util";
 import {
   isSubStr
-} from "../../util";
+} from "../../../tools/util";
 
 export default function ChartLegend({candles, chartref, moveindex, studies, studycallback}) {
   const [activeStudy, setActiveStudy] = useState(null);

@@ -7,7 +7,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import Slide from '@mui/material/Slide';
-import {IconCog, IconX} from '../Icons';
+import {IconCog, IconX} from '../../api/Icons';
 
 
 export default function SettingsLinkDialog() {
@@ -57,9 +57,9 @@ export default function SettingsLinkDialog() {
   return (
     <Fragment>
         <div key='settings_routing' className="block text-center mt-[4px]">
-            <span 
+            <span
               onClick={handleClickOpen}
-                title='settings' 
+                title='settings'
                 className="absolute bottom-0 left-0 px-[10px] py-[4px] text-lg hover:bg-discord-blurple hover:rounded cursor-pointer">
                 <IconCog />
             </span>

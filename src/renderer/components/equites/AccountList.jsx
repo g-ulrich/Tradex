@@ -1,5 +1,5 @@
-import {IconRefresh, IconTriangleDown, IconTriangleUp } from '../Icons';
-import {formatCurrency} from '../util';
+import {IconRefresh, IconTriangleDown, IconTriangleUp } from '../../api/Icons';
+import {formatCurrency} from '../../tools/util';
 
 
 export default function  AccountsList(props) {

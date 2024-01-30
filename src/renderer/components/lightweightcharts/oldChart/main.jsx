@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createChart, ColorType, createWatermark, CrosshairMode, LineStyle, Cre } from 'lightweight-charts';
-import {generateLineData, isSubStr} from '../../util';
-import { IconEye } from '../../Icons';
+import {generateLineData, isSubStr} from '../../../tools/util';
+import { IconEye } from '../../../api/Icons';
 
 const chartColors = {
   white: '#ffffff',

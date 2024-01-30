@@ -2,8 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { orderBy } from 'lodash';
 import Pagination from './pagination'; // Adjust the path based on your project structure
-import { IconRefresh, IconTriangleDown, IconTriangleUp } from '../Icons';
-import {findObjectByVal} from '../util';
+import { IconRefresh, IconTriangleDown, IconTriangleUp } from '../../api/Icons';
+import {findObjectByVal} from '../../tools/util';
 
  const columns = [
     { key: 'Symbol', label: 'Symbol', prefix: '' },

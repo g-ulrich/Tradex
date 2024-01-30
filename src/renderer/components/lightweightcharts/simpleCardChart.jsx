@@ -1,9 +1,9 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {chartColors, seriesColors, CHART_THEMES, defaultChartOptions, defaultSimpleChartOptions} from './options';
 import {Chart, AreaSeries} from "lightweight-charts-react-wrapper";
-import {IconEye, IconEyeSlash} from "../Icons";
+import {IconEye, IconEyeSlash} from "../../api/Icons";
 import { theme } from '../../../../tailwind.config';
-import {currentESTTime} from '../util';
+import {currentESTTime} from '../../tools/util';
 
 export default function SimpleCardChart({title, watermarkText, seriesData}) {
   const [toggleView, setToggleView] = useState(false);

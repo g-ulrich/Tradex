@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { isSubStr, isFloat, getRandomRGB } from '../util';
+import { isSubStr, isFloat, getRandomRGB } from '../../tools/util';
 import Fade from '@mui/material/Fade';
 import Slide from '@mui/material/Slide';
 import {
@@ -10,7 +10,7 @@ import {
   IconArrowUp,
   IconSearch,
   IconColor
-} from '../Icons';
+} from '../../api/Icons';
 import * as talib from './talib';
 // import
 //   ColorPicker

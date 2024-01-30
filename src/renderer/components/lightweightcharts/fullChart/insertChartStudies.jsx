@@ -1,4 +1,4 @@
-import {isSubStr} from '../../util';
+import {isSubStr} from '../../../tools/util';
 import {
   LineSeries,
 } from "lightweight-charts-react-wrapper";

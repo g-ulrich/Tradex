@@ -15,7 +15,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import {TSAuthentication} from './tradestation/authClass';
+import {TSAuthentication} from './tradestation/authentication';
 
 const tsAuth = new TSAuthentication();
 
@@ -33,15 +33,15 @@ let mainWindow: BrowserWindow | null = null;
 let loginWindow: BrowserWindow | null = null;
 
 
-ipcMain.on('refreshToken', async (event, _) => {
+ipcMain.on('getRefreshToken', async (event, _) => {
     const tokenObj = await tsAuth.triggerRefresh();
-    event.reply('refreshToken', {ts: tokenObj, alpha: process.env.ALPHA_VANTAGE_API_1});
+    event.reply('sendRefreshToken', {ts: tokenObj, alpha: process.env.ALPHA_VANTAGE_API_1});
 });
 
 
-ipcMain.on('new-access-token', async (event, _) => {
+ipcMain.on('getNewAccessToken', async (event, _) => {
   const tokenObj = await tsAuth.getNewAccessToken();
-  event.reply('new-access-token', {ts: tokenObj});
+  event.reply('sendNewAccessToken', {ts: tokenObj});
 });
 
 

@@ -1,7 +1,7 @@
 // Pagination.js
 import React from 'react';
-import {currentESTTime} from '../util';
-import { IconEllipsis, IconAnglesL, IconAnglesR, IconAngleR, IconAngleL } from '../Icons';
+import {currentESTTime} from '../../tools/util';
+import { IconEllipsis, IconAnglesL, IconAnglesR, IconAngleR, IconAngleL } from '../../api/Icons';
 
 const Pagination = ({ totalItems, itemsPerPage, currentPage, totalPages, onPageChange, onItemsPerPageChange }) => {
   const pages = [...Array(totalPages).keys()].map((page) => page + 1);

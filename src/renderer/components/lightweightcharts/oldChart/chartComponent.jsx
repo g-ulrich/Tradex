@@ -4,8 +4,8 @@ import { createChart, ColorType, CrosshairMode } from 'lightweight-charts';
 import LightWeight from './main';
 import * as talib from '../talib';
 import {convertArrayToJsonArrayForChart, indicatorToLineChart, bollingerbandsToAreaSeriesJsonArr} from '../util';
-import {getRandomRGB, isStringInArray, getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey, isSubStr} from '../../util';
-import {IconEye, IconEyeSlash, IconFlask, IconAdd} from '../../Icons';
+import {getRandomRGB, isStringInArray, getAllFunctions, generateLineData, generateCandleData,convertCsvToJson ,jsonArrayToArrayByKey, isSubStr} from '../../../tools/util';
+import {IconEye, IconEyeSlash, IconFlask, IconAdd} from '../../../api/Icons';
 import Slide from '@mui/material/Slide';
 import StudiesList from '../studies';
 

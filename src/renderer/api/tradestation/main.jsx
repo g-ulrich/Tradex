@@ -1,6 +1,7 @@
 import React from 'react';
 import TSEndpoints from './endpoints';
 import Cookies from 'js-cookie';
+import {currentESTTime} from '../../tools/util';
 
 
 export class TS {
@@ -10,9 +11,17 @@ export class TS {
     this.token = null;
   }
 
+  info(msg=""){
+    console.log(`${currentESTTime()} [INFO] - ${msg}`)
+  }
+
+  error(msg=""){
+    console.error(`${currentESTTime()} [ERROR] - ${msg}`)
+  }
+
   async refreshToken(){
-    window.electron.ipcRenderer.sendMessage('refreshToken', '');
-      window.electron.ipcRenderer.once('refreshToken', (arg) => {
+    window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
+      window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
         const objString = JSON.stringify(arg.ts);
         this.token = arg.ts;
         Cookies.set('TSTokenObj', objString);

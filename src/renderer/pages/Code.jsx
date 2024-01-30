@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {refreshToken, isSubStr} from '../components/util';
-import {IconWarning, IconAngleR, IconCog, IconCode} from '../components/Icons';
+import {refreshToken, isSubStr} from '../tools/util';
+import {IconWarning, IconAngleR, IconCog, IconCode} from '../api/Icons';
 import {TS} from '../api/tradestation/main';
 
 function Code() {
@@ -32,8 +32,8 @@ function Code() {
 
   const getAccessToken = () => {
     setTokenLoading(true);
-    window.electron.ipcRenderer.sendMessage('new-access-token', '');
-    window.electron.ipcRenderer.once('new-access-token', (obj) => {
+    window.electron.ipcRenderer.sendMessage('getNewAccessToken', '');
+    window.electron.ipcRenderer.once('sendNewAccessToken', (obj) => {
       setTokenLoading(!tokenLoading);
     });
   }

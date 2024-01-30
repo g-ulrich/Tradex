@@ -1,6 +1,6 @@
-import Equites from '../../pages/Equites';
-import Trade from '../../pages/Trade';
-import Code from '../../pages/Code';
+import Equites from '../Equities/Equites';
+import Trade from '../Trade';
+import Code from '../Code';
 
 export default function MainView(props) {
   const page = props.selectedPage;

@@ -33,7 +33,7 @@ import {
   getTimestampNMinsAgo,
   getUtcTimestampNMinutesBack,
 } from "../util";
-import { isStringInArray, isSubStr, getAllFunctions, getRandomRGB, findObjectById } from "../../util";
+import { isStringInArray, isSubStr, getAllFunctions, getRandomRGB, findObjectById } from "../../../tools/util";
 import {
   IconFlask,
   IconFlaskVial,
@@ -43,7 +43,7 @@ import {
   IconLineChart,
   IconSearch,
   IconWallet,
-} from "../../Icons";
+} from "../../../api/Icons";
 import {StudiesList} from "../studies";
 import AreaChartType from './areaChartType';
 import InsertChartStudies from './insertChartStudies';

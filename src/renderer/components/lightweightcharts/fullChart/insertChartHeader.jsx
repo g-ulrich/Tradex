@@ -9,7 +9,7 @@ import {
   IconLineChart,
   IconSearch,
   IconWallet,
-} from "../../Icons";
+} from "../../../api/Icons";
 
 
 export default function InsertChartHeader({toggleStudiesFunc, chartTypeCallback, chartType, showStudy}){

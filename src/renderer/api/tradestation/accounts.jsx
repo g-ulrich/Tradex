@@ -49,7 +49,7 @@ export class Accounts {
       },
     }).then(response => response.data.Accounts)
     .catch(error => {
-      console.error('Error fetching accounts:', error);
+      this.ts.error(`getAccounts() - ${error}`);
       throw error;
     });
     return response;
@@ -69,8 +69,7 @@ export class Accounts {
           });
         }
       } catch (error) {
-          const id_token = this.ts.getTokenId();
-        console.error("Error retrieving account id:", error);
+        this.ts.error(`setAccounts() ${error}`);
       }
     })();
   }
@@ -86,7 +85,7 @@ export class Accounts {
           }
         });
       } catch (error) {
-        console.error("Error retrieving account id:", error);
+        this.ts.error(`setAccountID() ${error}`);
       }
     })();
   }
@@ -97,42 +96,38 @@ export class Accounts {
    * @param {string} accountIds - List of valid Account IDs for the authenticated user in comma-separated format.
    * @returns {Promise<Array>} - Promise resolving to the list of account balances.
    */
-async getAccountBalances(accountIds) {
-          const id_token = this.ts.getTokenId();
-  const url = `${this.baseUrl}/accounts/${accountIds}/balances`;
-
-  return axios.get(url, {
-    headers: {
-      Authorization: `Bearer ${id_token}`,
-    },
-  })
+  async getAccountBalances(accountIds) {
+    const id_token = this.ts.getTokenId();
+    const url = `${this.baseUrl}/accounts/${accountIds}/balances`;
+    return axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${id_token}`,
+      },
+    })
     .then(response => response.data.Balances)
     .catch(error => {
-      console.error('Error fetching account balances:', error);
+      this.ts.error(`getAccountBalances() ${error}`);
       throw error;
     });
 }
 
 setAccountBalances(setter, accountIds, type='Cash'){
   if (accountIds !== null || typeof accountIds !== 'undefined') {
-          const id_token = this.ts.getTokenId();
+    const id_token = this.ts.getTokenId();
     (async () => {
       try {
         const arr = await this.getAccountBalances(accountIds);
         if (type === '') {
-          const id_token = this.ts.getTokenId();
           setter(arr);
         } else {
           arr.forEach((obj, index)=>{
             if (obj.AccountType === type) {
-          const id_token = this.ts.getTokenId();
               setter(obj);
             }
           });
         }
       } catch (error) {
-          const id_token = this.ts.getTokenId();
-        console.error("Error retrieving account balances:", error);
+        this.ts.error(`setAccountBalances() ${error}`);
       }
     })();
   }
@@ -144,9 +139,8 @@ setAccountBalances(setter, accountIds, type='Cash'){
    * @returns {Promise<Array>} - Promise resolving to the list of Beginning of Day Balances.
    */
   getBalancesBOD(accountIds) {
-          const id_token = this.ts.getTokenId();
+    const id_token = this.ts.getTokenId();
     const url = `${this.baseUrl}/accounts/${accountIds}/bodbalances`;
-
     return axios.get(url, {
       headers: {
         Authorization: `Bearer ${id_token}`,
@@ -154,7 +148,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
     })
       .then(response => response.data.BODBalances)
       .catch(error => {
-        console.error('Error fetching Beginning of Day Balances:', error);
+        this.ts.error(`getBalancesBOD() ${error}`);
         throw error;
       });
   }

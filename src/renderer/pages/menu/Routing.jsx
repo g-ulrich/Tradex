@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import MainView from './MainView';
-import { IconCog, IconBank, IconTrade, IconCode} from '../Icons';
+import { IconCog, IconBank, IconTrade, IconCode} from '../../api/Icons';
 import SettingsLinkDialog from './SettingsLinkDialog';
-import {titleBarheight} from '../util';
+import {titleBarheight} from '../../tools/util';
 
 
 function Routing() {
