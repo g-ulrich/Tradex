@@ -4,7 +4,7 @@ import {chartColors, seriesColors,
   defaultSimpleChartOptions
 } from '../../components/lightweightcharts/options';
 import {Chart, AreaSeries} from "lightweight-charts-react-wrapper";
-import {IconPause, IconPlay} from "../../api/Icons";
+import {IconPause, IconPlay, IconDot} from "../../api/Icons";
 import { theme } from '../../../../tailwind.config';
 import {currentESTTime} from '../../tools/util';
 
@@ -29,11 +29,14 @@ export default function SimpleAccountBalanceChart({accountClass, accountId, paus
       <>
         <div ref={containerRef} className="w-full">
           {chartWidth !== null && containerRef.current !== null && typeof seriesData !== 'undefined' ? (
-            <div className="h-[160px] py-2 rounded bg-discord-darkestGray w-full">
-            <h3 className="text-gray-500 px-2 absolute z-[999]">
-            <span className={`mr-[4px] cursor-pointer ${pause ? 'text-discord-blurple' : 'text-discord-softRed animate-pulse'}`} onClick={()=>{setPause(!pause)}}>{pause ? (<><IconPause/> Paused</>) : (<><IconPlay/> Live</>)}</span>
-              #{accountId}</h3>
-                <span className="float-right px-2 text-gray-500">{currentESTTime()}</span>
+            <div className="h-[180px] py-2 rounded bg-discord-darkestGray w-full">
+              <div className="w-full sticky">
+                  <h3 className="text-gray-500 px-2 float-left">
+                  <span className="text-discord-softRed mr-2 animate-pulse"><IconDot/> Live</span>
+                    #{accountId}</h3>
+                  <span className="float-right px-2 text-gray-500">{currentESTTime()}</span>
+              </div>
+
               <Chart width={chartWidth} height={150}
                 {...CHART_THEMES.simpleChart}
                   watermark={{

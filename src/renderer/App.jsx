@@ -2,40 +2,35 @@ import './App.css';
 import React, {useState, useEffect} from 'react';
 import Routing from './pages/menu/Routing';
 import {TS} from './api/tradestation/main';
+window.ts = new TS();
+window.ts.refreshToken();
+// import audioFile from '../../assets/ding.wav';
 
 export default function App() {
-  const [timeStamp, setTimeStamp] = useState(-1);
+  const [token, setToken] = useState(null);
   const [intervalItem, setIntervalItem] = useState(null);
-  const ts = new TS(); // inits the refresh token
 
   useEffect(() => {
-    const getTimeStamp = () => {
-      var t = ts.getTokenObj();
-      const stamp = typeof t?.timeStamp !== 'undefined' ? (Date.now() - t.timeStamp) / 1000 / 60 : -1;
-      if (stamp <= 0 || stamp > 19) {
-        ts.refreshToken();
-      }
-      return stamp;
-    }
-    setTimeStamp(getTimeStamp());
+    setToken(window.ts.token);
     const interval = setInterval(() => {
-      setTimeStamp(getTimeStamp());
+      setToken(window.ts.token)
     }, 1000);
-    setIntervalItem(interval)
+    setIntervalItem(interval);
     return () => clearInterval(interval);
   }, []);
 
+
   useEffect(() => {
-    if (intervalItem !== null && timeStamp >= 0 &&  timeStamp < 20){
+    if (intervalItem !== null && token !== null){
       clearInterval(intervalItem);
     }
-  }, [timeStamp]);
+  }, [token]);
 
   document.body.classList.add('bg-discord-darkerGray', 'text-discord-white');
   return (
     <>
       {
-        timeStamp >= 0 && timeStamp < 20 ? (
+        token !== null ? (
           <div className={`bg-discord-darkerGray`}>
             <Routing/>
           </div>

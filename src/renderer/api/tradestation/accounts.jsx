@@ -27,13 +27,21 @@
  * - URL: https://api.tradestation.com
  */
 import axios from 'axios';
-import {TS} from './main';
+import {currentESTTime} from '../../tools/util';
 
 export class Accounts {
-  constructor() {
-    this.ts = new TS();
+  constructor(accessToken) {
     this.baseUrl = 'https://api.tradestation.com/v3/brokerage';
-    // this.token = token;
+    this.accessToken = accessToken;
+
+  }
+
+  info(msg=""){
+    console.log(`${currentESTTime()} Accounts [INFO] - ${msg}`)
+  }
+
+  error(msg=""){
+    console.error(`${currentESTTime()} Accounts [ERROR] - ${msg}`)
   }
 
   /**
@@ -41,15 +49,14 @@ export class Accounts {
    * @returns {Promise<Array>} - Promise resolving to the list of brokerage accounts.
    */
   async getAccounts() {
-    const id_token = this.ts.getTokenId();
     const url = `${this.baseUrl}/accounts`;
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     }).then(response => response.data.Accounts)
     .catch(error => {
-      this.ts.error(`getAccounts() - ${error}`);
+      this.error(`getAccounts() - ${error}, ${this.accessToken}`);
       throw error;
     });
     return response;
@@ -69,7 +76,7 @@ export class Accounts {
           });
         }
       } catch (error) {
-        this.ts.error(`setAccounts() ${error}`);
+        this.error(`setAccounts() ${error}`);
       }
     })();
   }
@@ -80,12 +87,11 @@ export class Accounts {
         const arr = await this.getAccounts();
         arr.forEach((i)=>{
           if (i.AccountType === type) {
-          const id_token = this.ts.getTokenId();
             setter(i.AccountID);
           }
         });
       } catch (error) {
-        this.ts.error(`setAccountID() ${error}`);
+        this.error(`setAccountID() ${error}`);
       }
     })();
   }
@@ -97,23 +103,20 @@ export class Accounts {
    * @returns {Promise<Array>} - Promise resolving to the list of account balances.
    */
   async getAccountBalances(accountIds) {
-    const id_token = this.ts.getTokenId();
     const url = `${this.baseUrl}/accounts/${accountIds}/balances`;
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     })
     .then(response => response.data.Balances)
     .catch(error => {
-      this.ts.error(`getAccountBalances() ${error}`);
-      throw error;
+      this.error(`getAccountBalances() ${error}`);
     });
 }
 
 setAccountBalances(setter, accountIds, type='Cash'){
   if (accountIds !== null || typeof accountIds !== 'undefined') {
-    const id_token = this.ts.getTokenId();
     (async () => {
       try {
         const arr = await this.getAccountBalances(accountIds);
@@ -127,7 +130,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
           });
         }
       } catch (error) {
-        this.ts.error(`setAccountBalances() ${error}`);
+        this.error(`setAccountBalances() ${error}`);
       }
     })();
   }
@@ -139,17 +142,15 @@ setAccountBalances(setter, accountIds, type='Cash'){
    * @returns {Promise<Array>} - Promise resolving to the list of Beginning of Day Balances.
    */
   getBalancesBOD(accountIds) {
-    const id_token = this.ts.getTokenId();
     const url = `${this.baseUrl}/accounts/${accountIds}/bodbalances`;
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     })
       .then(response => response.data.BODBalances)
       .catch(error => {
-        this.ts.error(`getBalancesBOD() ${error}`);
-        throw error;
+        this.error(`getBalancesBOD() ${error}`);
       });
   }
 
@@ -163,12 +164,11 @@ setAccountBalances(setter, accountIds, type='Cash'){
    * @returns {Promise<Object>} - Promise resolving to the historical orders.
    */
  getHistoricalOrders(accounts, since, pageSize = 600, nextToken = null) {
-          const id_token = this.ts.getTokenId();
   const url = `${this.baseUrl}/accounts/${accounts}/historicalorders`;
 
   return axios.get(url, {
     headers: {
-      Authorization: `Bearer ${id_token}`,
+      Authorization: `Bearer ${this.accessToken}`,
     },
     params: {
       since,
@@ -178,8 +178,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
   })
     .then(response => response.data)
     .catch(error => {
-      console.error('Error fetching historical orders:', error);
-      throw error;
+      this.error(`getHistoricalOrders - ${error}`);
     });
 }
 
@@ -197,7 +196,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     })
       .then(response => response.data)
@@ -225,7 +224,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
       params,
     })
@@ -248,7 +247,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
   return axios.get(url, {
     headers: {
-      Authorization: `Bearer ${id_token}`,
+      Authorization: `Bearer ${this.accessToken}`,
     },
   })
     .then(response => response.data.Orders)
@@ -274,7 +273,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
       params,
     })
@@ -296,7 +295,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     })
       .then(response => response.data.Wallets)
@@ -317,7 +316,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/vnd.tradestation.streams.v2+json',
       },
       responseType: 'stream',
@@ -340,7 +339,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
       responseType: 'stream', // To handle streaming response
     })
@@ -370,7 +369,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     })
       .then(response => response.data.Orders)
@@ -393,7 +392,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${id_token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
       params: {
         changes,

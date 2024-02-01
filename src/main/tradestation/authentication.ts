@@ -32,6 +32,7 @@ interface rawRefreshTokenResponse {
 
 
 export class TSAuthentication {
+  lastRefresh: number;
   tokenFileName: string;
   callBackUrl: string;
   apiUrl: string;
@@ -42,6 +43,7 @@ export class TSAuthentication {
   tradingScope: string;
 
   constructor(){
+    this.lastRefresh = 0;
     // endpoint and TS variables
     this.tokenFileName = 'tsToken.json';
     this.callBackUrl = 'http://localhost:3001';
@@ -86,14 +88,18 @@ export class TSAuthentication {
   */
   async getNewAccessToken(){
     try {
-      // const lastRefresh: number | any = this.getLastRefreshTime();
-      // if ((Date.now() - lastRefresh) / 1000 / 60 > 19) {
+      // const minute = 1;
+      // const canRefresh = (Date.now() - this.lastRefresh) / 1000 / 60 > minute;
+      // Performs a superficial check to prevent asynchronous calls.
+      // if (this.lastRefresh === -1 || canRefresh) {
         this.info(`Refreshing Tradestation Token.`);
         const tokenData = await this.readTSTokenFile(this.tokenFileName);
         if (typeof tokenData?.refresh_token !== 'undefined') {
+          // Execute refresh token endpoint and update the stored token data.
           const newTokenData = await this.getTokenFromRefresh(tokenData?.refresh_token);
           const success : boolean = await this.updateTSTokenData(newTokenData);
           this.info(`Token Refreshed ${success ? 'Successfully!' : 'Un-successfully.'}.`);
+          this.lastRefresh = Date.now();
         }else{
           this.error(`getNewAccessToken() - refresh_token is undefined.`);
         }

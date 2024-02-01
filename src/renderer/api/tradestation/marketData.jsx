@@ -27,41 +27,121 @@
  * - URL: https://api.tradestation.com
  */
 import axios from 'axios';
+import {currentESTTime} from '../../tools/util';
 
 export class MarketData {
-  constructor(token) {
+  constructor(accessToken) {
+    this.ts = window.ts;
     this.baseUrl = 'https://api.tradestation.com/v3/marketdata';
-    this.token = token;
+    this.accessToken = accessToken;
+  }
+
+  info(msg=""){
+    console.log(`${currentESTTime()} MarketData [INFO] - ${msg}`)
+  }
+
+  error(msg=""){
+    console.error(`${currentESTTime()} MarketData [ERROR] - ${msg}`)
+  }
+
+  epoch_UTC2EST(epoch){
+    return new Date(epoch).getTime() + ((-5 * 60) * 60 * 1000);
+  }
+  timestamp_UTC2EST(timestamp){
+    return new Date(timestamp).toLocaleString("en-US", {timeZone: "America/New_York"});
+  }
+
+  bars2Candles(bars){
+    return bars.map((bar)=>{
+      return {
+        time: bar.Epoch,
+        open: bar.Open,
+        high: bar.High,
+        low: bar.Low,
+        close: bar.Close,
+        volume: bar.TotalVolume,
+      }
+    })
   }
 
   /**
    * Fetches marketdata bars for the given symbol, interval, and timeframe.
    * @param {string} symbol - The valid symbol string.
    * @param {string} [interval='1'] - Interval that each bar will consist of.
-   * @param {string} [unit='Daily'] - Unit of time for each bar interval.
+   * @param {string} [unit='Daily'] - Unit of time for each bar interval. Minute, Daily, Weekly, Monthly
    * @param {string} [barsback='1'] - Number of bars back to fetch.
-   * @param {string} [firstdate] - The first date formatted as 'YYYY-MM-DD'.
-   * @param {string} [lastdate] - The last date formatted as 'YYYY-MM-DD'.
-   * @param {string} [sessiontemplate] - United States (US) stock market session templates.
+   * @param {string} [firstdate] - The first date formatted as 'YYYY-MM-DD 2020-04-20T18:00:00Z'. - no default
+   * @param {string} [lastdate] - The last date formatted as 'YYYY-MM-DD 2020-04-20T18:00:00Z'. - Defaults to current timestamp
+   * @param {string} [sessiontemplate='Default'] - United States (US) stock market session templates. USEQPre, USEQPost, USEQPreAndPost, USEQ24Hour,Default.
    * @returns {Promise<object>} - Promise resolving to the fetched marketdata bars.
    */
-  async getBars(symbol, interval = '1', unit = 'Daily', barsback = '1', firstdate, lastdate, sessiontemplate) {
-    var lastdate = typeof lastdate === 'undefined' ? new Date().toISOString() : lastdate;
+  async getBars(symbol, params) {
+    const interval = params?.interval || '1';
+    const unit = params?.unit || 'Daily';
+    const barsback = params?.barsback || '1';
+    const firstdate = params?.firstdate || '';
+    const lastdate = params?.lastdate || new Date().toISOString();
+    const sessiontemplate = params?.sessiontemplate || 'Default';
+
     const url = `${this.baseUrl}/barcharts/${symbol}`;
-    const params = { interval, unit, barsback, firstdate, lastdate, sessiontemplate };
+    const options = {
+      params: {
+        interval,
+        unit,
+        barsback,
+        // firstdate,
+        // lastdate,
+        // sessiontemplate,
+      },
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+    };
 
     try {
-      const response = await axios.get(url, {
-        params,
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
+      const response = await axios.get(url, options);
+      const bars = response.data.Bars;
 
-      return response.data;
+      const newBars = bars.map((obj)=>{
+        return {
+          ...obj,
+          Close: parseFloat(obj.Close),
+          High: parseFloat(obj.High),
+          Low: parseFloat(obj.Low),
+          Open: parseFloat(obj.Open),
+          TotalVolume: parseInt(obj.TotalVolume),
+          Epoch: this.epoch_UTC2EST(obj.Epoch) / 1000,
+          TimeStamp: this.timestamp_UTC2EST(obj.TimeStamp),
+        }
+      });
+      return newBars;
     } catch (error) {
-      throw new Error(`Error fetching bars: ${error.message}`);
+      this.error(`getBars() - ${error}`);
+      throw error;
     }
+  }
+
+  setBars(setter, symbol, params){
+    (async () => {
+      try {
+        const arr = await this.getBars(symbol, params);
+        setter(arr);
+      } catch (error) {
+        this.error(`setBars() ${error}`);
+      }
+    })();
+  }
+
+  setCandles(setter, symbol, params){
+    (async () => {
+      try {
+        const arr = await this.getBars(symbol, params);
+        console.log(this.bars2Candles(arr));
+        setter(this.bars2Candles(arr));
+      } catch (error) {
+        this.error(`setBars() ${error}`);
+      }
+    })();
   }
 
   /**
@@ -80,7 +160,7 @@ export class MarketData {
     return axios.get(url, {
       params,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/vnd.tradestation.streams.v2+json',
       },
       responseType: 'stream',
@@ -97,7 +177,7 @@ async getCryptoSymbolNames() {
   try {
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     });
 
@@ -118,7 +198,7 @@ async getSymbolDetails(symbols) {
   try {
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     });
 
@@ -141,7 +221,7 @@ async getOptionExpirations(underlying, strikePrice = null) {
   try {
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
       params,
     });
@@ -164,7 +244,7 @@ async getOptionRiskReward(riskRewardInput) {
     const response = await axios.post(url, riskRewardInput, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     });
 
@@ -185,7 +265,7 @@ async getOptionSpreadTypes() {
   try {
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     });
 
@@ -216,7 +296,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
   try {
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
       params,
     });
@@ -265,7 +345,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
     return axios.get(url, {
       params,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/vnd.tradestation.streams.v2+json',
       },
       responseType: 'stream',
@@ -292,7 +372,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
     return axios.get(url, {
       params,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/vnd.tradestation.streams.v2+json',
       },
       responseType: 'stream',
@@ -309,7 +389,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
     const url = `${this.baseUrl}/quotes/${symbols}`;
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     })
     .then(response => response.data.Quotes)
@@ -328,7 +408,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
     const url = `${this.baseUrl}/stream/quotes/${symbols}`;
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/vnd.tradestation.streams.v2+json',
       }
     }).then(response => {
@@ -360,7 +440,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
     return axios.get(url, {
       params,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/vnd.tradestation.streams.v2+json',
       },
       responseType: 'stream',
@@ -383,7 +463,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
     return axios.get(url, {
       params,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/vnd.tradestation.streams.v2+json',
       },
       responseType: 'stream',
@@ -403,7 +483,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
 
     return axios.get(url, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     })
       .then(response => response.data)
