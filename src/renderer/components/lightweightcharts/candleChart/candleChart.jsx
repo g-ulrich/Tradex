@@ -47,29 +47,51 @@ import {
 import AreaChartType from './areaChartType';
 import InsertVolume from './insertVolume';
 import InsertCandles from './insertCandles';
+import axios from 'axios';
 
-export default function CandleChart({ dataCallBack }) {
+export default function CandleChart({ symbol, options }) {
+  const marketData = window.ts.marketData;
   const containerRef = useRef(null);
+  const seriesRef = useRef(null);
   const primaryChartRef = useRef(null);
   const [chartWidth, setChartWidth] = useState(800);
   const [candles, setCandles] = useState(null);
+  const [newCandle, setNewCandle] = useState(null);
   const [showStudy, setShowStudy] = useState(false);
   const [crosshairIndex, setCrosshairIndex] = useState(0);
   const [chartStudies, setChartStudies] = useState([]);
   const [chartType, setChartType] = useState("bar"); // bar, candle, line, area
 
 
-  const getInitialCandles = (daysBack=5) => {
-    const jsonArr = dataCallBack();
-    // if (jsonArr.length > 0) {
-    //   const timeBack = getUtcTimestampNMinutesBack(60*(daysBack*24), parseInt(jsonArr[jsonArr.length-1].time));
-    //   setCandles(filterJsonArrayByTimestamp(jsonArr, timeBack));
-    // }
-    setCandles(jsonArr);
-  }
+  useEffect(() => {
+    if (candles !== null) {
+      marketData.streamBars(setNewCandle, symbol, {...options, barsback:'1'});
+    }
+  }, [candles]);
+
+
 
   useEffect(() => {
-    getInitialCandles();
+    if (newCandle !== null && candles !== null && seriesRef?.current){
+      const bar = newCandle;
+      try {
+        seriesRef.current?.update({
+          time: bar.Epoch,
+          open: bar.Open,
+          high: bar.High,
+          low: bar.Low,
+          close: bar.Close,
+          volume: bar.TotalVolume,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }, [newCandle]);
+
+  useEffect(() => {
+
+    marketData.setCandles(setCandles, symbol, options);
 
     const resizeWidth = () => {
       if (containerRef.current) {
@@ -83,6 +105,7 @@ export default function CandleChart({ dataCallBack }) {
     };
   }, []);
 
+
   const crosshairAction = (e) => {
     if (primaryChartRef.current) {
       // const range = getVisRange(candles, primaryChartRef);
@@ -95,7 +118,7 @@ export default function CandleChart({ dataCallBack }) {
     <>
       <div ref={containerRef} className="grow relative min-w-[300px] sm:w-[100%]">
         <div className="w-full h-[610px] bg-discord-darkestGray rounded py-2">
-        {candles && containerRef.current ? (
+        {candles !== null && containerRef.current ? (
           <>
             {/* <ChartLegend candles={candles}
                   moveindex={crosshairIndex}
@@ -109,7 +132,11 @@ export default function CandleChart({ dataCallBack }) {
               {...defaultChartOptions({ width: chartWidth, height: 600 })}>
 
               <InsertVolume candles={candles}/>
-              <InsertCandles candles={candles} chartType={chartType} candleKey={'close'} visRange={getVisRange(candles, primaryChartRef)}/>
+              <InsertCandles chartRef={seriesRef}
+                candles={candles}
+                chartType={chartType}
+                candleKey={'close'}
+                visRange={getVisRange(candles, primaryChartRef)}/>
             </Chart>
             </>
           ) : (

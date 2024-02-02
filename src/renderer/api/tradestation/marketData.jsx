@@ -29,6 +29,7 @@
 import axios from 'axios';
 import {currentESTTime} from '../../tools/util';
 
+
 export class MarketData {
   constructor(accessToken) {
     this.ts = window.ts;
@@ -45,8 +46,9 @@ export class MarketData {
   }
 
   epoch_UTC2EST(epoch){
-    return new Date(epoch).getTime() + ((-5 * 60) * 60 * 1000);
+    return parseInt(new Date(epoch).getTime() + ((-5 * 60) * 60 * 1000));
   }
+
   timestamp_UTC2EST(timestamp){
     return new Date(timestamp).toLocaleString("en-US", {timeZone: "America/New_York"});
   }
@@ -62,6 +64,19 @@ export class MarketData {
         volume: bar.TotalVolume,
       }
     })
+  }
+
+  fixBar(bar){
+    return {
+      ...bar,
+      Close: parseFloat(bar.Close),
+      High: parseFloat(bar.High),
+      Low: parseFloat(bar.Low),
+      Open: parseFloat(bar.Open),
+      TotalVolume: parseInt(bar.TotalVolume),
+      Epoch: this.epoch_UTC2EST(bar.Epoch) / 1000,
+      TimeStamp: this.timestamp_UTC2EST(bar.TimeStamp),
+    }
   }
 
   /**
@@ -102,17 +117,8 @@ export class MarketData {
       const response = await axios.get(url, options);
       const bars = response.data.Bars;
 
-      const newBars = bars.map((obj)=>{
-        return {
-          ...obj,
-          Close: parseFloat(obj.Close),
-          High: parseFloat(obj.High),
-          Low: parseFloat(obj.Low),
-          Open: parseFloat(obj.Open),
-          TotalVolume: parseInt(obj.TotalVolume),
-          Epoch: this.epoch_UTC2EST(obj.Epoch) / 1000,
-          TimeStamp: this.timestamp_UTC2EST(obj.TimeStamp),
-        }
+      const newBars = bars.map((bar)=>{
+        return this.fixBar(bar);
       });
       return newBars;
     } catch (error) {
@@ -136,7 +142,6 @@ export class MarketData {
     (async () => {
       try {
         const arr = await this.getBars(symbol, params);
-        console.log(this.bars2Candles(arr));
         setter(this.bars2Candles(arr));
       } catch (error) {
         this.error(`setBars() ${error}`);
@@ -153,19 +158,98 @@ export class MarketData {
    * @param {string} [sessiontemplate] - United States (US) stock market session templates.
    * @returns {Promise<Stream>} - Promise resolving to the streamed marketdata bars.
    */
-  streamBars(symbol, interval = '1', unit = 'Daily', barsback = '1', sessiontemplate) {
-    const url = `${this.baseUrl}/stream/barcharts/${symbol}`;
-    const params = { interval, unit, barsback, sessiontemplate };
 
-    return axios.get(url, {
-      params,
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        Accept: 'application/vnd.tradestation.streams.v2+json',
-      },
-      responseType: 'stream',
-    });
-  }
+    async streamBars(setter, symbol, options){
+      try {
+        const { interval, unit, barsback, sessiontemplate } = options;
+
+        const params = new URLSearchParams({
+          interval: String(interval),
+          unit: String(unit),
+          barsback: String(barsback),
+          sessiontemplate: String(sessiontemplate),
+        }).toString();
+
+        const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
+        // console.log(url);
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
+          },
+        });
+        const reader = response.body.getReader();
+        // Process the streaming data
+        const processChunks = async () => {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              break;
+            }
+
+            try {
+              const jsonString = new TextDecoder().decode(value);
+              const jsonData = JSON.parse(jsonString.trim());
+              const newBar = this.fixBar(jsonData);
+              setter(newBar);
+            } catch (error) {
+              // console.error(error);
+            }
+          }
+        };
+
+        processChunks();
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+  // async streamBars(symbol, params) {
+  //   try {
+  //     const url = `${this.baseUrl}/stream/barcharts/${symbol}`;
+  //     const response = await fetch(url);
+  //     if (!response.ok || !response.body) {
+  //       throw response.statusText;
+  //     }
+
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+
+  //     while (true) {
+  //       const { value, done } = await reader.read();
+  //       if (done) {
+  //         break;
+  //       }
+
+  //       const decodedChunk = decoder.decode(value, { stream: true });
+  //       // setData(prevValue => `${prevValue}${decodedChunk}`);
+  //       console.log("stream", decodedChunk);
+  //     }
+  //   } catch (error) {
+  //     console.error(error)
+  //     // setLoading(false);
+  //     // Handle other errors
+  //   }
+  // }
+
+  // async streamBars(symbol, params) {
+  //   const interval = params?.interval || '1';
+  //   const unit = params?.unit || 'Daily';
+  //   const barsback = params?.barsback || '1';
+  //   const sessiontemplate = params?.sessiontemplate || 'Default';
+
+  //   const url = `${this.baseUrl}/stream/barcharts/${symbol}`;
+  //   const params = { interval, unit, barsback, sessiontemplate };
+
+  //   return axios.get(url, {
+  //     params,
+  //     headers: {
+  //       Authorization: `Bearer ${this.accessToken}`,
+  //       Accept: 'application/vnd.tradestation.streams.v2+json',
+  //     },
+  //     responseType: 'stream',
+  //   });
+  // }
 
   /**
  * Fetches all crypto Symbol Names information.

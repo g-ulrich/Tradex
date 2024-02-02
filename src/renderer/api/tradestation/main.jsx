@@ -28,6 +28,7 @@ export class TS {
     this.info(`TS Classes Refreshed (token: ${typeof accessToken === 'string' ? 'success': 'failure'})`);
     this.account = new Accounts(accessToken);
     this.marketData = new MarketData(accessToken);
+    console.log(accessToken.length, accessToken);
   }
 
   async refreshToken(){

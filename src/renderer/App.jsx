@@ -2,10 +2,9 @@ import './App.css';
 import React, {useState, useEffect} from 'react';
 import Routing from './pages/menu/Routing';
 import {TS} from './api/tradestation/main';
-window.ts = new TS();
-window.ts.refreshToken();
 // import audioFile from '../../assets/ding.wav';
-
+window.ts = new TS();
+    window.ts.refreshToken();
 export default function App() {
   const [token, setToken] = useState(null);
   const [intervalItem, setIntervalItem] = useState(null);

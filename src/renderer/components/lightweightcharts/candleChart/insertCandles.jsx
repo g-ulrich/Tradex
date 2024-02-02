@@ -14,13 +14,14 @@ import {
   seriesColors,
 } from "../options";
 
-export default function InsertCandles({candles, chartType, candleKey, visRange}){
-  const isProfiting = candles[visRange.from][candleKey] <= candles[visRange.to][candleKey];
-
+export default function InsertCandles({chartRef, candles, chartType, candleKey, visRange}){
+  // const isProfiting = candles[visRange.from][candleKey] <= candles[visRange.to][candleKey];
+  const isProfiting = false;
   return(
     <>
       {chartType === "line" ? (
           <LineSeries
+            ref={chartRef}
             data={candleToLineChart(candles, candleKey)}
             color={
                 isProfiting ? seriesColors.green.line : seriesColors.red.line
@@ -30,10 +31,11 @@ export default function InsertCandles({candles, chartType, candleKey, visRange})
           />
         ) : chartType === "area" ? (
           <AreaChartType candles={candles}
-          candleKey={candleKey}
-          visRange={visRange}/>
+            candleKey={candleKey}
+            visRange={visRange}/>
         ) : chartType === "bar" ? (
           <BarSeries
+            ref={chartRef}
             data={candles}
             reactive={true}
             thinBars={false}
@@ -41,7 +43,9 @@ export default function InsertCandles({candles, chartType, candleKey, visRange})
             upColor={chartColors.discord.softGreen}
           />
         ) : (
-          <CandlestickSeries data={candles}
+          <CandlestickSeries
+          ref={chartRef}
+          data={candles}
           reactive={true} />
         )}
     </>
