@@ -6,16 +6,18 @@ import {
   PriceScale,
 } from "lightweight-charts-react-wrapper";
 
-export default function InsertVolume({candles}){
+export default function InsertVolume({volumeRef, candles}){
   return(
     <>
       <HistogramSeries
+        reactive={true}
+        ref={volumeRef}
         data={candles.map((candle) => ({
           time: candle.time,
           value: candle.volume,
           color:
             candle.open > candle.close
-              ? chartColors.softRed
+              ? chartColors.softBlurple
               : chartColors.softGreen,
         }))}
         priceScaleId="overlay"

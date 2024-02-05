@@ -11,9 +11,10 @@ import {Chart, LineSeries, CandlestickSeries, HistogramSeries, PriceScale} from 
 import {
   generateRandomData,
   strHas,
-  titleBarheight } from '../../tools/util';
+  titleBarheight,
+  getDateNDaysAgo } from '../../tools/util';
 import { data as OHLCV } from '../../components/lightweightcharts/exampleData';
-import { csvToJsonArray } from '../../components/lightweightcharts/util';
+import { csvToJsonArray, getMarketOpenStatus } from '../../components/lightweightcharts/util';
 import FullChart from '../../components/lightweightcharts/fullChart/fullChart';
 import CandleChart from '../../components/lightweightcharts/candleChart/candleChart';
 
@@ -22,18 +23,18 @@ document.title = 'Tradex | Equities';
 
 export default function Equites() {
   const account = window.ts.account;// new Accounts();
-
   const [accId, setAccId] = useState(null);
   const [pauseBalArr, setPauseBalArr] = useState(null);
   const [accountBal, setAccountBal] = useState(null);
+  const [positions, setPositions] = useState(null);
   const [balArray, setBalArray] = useState([]);
   const [balInterval, setBalInterval] = useState(null);
   const [newbar, setNewBar] = useState(null);
-
+  const [orderHistory, setOrderHistory] = useState(null);
 
   useEffect(() => {
     setPauseBalArr(false);
-    account.setAccountID(setAccId, 'Cash');
+    account.setAccountID(setAccId, 'Cash'); // accountType is defined, so balance doesnt need to be
   }, []);
 
   const getplStr =() =>{
@@ -45,16 +46,27 @@ export default function Equites() {
     return '';
   }
 
-  useEffect(() => {
-    if (accId != null) {
-      account.setAccountBalances(setAccountBal, accId, 'Cash');
+  const friendlyMarketStatus = () => {
+    var marketStatus = getMarketOpenStatus();
+    return`${marketStatus}${marketStatus !== 'Closed' ? '-Market Open': ''}`;
+  }
 
+  useEffect(() => {
+    if (accId != null || accId !== undefined) {
+      account.setPostions(setPositions, accId, 'TQQQ')
+      account.setAccountBalances(setAccountBal, accId, 'Cash');
+      // account.setHistoricalOrdersBySymbol(setOrderHistory, 'TQQQ', accId, getDateNDaysAgo(1));
+      account.setOrdersBySymbol(setOrderHistory, "TQQQ", accId);
+
+      document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
       const interval = setInterval(() => {
-        account.setAccountBalances(setAccountBal, accId, 'Cash');
-      }, 1000*30);
+        account.setOrdersBySymbol(setOrderHistory, "TQQQ", accId);
+          account.setAccountBalances(setAccountBal, accId, 'Cash');
+          document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
+        }, 1000*30);
 
       return () => {
-          clearInterval(interval);
+        clearInterval(interval);
       }
     }
   }, [accId]);
@@ -73,17 +85,17 @@ export default function Equites() {
 <div className="flex gap-2">
   <div className="p-[4px] mb-2 grow rounded bg-discord-darkestGray  border border-discord-black">
     {
-       accountBal !== null ? (
+       accountBal !== null && positions !== null ? (
         <div className="flex gap-2">
-          <span className="grow text-lg text-gray-500 rounded text-center">
-            <button className={`mr-2 ${pauseBalArr ? 'bg-discord-blurple':'bg-discord-softRed'} rounded px-2`}
-              onClick={()=>{setPauseBalArr(!pauseBalArr)}}>
-                {pauseBalArr ? <IconPlay/> : <IconPause/>}
-            </button>
+           <span
+            className={`${getMarketOpenStatus() !== 'Closed' ? 'bg-discord-softBlurple' : 'bg-discord-darkerGray'} grow text-lg text-white rounded text-center`}>
+            {friendlyMarketStatus()}</span>
+          <span
+            className="grow text-lg text-gray-500 rounded text-center">
             #{accId}</span>
           <span className="grow text-lg text-gray-500 rounded text-center">Bal ${accountBal.Equity}</span>
           <span className="grow text-lg text-gray-500 rounded text-center">P/L {getplStr()}</span>
-          <span className="grow text-lg text-gray-500 rounded text-center">Pos 10</span>
+          <span className="grow text-lg text-gray-500 rounded text-center">Pos {positions?.length}</span>
         </div>
        ) : (<></>)
     }
@@ -105,13 +117,16 @@ export default function Equites() {
   }
     {/* <WatchlistTable/> */}
   </div>
+
       <CandleChart symbol={'TQQQ'}
-      options={{
+        options={{
         interval : '5',
         unit : 'Minute',
-        barsback : '100',
+        barsback : '1000',
         sessiontemplate : 'USEQ24Hour'
-      }}/>
+      }}
+      orderHistory={orderHistory}
+      />
 
       {/* <FullChart dataCallBack={dataCallBack}/> */}
 </div>

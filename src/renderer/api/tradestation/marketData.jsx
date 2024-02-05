@@ -27,7 +27,7 @@
  * - URL: https://api.tradestation.com
  */
 import axios from 'axios';
-import {currentESTTime} from '../../tools/util';
+import {currentESTTime, isSubStr} from '../../tools/util';
 
 
 export class MarketData {
@@ -35,6 +35,10 @@ export class MarketData {
     this.ts = window.ts;
     this.baseUrl = 'https://api.tradestation.com/v3/marketdata';
     this.accessToken = accessToken;
+    // stream
+    this.allStreams = [];
+    // predefined readers
+    this.streamBarsReader = null;
   }
 
   info(msg=""){
@@ -45,6 +49,32 @@ export class MarketData {
     console.error(`${currentESTTime()} MarketData [ERROR] - ${msg}`)
   }
 
+  killAllStreams(){
+    this.allStreams.forEach((reader)=>{
+      if (this[reader] !== null) {
+        // this[reader].cancel();
+        this[reader] = null;
+      }
+    });
+  }
+
+  async refreshToken(){
+    window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
+    window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
+      const accessToken = arg.ts?.access_token;
+      if (typeof accessToken === 'string'){
+        if (this.accessToken !== accessToken) {
+          this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+        }
+        this.accessToken = accessToken;
+      }
+    });
+  }
+
+  async delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   epoch_UTC2EST(epoch){
     return parseInt(new Date(epoch).getTime() + ((-5 * 60) * 60 * 1000));
   }
@@ -53,16 +83,20 @@ export class MarketData {
     return new Date(timestamp).toLocaleString("en-US", {timeZone: "America/New_York"});
   }
 
+  formatBar(bar){
+    return {
+      time: bar.Epoch,
+      open: bar.Open,
+      high: bar.High,
+      low: bar.Low,
+      close: bar.Close,
+      volume: bar.TotalVolume,
+    }
+  }
+
   bars2Candles(bars){
     return bars.map((bar)=>{
-      return {
-        time: bar.Epoch,
-        open: bar.Open,
-        high: bar.High,
-        low: bar.Low,
-        close: bar.Close,
-        volume: bar.TotalVolume,
-      }
+      return this.formatBar(bar)
     })
   }
 
@@ -91,6 +125,7 @@ export class MarketData {
    * @returns {Promise<object>} - Promise resolving to the fetched marketdata bars.
    */
   async getBars(symbol, params) {
+    this.refreshToken();
     const interval = params?.interval || '1';
     const unit = params?.unit || 'Daily';
     const barsback = params?.barsback || '1';
@@ -106,7 +141,7 @@ export class MarketData {
         barsback,
         // firstdate,
         // lastdate,
-        // sessiontemplate,
+        sessiontemplate,
       },
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -159,7 +194,23 @@ export class MarketData {
    * @returns {Promise<Stream>} - Promise resolving to the streamed marketdata bars.
    */
 
+    updateCandle(ref, bar){
+      ref.current?.update(this.formatBar(bar));
+    }
+
+    updateVolume(ref, bar, upColor, downColor){
+      ref.current?.update({
+        time: bar.Epoch,
+        value: bar.TotalVolume,
+        color:
+          bar.Open > bar.Close
+            ? downColor || '#7289DA'
+            : upColor || 'rgb(87,242,135)',
+      });
+    }
+
     async streamBars(setter, symbol, options){
+      this.refreshToken();
       try {
         const { interval, unit, barsback, sessiontemplate } = options;
 
@@ -177,79 +228,37 @@ export class MarketData {
             Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
           },
         });
-        const reader = response.body.getReader();
+        this.streamBarsReader = response.body.getReader();
+        this.allStreams.push(this.streamBarsReader);
         // Process the streaming data
         const processChunks = async () => {
           while (true) {
-            const { done, value } = await reader.read();
-
-            if (done) {
-              break;
-            }
-
             try {
+              const { done, value } = await this.streamBarsReader.read();
+              if (done || this.streamBarsReader === null) {
+                break;
+              }
               const jsonString = new TextDecoder().decode(value);
               const jsonData = JSON.parse(jsonString.trim());
               const newBar = this.fixBar(jsonData);
               setter(newBar);
             } catch (error) {
-              // console.error(error);
+              const msg = error.message.toLowerCase();
+              if (isSubStr(msg, 'network')) {
+                console.log("Network Error");
+                await this.delay(1000 * 5);
+              }else{
+                this.error(`streamBars() while ${error}`);
+              }
             }
           }
         };
 
         processChunks();
       } catch (error) {
-        console.error('Error:', error);
+        this.error(`streamBars() - ${error}`);
       }
     }
-
-  // async streamBars(symbol, params) {
-  //   try {
-  //     const url = `${this.baseUrl}/stream/barcharts/${symbol}`;
-  //     const response = await fetch(url);
-  //     if (!response.ok || !response.body) {
-  //       throw response.statusText;
-  //     }
-
-  //     const reader = response.body.getReader();
-  //     const decoder = new TextDecoder();
-
-  //     while (true) {
-  //       const { value, done } = await reader.read();
-  //       if (done) {
-  //         break;
-  //       }
-
-  //       const decodedChunk = decoder.decode(value, { stream: true });
-  //       // setData(prevValue => `${prevValue}${decodedChunk}`);
-  //       console.log("stream", decodedChunk);
-  //     }
-  //   } catch (error) {
-  //     console.error(error)
-  //     // setLoading(false);
-  //     // Handle other errors
-  //   }
-  // }
-
-  // async streamBars(symbol, params) {
-  //   const interval = params?.interval || '1';
-  //   const unit = params?.unit || 'Daily';
-  //   const barsback = params?.barsback || '1';
-  //   const sessiontemplate = params?.sessiontemplate || 'Default';
-
-  //   const url = `${this.baseUrl}/stream/barcharts/${symbol}`;
-  //   const params = { interval, unit, barsback, sessiontemplate };
-
-  //   return axios.get(url, {
-  //     params,
-  //     headers: {
-  //       Authorization: `Bearer ${this.accessToken}`,
-  //       Accept: 'application/vnd.tradestation.streams.v2+json',
-  //     },
-  //     responseType: 'stream',
-  //   });
-  // }
 
   /**
  * Fetches all crypto Symbol Names information.
@@ -277,19 +286,30 @@ async getCryptoSymbolNames() {
  * @returns {Promise<object>} - Promise resolving to the symbol details response.
  */
 async getSymbolDetails(symbols) {
+  this.refreshToken();
   const url = `${this.baseUrl}/symbols/${symbols}`;
-
-  try {
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
+  return axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${this.accessToken}`,
+    },
+  })
+    .then(response => response.data.Symbols)
+    .catch(error => {
+      this.error(`getSymbolDetails() - ${error}`);
+      throw error;
     });
+}
 
-    return response.data;
-  } catch (error) {
-    throw new Error(`Error fetching symbol details: ${error.message}`);
-  }
+setSymbolDetails(setter, symbols){
+  (async () => {
+    try {
+      const arr = await this.getSymbolDetails(symbols);
+      setter(arr);
+      // console.log(arr);
+    } catch (error) {
+      this.error(`setSymbolDetails() ${error}`);
+    }
+  })();
 }
 
 /**
@@ -470,6 +490,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
    * @returns {Promise<Quotes>} - Promise resolving to the snapshot of the latest Quote.
    */
   async getQuoteSnapshots(symbols) {
+    this.refreshToken();
     const url = `${this.baseUrl}/quotes/${symbols}`;
     return axios.get(url, {
       headers: {
@@ -481,6 +502,17 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
       console.error('Error fetching account balances:', error);
       throw error;
     });
+  }
+
+  setQuoteSnapshots(setter, symbols){
+    (async () => {
+      try {
+        const arr = await this.getQuoteSnapshots(symbols);
+        setter(arr);
+      } catch (error) {
+        this.error(`setQuoteSnapshots() ${error}`);
+      }
+    })();
   }
 
   /**

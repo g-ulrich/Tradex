@@ -4,7 +4,7 @@ import Routing from './pages/menu/Routing';
 import {TS} from './api/tradestation/main';
 // import audioFile from '../../assets/ding.wav';
 window.ts = new TS();
-    window.ts.refreshToken();
+
 export default function App() {
   const [token, setToken] = useState(null);
   const [intervalItem, setIntervalItem] = useState(null);

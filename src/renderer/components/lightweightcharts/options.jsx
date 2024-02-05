@@ -4,6 +4,9 @@ export const seriesColors = {
   red: {line: 'rgba(237,66,69, 1)',
   bottom: 'rgba(237,66,69, 0.04)',
   top: 'rgba(237,66,69, 0.56)'},
+  blurple: {line: 'rgba(114, 137, 218, 1)',
+  bottom: 'rgba(114, 137, 218, 0.04)',
+  top: 'rgba(114, 137, 218, 0.56)'},
   green: {line: 'rgba(87,242,135, 1)',
   bottom: 'rgba(87,242,135, 0.04)',
   top: 'rgba(87,242,135, 0.56)'}
@@ -15,6 +18,7 @@ export const chartColors = {
     softWhite: 'rgba(100,100,100, 0.4)',
     softRed: 'rgba(200, 97, 100, .5)',
     softGreen: 'rgba(39, 157, 130, .5)',
+    softBlurple: 'rgba(114, 137, 218, .5)',
     discord: {
       red: '#ED4245',
       softRed: 'rgba(237,66,69,.5)',

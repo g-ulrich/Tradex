@@ -356,3 +356,23 @@ export const findObjectById = (jsonArray, key, value) => {
   }
   return null; // return null if no match is found
 }
+
+export const getDateNDaysAgo = (n) => {
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() - n);
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+  const day = String(currentDate.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
+  return formattedDate;
+}
+
+
+export const convertDatetimeToEpoch = (datetimeString) => {
+  // "2024-01-31T16:04:18Z"
+  const datetime = new Date(datetimeString);
+  const estDatetime = datetime.toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const epochTime = new Date(estDatetime).getTime();
+
+  return epochTime / 1000;
+}

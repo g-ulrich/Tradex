@@ -44,11 +44,25 @@ export class Accounts {
     console.error(`${currentESTTime()} Accounts [ERROR] - ${msg}`)
   }
 
+  async refreshToken(){
+    window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
+    window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
+      const accessToken = arg.ts?.access_token;
+      if (typeof accessToken === 'string'){
+        if (this.accessToken !== accessToken) {
+          this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+        }
+        this.accessToken = accessToken;
+      }
+    });
+  }
+
   /**
    * Fetches the list of Brokerage Accounts available for the current user.
    * @returns {Promise<Array>} - Promise resolving to the list of brokerage accounts.
    */
   async getAccounts() {
+    this.refreshToken();
     const url = `${this.baseUrl}/accounts`;
     const response = await axios.get(url, {
       headers: {
@@ -103,6 +117,7 @@ export class Accounts {
    * @returns {Promise<Array>} - Promise resolving to the list of account balances.
    */
   async getAccountBalances(accountIds) {
+    this.refreshToken();
     const url = `${this.baseUrl}/accounts/${accountIds}/balances`;
     return axios.get(url, {
       headers: {
@@ -121,11 +136,12 @@ setAccountBalances(setter, accountIds, type='Cash'){
       try {
         const arr = await this.getAccountBalances(accountIds);
         if (type === '') {
-          setter(arr);
+          setter(arr[0]);
         } else {
           arr.forEach((obj, index)=>{
             if (obj.AccountType === type) {
               setter(obj);
+              // break;
             }
           });
         }
@@ -163,7 +179,8 @@ setAccountBalances(setter, accountIds, type='Cash'){
    * @param {string} nextToken - An encrypted token with a lifetime of 1 hour for use with paginated order responses (optional).
    * @returns {Promise<Object>} - Promise resolving to the historical orders.
    */
- getHistoricalOrders(accounts, since, pageSize = 600, nextToken = null) {
+ getHistoricalOrders(accounts, since, pageSize, nextToken) {
+  this.refreshToken();
   const url = `${this.baseUrl}/accounts/${accounts}/historicalorders`;
 
   return axios.get(url, {
@@ -176,10 +193,41 @@ setAccountBalances(setter, accountIds, type='Cash'){
       nextToken,
     },
   })
-    .then(response => response.data)
+    .then(response => response.data.Orders)
     .catch(error => {
       this.error(`getHistoricalOrders - ${error}`);
     });
+}
+
+setHistoricalOrders(setter, accounts, since, pageSize, nextToken){
+  (async () => {
+    try {
+      const arr = await this.getHistoricalOrders(accounts, since, pageSize, nextToken);
+      console.log("setHistoricalOrders", typeof arr, arr);
+      setter(arr);
+    } catch (error) {
+      this.error(`setHistoricalOrders() ${error}`);
+    }
+  })();
+}
+
+setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken){
+  (async () => {
+    try {
+      const arr = await this.getHistoricalOrders(accounts, since, pageSize, nextToken);
+      // console.log("setHistoricalOrdersBySymbol", typeof arr, arr);
+      var filteredOrders = [];
+      arr.forEach((obj)=>{
+        const legSymbol = obj.Legs[0]?.Symbol;
+        if (symbol === legSymbol){
+          filteredOrders.push(obj);
+        }
+      });
+      setter(arr);
+    } catch (error) {
+      this.error(`setHistoricalOrdersBySymbol() ${error}`);
+    }
+  })();
 }
 
 /**
@@ -213,15 +261,13 @@ setAccountBalances(setter, accountIds, type='Cash'){
    * @param {string} [nextToken] - An encrypted token with a lifetime of 1 hour for use with paginated order responses.
    * @returns {Promise<Object>} - Promise resolving to the list of orders.
    */
-  getOrders(accounts, pageSize = 600, nextToken) {
-          const id_token = this.ts.getTokenId();
+  getOrders(accounts, pageSize, nextToken) {
+    this.refreshToken();
     const url = `${this.baseUrl}/accounts/${accounts}/orders`;
-
     const params = {
       pageSize,
       nextToken,
     };
-
     return axios.get(url, {
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -233,6 +279,24 @@ setAccountBalances(setter, accountIds, type='Cash'){
         console.error('Error fetching orders:', error);
         throw error;
       });
+  }
+
+  setOrdersBySymbol(setter, symbol, accounts, pageSize, nextToken){
+    (async () => {
+      try {
+        const arr = await this.getOrders(accounts, pageSize, nextToken);
+        var filteredOrders = [];
+        arr.forEach((obj)=>{
+          const legSymbol = obj.Legs[0]?.Symbol;
+          if (symbol === legSymbol){
+            filteredOrders.push(obj);
+          }
+        });
+        setter(arr);
+      } catch (error) {
+        this.error(`setOrdersBySymbol() ${error}`);
+      }
+    })();
   }
 
  /**
@@ -265,7 +329,7 @@ setAccountBalances(setter, accountIds, type='Cash'){
    * @returns {Promise<Array>} - Promise resolving to the list of positions.
    */
   getPositions(accounts, symbol) {
-          const id_token = this.ts.getTokenId();
+    this.refreshToken();
     const url = `${this.baseUrl}/accounts/${accounts}/positions`;
 
     // Optional query parameter for symbol
@@ -282,6 +346,17 @@ setAccountBalances(setter, accountIds, type='Cash'){
         console.error('Error fetching positions:', error);
         throw error;
       });
+  }
+
+  setPostions(setter, accounts, symbol){
+    (async () => {
+      try {
+        const arr = await this.getPositions(accounts, symbol);
+        setter(arr);
+      } catch (error) {
+        this.error(`setPostions() ${error}`);
+      }
+    })();
   }
 
    /**

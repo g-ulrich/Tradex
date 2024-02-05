@@ -24,20 +24,24 @@ export class TS {
     console.error(`${currentESTTime()} TS [ERROR] - ${msg}`)
   }
 
-  initializeClasses(accessToken){
-    this.info(`TS Classes Refreshed (token: ${typeof accessToken === 'string' ? 'success': 'failure'})`);
-    this.account = new Accounts(accessToken);
-    this.marketData = new MarketData(accessToken);
-    console.log(accessToken.length, accessToken);
+  refreshClasses(accessToken){
+    this.info(`TS Classes (token: ${typeof accessToken === 'string' ? 'success': 'failure'}, length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+    if (this.account === null) {
+      this.account = new Accounts(accessToken);
+      this.marketData = new MarketData(accessToken);
+    } else {
+      this.account.accessToken = accessToken;
+      this.marketData.accessToken = accessToken;
+    }
   }
 
   async refreshToken(){
     window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
     window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
       // const objString = JSON.stringify(arg.ts);
-      this.token = arg.ts;
-      this.initializeClasses(this.token?.access_token);
-      // Cookies.set('TSTokenObj', objString);
+       // Cookies.set('TSTokenObj', objString);
+       this.token = arg.ts;
+      this.refreshClasses(this.token?.access_token)
     });
   }
 

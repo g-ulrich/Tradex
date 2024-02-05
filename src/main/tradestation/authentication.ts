@@ -42,6 +42,8 @@ export class TSAuthentication {
   secretKey: string | undefined;
   tradingScope: string;
 
+  // interval: any;
+
   constructor(){
     this.lastRefresh = 0;
     // endpoint and TS variables
@@ -249,11 +251,11 @@ export class TSAuthentication {
         } else {
             // if timedelta for the timestamp is > than minutes its expired.
             // Called everytime its needed from renderer.
-            const minutes = 15;
-            return (Date.now() - token_ts) / 1000 / 60 > minutes ? true : false;
+            const minutes = 19;
+            return (Date.now() - token_ts) / 1000 / 60 >= minutes ? true : false;
         }
     } else {
-        return false;
+      return false;
     }
   }
 
