@@ -5,17 +5,17 @@ import Pagination from './pagination'; // Adjust the path based on your project 
 import { IconRefresh, IconTriangleDown, IconTriangleUp } from '../../api/Icons';
 import {findObjectByVal} from '../../tools/util';
 
- const columns = [
-    { key: 'Symbol', label: 'Symbol', prefix: '' },
-    { key: 'Last', label: 'Price', prefix: '$' },
-    { key: 'NetChange', label: 'DChange', prefix: '$' },
-    { key: 'NetChangePct', label: 'PChange', prefix: '%' },
-    { key: 'Volume', label: 'Volume', prefix: '' },
-    { key: 'Ask', label: 'Ask', prefix: '$' },
-    { key: 'AskSize', label: 'AskSize', prefix: '' },
-    { key: 'Bid', label: 'Bid', prefix: '$' },
-    { key: 'BidSize', label: 'BidSize', prefix: '' },
-  ];
+//  const columns = [
+//     { key: 'Symbol', label: 'Symbol', prefix: '' },
+//     { key: 'Last', label: 'Price', prefix: '$' },
+//     { key: 'NetChange', label: 'DChange', prefix: '$' },
+//     { key: 'NetChangePct', label: 'PChange', prefix: '%' },
+//     { key: 'Volume', label: 'Volume', prefix: '' },
+//     { key: 'Ask', label: 'Ask', prefix: '$' },
+//     { key: 'AskSize', label: 'AskSize', prefix: '' },
+//     { key: 'Bid', label: 'Bid', prefix: '$' },
+//     { key: 'BidSize', label: 'BidSize', prefix: '' },
+//   ];
 
 
 const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryKey }) => {
@@ -74,14 +74,15 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
               </div>
               <input
                 type="search"
-                className="block text-discord-white outline-none w-full py-[4px] px-2 ps-10 text-sm border border-none rounded bg-discord-darkerGray"
+                className="block text-discord-white outline-none w-full py-[4px] px-2 input-pl text-sm border border-none rounded bg-discord-darkerGray"
                 placeholder={`${primaryKey} Search`}
+
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
           </div>
         </div>
-        <div class="overflow-x-auto max-h-[700px] overflow-y-auto bg-discord-darkestGray">
+        <div className="overflow-x-auto max-h-[700px] overflow-y-auto bg-discord-darkestGray">
         <table className="w-full divide-y divide-discord-darkerGray">
           <thead className="bg-discord-darkestGray">
             <tr>

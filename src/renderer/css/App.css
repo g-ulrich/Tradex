@@ -1,11 +1,21 @@
  @tailwind base;
  @tailwind components;
  @tailwind utilities;
+ @import './bootstrap-grid.min.css';
 
  body {
     font-size: 14px;
  }
 
+ .col-menu {
+  flex:0 0 auto;
+  width:4.33333333%;
+ }
+
+
+ .input-pl {
+  padding-inline-start: 2.5rem !important;
+ }
 
  ::-webkit-scrollbar {
    width: 5px;

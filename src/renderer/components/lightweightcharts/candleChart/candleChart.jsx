@@ -70,14 +70,6 @@ export default function CandleChart({ symbol, options, orderHistory }) {
   const [chartType, setChartType] = useState("candle"); // bar, candle, line, area
   const chartHeight = 600;
 
-  const getDataFromSeriesRef = (ref) => {
-    if (ref?.current) {
-      return ref.current?._internal__series._private__data._private__items;
-    } else {
-      return null;
-    }
-  }
-
   useEffect(() => {
     marketData.setSymbolDetails(setSymbolDetails, symbol);
     marketData.setCandles(setCandles, symbol, options);
@@ -102,15 +94,13 @@ export default function CandleChart({ symbol, options, orderHistory }) {
     }
   }, [candles]);
 
-
   useEffect(() => {
     if (newCandle !== null && candles !== null && seriesRef?.current){
       if (typeof newCandle?.Heartbeat === 'undefined') {
         const bar = newCandle;
         try {
             marketData.updateCandle(seriesRef, newCandle);
-            marketData.updateVolume(volumeRef, newCandle, chartColors.softGreen, chartColors.softBlurple);
-            // console.log(getDataFromSeriesRef(seriesRef));
+            // marketData.updateVolume(volumeRef, newCandle, chartColors.softGreen, chartColors.softBlurple);
             setData(prevData =>
               prevData[prevData.length-1].time !== marketData.formatBar(newCandle).time ?
               [...prevData, marketData.formatBar(newCandle)] : [...prevData]);
@@ -123,37 +113,28 @@ export default function CandleChart({ symbol, options, orderHistory }) {
     }
   }, [newCandle]);
 
-
-useEffect(() => {
+  useEffect(() => {
     if (data !== null) {
       if (data.length > candles.length) {
-        console.log(data.length, candles.length);
-        setCandles(prevCandles=>data);
+        try {
+          setCandles(prevCandles=>data);
+        } catch (error) {
+          console.error(`Setting new candles - ${error}`);
+        }
       }
     }
   }, [data]);
 
   const crosshairAction = (e) => {
     if (primaryChartRef.current) {
-      // const range = getVisRange(candles, primaryChartRef);
-      const currentIndex = candles.findIndex(obj => obj.time === e.time || obj.time === candles[candles.length-1].time);
-      setCrosshairIndex(currentIndex);
+      try {
+        const currentIndex = candles.findIndex(obj => obj.time === e.time || obj.time === candles[candles.length-1].time);
+        setCrosshairIndex(currentIndex);
+      } catch (error) {
+        console.error(`Setting Crosshair Index - ${error}`);
+      }
     }
   };
-
-
-  const chartTypeCallback = (txt) => {
-    setChartType(txt);
-  }
-
-  const symbolName = () => {
-    const data = symbolDetails[0];
-    if (data?.Exchange) {
-      return `${symbol}:${data?.Exchange}`;
-    }else{
-      return symbol
-    }
-  }
 
   return (
     <>
@@ -161,8 +142,11 @@ useEffect(() => {
         <div className={`w-full h-[${chartHeight}px] bg-discord-darkestGray rounded py-2`}>
         {candles !== null && containerRef.current && symbolDetails !== null ? (
           <>
-            <InsertChartHeader chartTypeCallback={chartTypeCallback} chartType={chartType}/>
-            <ChartLegend symbolName={symbolName()} candles={data} chartref={primaryChartRef} moveindex={crosshairIndex}/>
+            <InsertChartHeader chartTypeCallback={setChartType} chartType={chartType}/>
+            <ChartLegend
+              symbolName={`${symbol}${symbolDetails[0]?.Exchange ? `:${symbolDetails[0]?.Exchange}` : ''}`}
+              candles={data} chartref={primaryChartRef}
+              moveindex={crosshairIndex}/>
             <Chart
               ref={primaryChartRef}
               onCrosshairMove={crosshairAction}

@@ -122,17 +122,22 @@ export const formatVolume = (number) => {
 
 
 export const getVisRange = (candles, primaryChartRef) => {
-  if (primaryChartRef.current !== null) {
-    const chartRange = primaryChartRef.current.timeScale().getVisibleRange();
-    const fromIndex = candles.findIndex(
-      (item) => item["time"] === chartRange.from
-    );
-    const toIndex = candles.findIndex(
-      (item) => item["time"] === chartRange.to
-    );
-    return { from: fromIndex, to: toIndex };
+  try {
+    if (primaryChartRef.current !== null) {
+      const chartRange = primaryChartRef.current.timeScale().getVisibleRange();
+      const fromIndex = candles.findIndex(
+        (item) => item["time"] === chartRange.from
+      );
+      const toIndex = candles.findIndex(
+        (item) => item["time"] === chartRange.to
+      );
+      return { from: fromIndex, to: toIndex };
+    }
+  } catch (error){
+    console.error(error);
   }
-  return { from: 0, to: 1 };
+return { from: 0, to: 1 };
+
 };
 
 export const getVisRangeTimestamps = (candles, primaryChartRef) => {

@@ -277,7 +277,6 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
       .then(response => response.data.Orders)
       .catch(error => {
         console.error('Error fetching orders:', error);
-        throw error;
       });
   }
 
@@ -292,7 +291,7 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
             filteredOrders.push(obj);
           }
         });
-        setter(arr);
+        setter(filteredOrders);
       } catch (error) {
         this.error(`setOrdersBySymbol() ${error}`);
       }

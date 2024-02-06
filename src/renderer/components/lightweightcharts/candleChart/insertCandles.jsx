@@ -80,7 +80,6 @@ export default function InsertCandles({chartRef, candles, orderHistory, chartTyp
                 isProfiting ? seriesColors.green.line : seriesColors.blurple.line
             }
             lineWidth={2}
-            reactive={true}
             markers={markers}
           />
         ) : chartType === "area" ? (

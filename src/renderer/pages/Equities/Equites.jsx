@@ -7,63 +7,76 @@ import {
   IconPlay
 } from '../../api/Icons';
 import {Chart, LineSeries, CandlestickSeries, HistogramSeries, PriceScale} from "lightweight-charts-react-wrapper";
-
 import {
   generateRandomData,
   strHas,
   titleBarheight,
-  getDateNDaysAgo } from '../../tools/util';
+  getDateNDaysAgo,
+  currentESTTime } from '../../tools/util';
 import { data as OHLCV } from '../../components/lightweightcharts/exampleData';
 import { csvToJsonArray, getMarketOpenStatus } from '../../components/lightweightcharts/util';
 import FullChart from '../../components/lightweightcharts/fullChart/fullChart';
 import CandleChart from '../../components/lightweightcharts/candleChart/candleChart';
 
 import SimpleAccountBalanceChart from './simpleAccountBalanceChart';
+import WatchlistTable from '../../components/tables/watchlistTable';
 document.title = 'Tradex | Equities';
+
+const getplStr = (accountBal) =>{
+  if (accountBal !== null) {
+    const p$ = accountBal.TodaysProfitLoss;
+    const b$ = accountBal.Equity;
+    return `$${parseFloat(p$).toFixed(3)} ${p$ >= 0 ? '▲' : '▼'} ${(p$/b$*100).toFixed(3)}%`;
+  }
+  return '';
+}
+
+const friendlyMarketStatus = () => {
+  var marketStatus = getMarketOpenStatus();
+  return`${marketStatus}${marketStatus !== 'Closed' ? '-Market': ''}`;
+}
 
 export default function Equites() {
   const account = window.ts.account;// new Accounts();
   const [accId, setAccId] = useState(null);
+  const [acc, setAcc] = useState(null);
   const [pauseBalArr, setPauseBalArr] = useState(null);
   const [accountBal, setAccountBal] = useState(null);
+  const [prevPositions, setPrevPositions] = useState(null);
   const [positions, setPositions] = useState(null);
   const [balArray, setBalArray] = useState([]);
   const [balInterval, setBalInterval] = useState(null);
   const [newbar, setNewBar] = useState(null);
   const [orderHistory, setOrderHistory] = useState(null);
+  const [symbol, setSymbol] = useState("QQQ");
 
   useEffect(() => {
     setPauseBalArr(false);
-    account.setAccountID(setAccId, 'Cash'); // accountType is defined, so balance doesnt need to be
+    account.setAccounts(setAcc, 'Cash');
+    // account.setAccountID(setAccId, 'Cash'); // accountType is defined, so balance doesnt need to be
   }, []);
 
-  const getplStr =() =>{
-    if (accountBal !== null) {
-      const p$ = accountBal.TodaysProfitLoss;
-      const b$ = accountBal.Equity;
-      return `$${p$} ${p$ >= 0 ? '▲' : '▼'} ${(p$/b$*100).toFixed(3)}%`;
+  useEffect(() => {
+    if (acc !== null) {
+      setAccId(acc.AccountID);
     }
-    return '';
-  }
-
-  const friendlyMarketStatus = () => {
-    var marketStatus = getMarketOpenStatus();
-    return`${marketStatus}${marketStatus !== 'Closed' ? '-Market Open': ''}`;
-  }
+  }, [acc]);
 
   useEffect(() => {
     if (accId != null || accId !== undefined) {
-      account.setPostions(setPositions, accId, 'TQQQ')
+      account.setPostions(setPositions, accId);
       account.setAccountBalances(setAccountBal, accId, 'Cash');
-      // account.setHistoricalOrdersBySymbol(setOrderHistory, 'TQQQ', accId, getDateNDaysAgo(1));
-      account.setOrdersBySymbol(setOrderHistory, "TQQQ", accId);
+      account.setOrdersBySymbol(setOrderHistory, symbol, accId);
 
       document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
       const interval = setInterval(() => {
-        account.setOrdersBySymbol(setOrderHistory, "TQQQ", accId);
+        if (accId != null || accId !== undefined) {
+          account.setPostions(setPositions, accId);
+          account.setOrdersBySymbol(setOrderHistory, symbol, accId);
           account.setAccountBalances(setAccountBal, accId, 'Cash');
-          document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
-        }, 1000*30);
+        }
+        document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
+      }, 1000*30);
 
       return () => {
         clearInterval(interval);
@@ -73,70 +86,128 @@ export default function Equites() {
 
   useEffect(() => {
     // check accountBal if the array is populated
+    if (positions !== null) {
+      // if (positions.lenth > 0) {
+        setPrevPositions(positions);
+      // }
+    }
+  }, [positions]);
+
+  useEffect(() => {
+    // check accountBal if the array is populated
     if (accountBal !== null) {
       // create the balance for the simpleChart
-      const newbal = {time: Math.floor(new Date()), value: parseFloat(accountBal.Equity)};
+      const newbal = {time: Math.floor(new Date()),
+                      value: parseFloat(accountBal.Equity)};
       setBalArray(prevData => [...prevData.slice(-100), newbal]);
     }
   }, [accountBal]);
 
   return (
     <>
-<div className="flex gap-2">
-  <div className="p-[4px] mb-2 grow rounded bg-discord-darkestGray  border border-discord-black">
-    {
-       accountBal !== null && positions !== null ? (
-        <div className="flex gap-2">
-           <span
-            className={`${getMarketOpenStatus() !== 'Closed' ? 'bg-discord-softBlurple' : 'bg-discord-darkerGray'} grow text-lg text-white rounded text-center`}>
-            {friendlyMarketStatus()}</span>
-          <span
-            className="grow text-lg text-gray-500 rounded text-center">
-            #{accId}</span>
-          <span className="grow text-lg text-gray-500 rounded text-center">Bal ${accountBal.Equity}</span>
-          <span className="grow text-lg text-gray-500 rounded text-center">P/L {getplStr()}</span>
-          <span className="grow text-lg text-gray-500 rounded text-center">Pos {positions?.length}</span>
-        </div>
-       ) : (<></>)
-    }
-  </div>
-</div>
-<div className="mb-2 flex gap-2">
-  <div className=" flex min-w-[350px] max-w-[400px] sm:w-[50%] rounded ">
-  {
-    accountBal !== null ? (
-      <SimpleAccountBalanceChart
-        accountClass={account}
-        accountId={accId}
-        pause={pauseBalArr}
-        setPause={setPauseBalArr}
-        accountBal={accountBal}
-        seriesData={balArray}
-        />
-      ) : (<></>)
-  }
-    {/* <WatchlistTable/> */}
-  </div>
+      <div className="container-fluid">
+          <div className="row">
+            {/* Header */}
+            <div className="col-12 mb-2">
+              { acc !== null && accountBal !== null ? (
+                  <div className={`row items-center py-[4px] bg-discord-darkestGray rounded text-sm ${parseFloat(accountBal.TodaysProfitLoss) >= 0 ? 'text-discord-green' : 'text-discord-blurple'}`}>
+                      <div className="col px-[4px]">
+                        <div className="bg-discord-softBlurple text-white rounded  py-[0px] text-center text-lg">
+                          {getMarketOpenStatus() !== 'Closed' ? `${getMarketOpenStatus()}-` : ''}Market
+                          {getMarketOpenStatus() !== 'Closed' ? ' Open' : ' ' + getMarketOpenStatus()}
+                        </div>
+                      </div>
+                      <div className="col text-center">
+                        {acc.AccountType} ID #{acc.AccountID}
+                      </div>
+                      <div className="col text-center">
+                        Equity <b>${parseFloat(accountBal.Equity).toFixed(2)}</b>
+                      </div>
+                      <div className="col text-center">
+                        PL <b>{getplStr(accountBal)}</b>
+                      </div>
+                      <div className="col text-center">
+                        Cash <b>${parseFloat(accountBal.CashBalance).toFixed(2)}</b>
+                      </div>
+                      <div className="col text-center">
+                        Market <b>${parseFloat(accountBal.MarketValue).toFixed(2)}</b>
+                      </div>
+                    </div>
+                ) : (<></>)
+              }
+            </div>
+            {/* Chart */}
+            <div class="col-sm-8 col-md-9 col-xl-10 pr-2 pl-0">
+              <CandleChart
+                symbol={symbol}
+                orderHistory={orderHistory}
+                options={{
+                interval : '5',
+                unit : 'Minute',
+                barsback : '1000',
+                sessiontemplate : 'USEQ24Hour'
+                }}/>
+            </div>
+            {/* Positions */}
+            <div class="col-sm-4 col-md-3 col-xl-2 p-0">
+              <div className=" p-2 rounded bg-discord-darkestGray text-gray-500">
+                  {
 
-      <CandleChart symbol={'TQQQ'}
-        options={{
-        interval : '5',
-        unit : 'Minute',
-        barsback : '1000',
-        sessiontemplate : 'USEQ24Hour'
-      }}
-      orderHistory={orderHistory}
-      />
+                    true ? (
+                      <>
+                        <div className="text-center">
+                          Data
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-center">Loading Data...</div>
+                      </>
+                    )
+                  }
+              </div>
 
-      {/* <FullChart dataCallBack={dataCallBack}/> */}
-</div>
+            </div>
 
-{/* <div className="flex gap-2">
-  <div className="p-[4px] grow rounded bg-discord-darkestGray h-[400px]">
+            <div className="col-6 p-0 mt-2">
+            {prevPositions ? (
+<WatchlistTable
+                          title={'Positions'}
+                          data={positions}
+                          prevData={prevPositions}
+                          columns={[
+                            { key: 'Symbol', label: 'Symbol', prefix: '' },
+                            { key: 'TodaysProfitLoss', label: '$PL', prefix: '$' },
+                            { key: 'AveragePrice', label: 'Avg. Price', prefix: '' },
+                            { key: 'Last', label: 'Price', prefix: '$' },
+                            { key: 'MarketValue', label: 'Value', prefix: '$' }
+                          ]}
+                          primaryKey={'Symbol'}
+                          />
+            ):(<>Loading...</>)
+            }
 
-  </div>
-</div> */}
-</>
+            </div>
+            <div className="col-6">
+
+            </div>
+          </div>
+      </div>
+
+ {/* {
+        accountBal !== null ? (
+          <SimpleAccountBalanceChart
+            accountClass={account}
+            accountId={accId}
+            pause={pauseBalArr}
+            setPause={setPauseBalArr}
+            accountBal={accountBal}
+            seriesData={balArray}
+            />
+          ) : (<></>)
+        } */}
+
+    </>
   );
 }
 

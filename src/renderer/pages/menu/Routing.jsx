@@ -17,23 +17,28 @@ function Routing() {
       };
 
     return (
-      <div className="flex">
-        <div className={`flex-none bg-discord-black border-[1px] border-discord-darkestGray max-h-screen `} >
-          <div className="grid grid-cols-1">
-            {links.map((obj, i) => (
-                <div key={`${obj.title}_routing`} className="block text-center my-[4px]">
-                    <span onClick={() => {handlePageChange(obj.title)}}
-                    title={obj.title} className={`${obj.extraClasses} px-[10px] py-[4px] text-lg hover:bg-discord-blurple hover:rounded cursor-pointer`}>
-                    {obj.icon}</span>
+      <>
+        <div className="container-fluid">
+            <div className="row">
+                <div className="col-menu m-0 p-0 bg-discord-black" style={{'height': `calc(100vh - ${titleBarheight()}px)`}}>
+                  {links.map((obj, i) => (
+                      <div onClick={() => {handlePageChange(obj.title)}}
+                        key={`${obj.title}_routing`}
+                        className="block text-center my-[4px] hover:bg-discord-blurple cursor-pointer">
+                          <span title={obj.title}
+                          className={`${obj.extraClasses} px-[5px] py-[4px] text-lg `}>
+                          {obj.icon}</span>
+                      </div>
+                  ))}
+                  {/* <SettingsLinkDialog /> */}
+
                 </div>
-            ))}
-            <SettingsLinkDialog />
-          </div>
+                <div className="col scrollable overflow-y-auto p-2" style={{'height': `calc(100vh - ${titleBarheight()}px)`}}>
+                    <MainView selectedPage={page}/>
+                </div>
+            </div>
         </div>
-        <div className={`grow scrollable overflow-y-auto p-2`} style={{'height': `calc(100vh - ${titleBarheight()}px)`}}>
-          <MainView selectedPage={page}/>
-        </div>
-      </div>
+      </>
     );
 }
 

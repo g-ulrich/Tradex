@@ -1,4 +1,4 @@
-import './App.css';
+import './css/App.css';
 import React, {useState, useEffect} from 'react';
 import Routing from './pages/menu/Routing';
 import {TS} from './api/tradestation/main';

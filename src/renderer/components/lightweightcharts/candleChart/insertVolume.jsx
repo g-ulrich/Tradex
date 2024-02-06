@@ -9,6 +9,7 @@ import {
 export default function InsertVolume({volumeRef, candles}){
   return(
     <>
+
       <HistogramSeries
         reactive={true}
         ref={volumeRef}

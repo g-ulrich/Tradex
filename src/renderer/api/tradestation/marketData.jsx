@@ -247,7 +247,9 @@ export class MarketData {
               if (isSubStr(msg, 'network')) {
                 console.log("Network Error");
                 await this.delay(1000 * 5);
-              }else{
+              }else if (isSubStr(msg, 'whitespace')){
+                console.log("None-whitespace Error");
+              } else {
                 this.error(`streamBars() while ${error}`);
               }
             }
