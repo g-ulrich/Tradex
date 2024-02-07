@@ -33,7 +33,12 @@ import {
   getTimestampNMinsAgo,
   getUtcTimestampNMinutesBack,
 } from "../util";
-import { isStringInArray, isSubStr, getAllFunctions, getRandomRGB, findObjectById } from "../../../tools/util";
+import { isStringInArray,
+  isSubStr,
+  getAllFunctions,
+  getRandomRGB,
+  findObjectById,
+  inArray } from "../../../tools/util";
 import {
   IconFlask,
   IconFlaskVial,
@@ -52,28 +57,32 @@ import ChartLegend from './legend';
 import InsertChartHeader from './insertChartHeader';
 import axios from 'axios';
 
-export default function CandleChart({ symbol, options, orderHistory }) {
+export default function CandleChart({ preloadSymbol, accountId, options }) {
   const marketData = window.ts.marketData;
+  const account = window.ts.account;
   const containerRef = useRef(null);
-  const seriesRef = useRef(null);
+
+  // Chart Component
   const volumeRef = useRef(null);
   const primaryChartRef = useRef(null);
+  const chartHeight = 600;
   const [chartWidth, setChartWidth] = useState(800);
+  const [chartType, setChartType] = useState("candle"); // bar, candle, line, area
+  const seriesRef = useRef(null); // tied to specfic series type
+  const [crosshairIndex, setCrosshairIndex] = useState(0);
+  // SeriesData
   const [data, setData] = useState(null);
   const [candles, setCandles] = useState(null);
   const [newCandle, setNewCandle] = useState(null);
+  // Symbol
+  const [symbol, setSymbol] = useState(preloadSymbol);
+  const [searchInput, setSearchInput] = useState(preloadSymbol);
   const [symbolDetails, setSymbolDetails] = useState(null);
-  const [showStudy, setShowStudy] = useState(false);
-  const [crosshairIndex, setCrosshairIndex] = useState(0);
-  const [chartStudies, setChartStudies] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(symbol);
-  const [chartType, setChartType] = useState("candle"); // bar, candle, line, area
-  const chartHeight = 600;
+  // for daily markers
+  const [orderHistory, setOrderHistory] = useState([]);
+  const [orderHistoryInterval, setOrderHistoryInterval] = useState(null);
 
   useEffect(() => {
-    marketData.setSymbolDetails(setSymbolDetails, symbol);
-    marketData.setCandles(setCandles, symbol, options);
-
     const resizeWidth = () => {
       if (containerRef.current) {
         setChartWidth(containerRef.current.clientWidth);
@@ -87,9 +96,33 @@ export default function CandleChart({ symbol, options, orderHistory }) {
   }, []);
 
   useEffect(() => {
+    marketData.allStreams = [];
+    marketData.setSymbolDetails(setSymbolDetails, symbol);
+    marketData.setCandles(setCandles, symbol, options);
+    account.setOrdersBySymbol(setOrderHistory, symbol, accountId);
+    if (accountId != null || accountId !== undefined) {
+      if (orderHistoryInterval !== null) {
+        clearInterval(orderHistoryInterval);
+      }
+      account.setOrdersBySymbol(setOrderHistory, symbol, accountId);
+      const interval = setInterval(() => {
+        if (accountId != null || accountId !== undefined) {
+          account.setOrdersBySymbol(setOrderHistory, symbol, accountId);
+        }
+      }, 30000);
+      setOrderHistoryInterval(interval);
+    }
+    return () => {
+      if (orderHistoryInterval !== null) {
+        clearInterval(orderHistoryInterval);
+      }
+    }
+  }, [symbol]);
+
+  useEffect(() => {
     if (candles !== null) {
       setData(candles);
-      marketData.killAllStreams();
+      marketData.allStreams = [];
       marketData.streamBars(setNewCandle, symbol, {...options, barsback:'1'});
     }
   }, [candles]);
@@ -117,13 +150,22 @@ export default function CandleChart({ symbol, options, orderHistory }) {
     if (data !== null) {
       if (data.length > candles.length) {
         try {
-          setCandles(prevCandles=>data);
+          console.log("New candles.");
+          marketData.setCandles(setCandles, symbol, options);
+          // setCandles(prevCandles=>data);
         } catch (error) {
           console.error(`Setting new candles - ${error}`);
         }
       }
     }
   }, [data]);
+
+  useEffect(() => {
+    if (searchInput !== null  || searchInput.trim() !== "") {
+      setSymbol(searchInput);
+    }
+  }, [searchInput]);
+
 
   const crosshairAction = (e) => {
     if (primaryChartRef.current) {
@@ -142,7 +184,12 @@ export default function CandleChart({ symbol, options, orderHistory }) {
         <div className={`w-full h-[${chartHeight}px] bg-discord-darkestGray rounded py-2`}>
         {candles !== null && containerRef.current && symbolDetails !== null ? (
           <>
-            <InsertChartHeader chartTypeCallback={setChartType} chartType={chartType}/>
+            <InsertChartHeader
+            chartTypeCallback={setChartType}
+            chartType={chartType}
+            searchInput={searchInput}
+            setSearchInput={setSearchInput}
+            />
             <ChartLegend
               symbolName={`${symbol}${symbolDetails[0]?.Exchange ? `:${symbolDetails[0]?.Exchange}` : ''}`}
               candles={data} chartref={primaryChartRef}

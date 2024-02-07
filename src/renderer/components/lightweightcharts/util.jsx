@@ -154,7 +154,6 @@ export const getVisRangeTimestamps = (candles, primaryChartRef) => {
   return { from: candles[0].time, to: candles[1].time };
 };
 
-
 export const getMarketOpenStatus = () => {
   const now = new Date();
   const dayOfWeek = now.getDay();

@@ -47,8 +47,6 @@ export default function Equites() {
   const [balArray, setBalArray] = useState([]);
   const [balInterval, setBalInterval] = useState(null);
   const [newbar, setNewBar] = useState(null);
-  const [orderHistory, setOrderHistory] = useState(null);
-  const [symbol, setSymbol] = useState("QQQ");
 
   useEffect(() => {
     setPauseBalArr(false);
@@ -66,13 +64,11 @@ export default function Equites() {
     if (accId != null || accId !== undefined) {
       account.setPostions(setPositions, accId);
       account.setAccountBalances(setAccountBal, accId, 'Cash');
-      account.setOrdersBySymbol(setOrderHistory, symbol, accId);
 
       document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
       const interval = setInterval(() => {
         if (accId != null || accId !== undefined) {
           account.setPostions(setPositions, accId);
-          account.setOrdersBySymbol(setOrderHistory, symbol, accId);
           account.setAccountBalances(setAccountBal, accId, 'Cash');
         }
         document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
@@ -87,6 +83,7 @@ export default function Equites() {
   useEffect(() => {
     // check accountBal if the array is populated
     if (positions !== null) {
+        console.log("positions", positions);
       // if (positions.lenth > 0) {
         setPrevPositions(positions);
       // }
@@ -139,13 +136,13 @@ export default function Equites() {
             {/* Chart */}
             <div class="col-sm-8 col-md-9 col-xl-10 pr-2 pl-0">
               <CandleChart
-                symbol={symbol}
-                orderHistory={orderHistory}
+                preloadSymbol={'QQQ'}
+                accountId={accId}
                 options={{
-                interval : '5',
-                unit : 'Minute',
-                barsback : '1000',
-                sessiontemplate : 'USEQ24Hour'
+                  interval : '5',
+                  unit : 'Minute',
+                  barsback : '1000',
+                  sessiontemplate : 'USEQ24Hour'
                 }}/>
             </div>
             {/* Positions */}
@@ -155,9 +152,30 @@ export default function Equites() {
 
                     true ? (
                       <>
-                        <div className="text-center">
-                          Data
+                        <div className="row px-2">
+                        <div className="col-6 px-3">
+                          <div className="row cursor-pointer bg-discord-blurple hover:bg-discord-softBlurple active:bg-discord-blurple border-2 border-discord-blurple hover:border-discord-softBlurple active:border-discord-blurple text-white rounded">
+                            <div className="col-12 px-1 text-left">
+                              Sell
+                            </div>
+                            <div className="col-6 p-1 rounded-r w-full text-left bg-discord-darkestGray">
+                              <div className="text-lg">58.00</div>
+                              <span className="text-gray-400">Size</span> 1,001
+                            </div>
+                          </div>
                         </div>
+                        <div className="col-6 px-3">
+                        <div className="row cursor-pointer bg-discord-green hover:bg-discord-softGreen active:bg-discord-green border-2 border-discord-green hover:border-discord-softGreen active:border-discord-green text-white rounded">
+                          <div className="col-12 px-1 text-left">
+                            Buy
+                          </div>
+                          <div className="col-6 p-1 rounded-r w-full text-left bg-discord-darkestGray">
+                            <div className="text-lg">58.00</div>
+                            <span className="text-gray-400">Size</span> 1,001
+                          </div>
+                        </div>
+                        </div>
+                      </div>
                       </>
                     ) : (
                       <>
@@ -166,25 +184,25 @@ export default function Equites() {
                     )
                   }
               </div>
-
             </div>
 
-            <div className="col-6 p-0 mt-2">
+            <div className="col-sm-6 col-md-6 col-lg-4 col-xxl-3 p-0 mt-2">
             {prevPositions ? (
-<WatchlistTable
-                          title={'Positions'}
-                          data={positions}
-                          prevData={prevPositions}
-                          columns={[
-                            { key: 'Symbol', label: 'Symbol', prefix: '' },
-                            { key: 'TodaysProfitLoss', label: '$PL', prefix: '$' },
-                            { key: 'AveragePrice', label: 'Avg. Price', prefix: '' },
-                            { key: 'Last', label: 'Price', prefix: '$' },
-                            { key: 'MarketValue', label: 'Value', prefix: '$' }
-                          ]}
-                          primaryKey={'Symbol'}
-                          />
-            ):(<>Loading...</>)
+              <WatchlistTable
+                title={'Positions'}
+                data={positions}
+                prevData={prevPositions}
+                columns={[
+                  { key: 'Symbol', label: 'Symbol', prefix: '' },
+                  { key: 'TodaysProfitLoss', label: '$PL', prefix: '$' },
+                  { key: 'Quantity', label: 'Shares', prefix: '' },
+                  { key: 'AveragePrice', label: 'Avg. Price', prefix: '$' },
+                  { key: 'Last', label: 'Price', prefix: '$' },
+                  { key: 'MarketValue', label: 'Value', prefix: '$' }
+                ]}
+                primaryKey={'Symbol'}
+                />
+              ):(<>Loading...</>)
             }
 
             </div>

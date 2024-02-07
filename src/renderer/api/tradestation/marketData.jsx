@@ -27,7 +27,7 @@
  * - URL: https://api.tradestation.com
  */
 import axios from 'axios';
-import {currentESTTime, isSubStr} from '../../tools/util';
+import {currentESTTime, isSubStr, inArray} from '../../tools/util';
 
 
 export class MarketData {
@@ -50,12 +50,17 @@ export class MarketData {
   }
 
   killAllStreams(){
-    this.allStreams.forEach((reader)=>{
-      if (this[reader] !== null) {
-        // this[reader].cancel();
-        this[reader] = null;
-      }
+    this.allStreams = [];
+  }
+
+  killStreamBySymbol(symbol){
+    var updatedStreams = [];
+    this.allStreams.forEach((sym, index)=>{
+        if (symbol.toLowerCase() !== sym.toLowerCase()) {
+          updatedStreams.push(sym);
+        }
     });
+    this.allStreams = updatedStreams;
   }
 
   async refreshToken(){
@@ -210,55 +215,63 @@ export class MarketData {
     }
 
     async streamBars(setter, symbol, options){
-      this.refreshToken();
-      try {
-        const { interval, unit, barsback, sessiontemplate } = options;
+      if (!inArray(this.allStreams, symbol)) {
+        this.refreshToken();
+        try {
+          const { interval, unit, barsback, sessiontemplate } = options;
 
-        const params = new URLSearchParams({
-          interval: String(interval),
-          unit: String(unit),
-          barsback: String(barsback),
-          sessiontemplate: String(sessiontemplate),
-        }).toString();
+          const params = new URLSearchParams({
+            interval: String(interval),
+            unit: String(unit),
+            barsback: String(barsback),
+            sessiontemplate: String(sessiontemplate),
+          }).toString();
 
-        const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
-        // console.log(url);
-        const response = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
-          },
-        });
-        this.streamBarsReader = response.body.getReader();
-        this.allStreams.push(this.streamBarsReader);
-        // Process the streaming data
-        const processChunks = async () => {
-          while (true) {
-            try {
-              const { done, value } = await this.streamBarsReader.read();
-              if (done || this.streamBarsReader === null) {
-                break;
-              }
-              const jsonString = new TextDecoder().decode(value);
-              const jsonData = JSON.parse(jsonString.trim());
-              const newBar = this.fixBar(jsonData);
-              setter(newBar);
-            } catch (error) {
-              const msg = error.message.toLowerCase();
-              if (isSubStr(msg, 'network')) {
-                console.log("Network Error");
-                await this.delay(1000 * 5);
-              }else if (isSubStr(msg, 'whitespace')){
-                console.log("None-whitespace Error");
-              } else {
-                this.error(`streamBars() while ${error}`);
+          const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
+          // console.log(url);
+          const response = await fetch(url, {
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
+            },
+          });
+          this.streamBarsReader = response.body.getReader();
+          this.allStreams.push(symbol);
+          // Process the streaming data
+          const processChunks = async () => {
+            while (true) {
+              try {
+                const { done, value } = await this.streamBarsReader.read();
+                if (done || !inArray(this.allStreams, symbol)) {
+                  this.info(`Breaking stream for ${symbol}...`);
+                  break;
+                }
+                const jsonString = new TextDecoder().decode(value);
+                const jsonData = JSON.parse(jsonString.trim());
+                const newBar = this.fixBar(jsonData);
+                setter(newBar);
+              } catch (error) {
+                const msg = error.message.toLowerCase();
+                if (isSubStr(msg, 'network')) {
+                  console.log("Network Error");
+                  await this.delay(1000 * 5);
+                }else if (isSubStr(msg, 'whitespace')){
+                  console.log("None-whitespace Error");
+                } else {
+                  this.error(`streamBars() while ${error}`);
+                }
               }
             }
+          };
+          if (inArray(this.allStreams, symbol)) {
+            processChunks();
+          }else{
+            this.info(`Killed stream for ${symbol}.`)
           }
-        };
-
-        processChunks();
-      } catch (error) {
-        this.error(`streamBars() - ${error}`);
+        } catch (error) {
+          this.error(`streamBars() - ${error}`);
+        }
+      } else {
+        this.info(`${symbol} stream already active.`)
       }
     }
 

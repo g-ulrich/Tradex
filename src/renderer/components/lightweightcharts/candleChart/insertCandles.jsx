@@ -40,15 +40,20 @@ export default function InsertCandles({chartRef, candles, orderHistory, chartTyp
   }
 
   useEffect(() => {
-    if (orderHistory !== null) {
+    if (orderHistory !== null || orderHistory.length > 0) {
+      console.log(orderHistory);
       // get all orders that have been filled.
-      const orders = orderHistory.map((order)=>{
-        if (order?.StatusDescription === 'Filled'){return order;}
-      });
-      const legs = orders.map((order)=>{
-        return{...order,
-          BuyOrSell: order.Legs[0]?.BuyOrSell,
-          QuantityOrdered: order.Legs[0]?.QuantityOrdered
+      // const orders = orderHistory.map((order)=>{
+      //   if (order?.Status === 'FLL'){return order;}
+      // });
+      const legs = orderHistory.map((order)=>{
+        try {
+          return{...order,
+            BuyOrSell: order.Legs[0]?.BuyOrSell,
+            QuantityOrdered: order.Legs[0]?.QuantityOrdered
+          }
+        }catch (error) {
+          console.error("insertcandles legs", error);
         }
       });
       const setMarkerPos = (orderDT) => {
@@ -57,11 +62,18 @@ export default function InsertCandles({chartRef, candles, orderHistory, chartTyp
         return candles[findClosestEpochIndex(candles, new_epoch/1000)].time;
       }
       const markersArray = legs.map((order)=>{
-        return { time: setMarkerPos(order.ClosedDateTime),
-        position: order?.BuyOrSell !== 'Buy' ? 'aboveBar' : 'belowBar',
-        color: order?.BuyOrSell !== 'Buy' ? '#e91e63' :  '#2196F3',
-        shape: order?.BuyOrSell !== 'Buy' ? 'arrowDown' : 'arrowUp',
-        text: (order?.BuyOrSell !== 'Buy' ? order?.BuyOrSell : 'Buy') + ` ${order?.QuantityOrdered} @ $${parseFloat(order.FilledPrice).toFixed(2)}`}
+
+        return { time: setMarkerPos(typeof order?.ClosedDateTime === 'undefined' ? order?.OpenedDateTime : order?.ClosedDateTime),
+          position: order?.BuyOrSell !== 'Buy' ? 'aboveBar' : 'belowBar',
+          color: order?.BuyOrSell !== 'Buy' ? '#e91e63' :  '#2196F3',
+          shape: order?.BuyOrSell !== 'Buy' ? 'arrowDown' : 'arrowUp',
+          text: (order?.BuyOrSell !== 'Buy' ?
+                   order?.BuyOrSell : 'Buy') +
+                    `${order?.Status !== 'FLL' ? ` (${order?.Status})` : ' (FLL)'}` +
+                     ` ${order?.QuantityOrdered} @ `+
+                      `$${parseFloat(order?.FilledPrice === '0' ?
+                        order?.LimitPrice :
+                        order?.FilledPrice).toFixed(2)}`}
         });
       const compareTime = (a, b) => { return a.time - b.time;}
       const newMarkersArray = markersArray.sort(compareTime);

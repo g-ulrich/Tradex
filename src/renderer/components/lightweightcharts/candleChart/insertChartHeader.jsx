@@ -13,44 +13,41 @@ import {
 } from "../../../api/Icons";
 
 
-export default function InsertChartHeader({chartTypeCallback, chartType}){
+export default function InsertChartHeader({chartTypeCallback, chartType, searchInput, setSearchInput}){
   const marketType = "Equites";
   const selectChartRef = useRef(null);
-  const symbolSuggestRef = useRef(null);
-  const [searchInput, setSearchInput] = useState("");
+  const searchRef = useRef(null);
 
   const selectOnChange = () => {
     chartTypeCallback(selectChartRef.current.value.toLowerCase());
   }
 
-  useEffect(() => {
-    if (searchInput.length > 0) {
-      symbolSuggestRef.current.style.display = 'block';
-      console.log(searchInput);
-    }else{
-      symbolSuggestRef.current.style.display = 'none';
+  const setSymbol = () => {
+    if (searchRef.current !== null) {
+      setSearchInput(searchRef.current?.value);
     }
+  }
+
+  useEffect(() => {
+    console.log("header searchInput", searchInput);
   }, [searchInput]);
+
 
   return(
     <>
+
      <div className="flex gap-2 px-2 pb-[4px]">
         <div className="flex">
           <input
+            ref={searchRef}
             type="search"
             className="min-w-[200px] block text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded-l bg-discord-darkerGray hover:bg-discord-darkGray"
             placeholder={`${marketType} Search`}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+
           />
-          <button className="px-2 bg-discord-softBlurple hover:bg-discord-blurple active:bg-discord-softBlurple rounded-r">
+          <button onClick={() => setSymbol()} className="px-2 bg-discord-softBlurple hover:bg-discord-blurple active:bg-discord-softBlurple rounded-r">
             <IconSearch />
           </button>
-          <div ref={symbolSuggestRef} className="px-2 py-[4px] mt-[1.95rem] min-w-[200px] z-[9999] absolute bg-discord-darkerGray rounded shadow-xl">
-            {
-              true ? 'Loading...' : ''
-            }
-          </div>
 
         </div>
         <div className="flex gap-2">
@@ -62,7 +59,7 @@ export default function InsertChartHeader({chartTypeCallback, chartType}){
                 <IconCandleChart /> : chartType === 'line' ?
                 <IconLineChart /> : <IconLineChart />}
             </div>
-            <select ref={selectChartRef} onChange={selectOnChange} className="outline-none focus:border-none active:border-none text-sm border border-none cursor-pointer rounded bg-discord-darkerGray hover:bg-discord-darkGray px-2 py-[3px]">
+            <select value="Candle" ref={selectChartRef} onChange={selectOnChange} className="outline-none focus:border-none active:border-none text-sm border border-none cursor-pointer rounded bg-discord-darkerGray hover:bg-discord-darkGray px-2 py-[3px]">
               <option>Candle</option>
               <option>Area</option>
               <option>Bar</option>

@@ -76,7 +76,6 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
                 type="search"
                 className="block text-discord-white outline-none w-full py-[4px] px-2 input-pl text-sm border border-none rounded bg-discord-darkerGray"
                 placeholder={`${primaryKey} Search`}
-
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
@@ -86,50 +85,68 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
         <table className="w-full divide-y divide-discord-darkerGray">
           <thead className="bg-discord-darkestGray">
             <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  className="px-2 py-[4px] text-left text-xs font-medium text-gray-500 tracking-wider cursor-pointer"
-                  onClick={() => requestSort(column.key)}
-                >
-                  {column.label}
-                  {sortConfig.key === column.key && (
-                    <span className={`ml-2 ${sortConfig.direction === 'desc' ? 'inline' : 'hidden'}`}>
-                      &#8595;
-                    </span>
-                  )}
-                  {sortConfig.key === column.key && (
-                    <span className={`ml-2 ${sortConfig.direction === 'asc' ? 'inline' : 'hidden'}`}>
-                      &#8593;
-                    </span>
-                  )}
-                </th>
-              ))}
+            {paginateData().length > 0 ?
+                columns.map((column) => (
+                  <th
+                    key={column.key}
+                    className="px-2 py-[4px] text-left text-xs font-medium text-gray-500 tracking-wider cursor-pointer"
+                    onClick={() => requestSort(column.key)}
+                  >
+                    {column.label}
+                    {sortConfig.key === column.key && (
+                      <span className={`ml-2 ${sortConfig.direction === 'desc' ? 'inline' : 'hidden'}`}>
+                        &#8595;
+                      </span>
+                    )}
+                    {sortConfig.key === column.key && (
+                      <span className={`ml-2 ${sortConfig.direction === 'asc' ? 'inline' : 'hidden'}`}>
+                        &#8593;
+                      </span>
+                    )}
+                  </th>
+                ))
+             : (
+              <th className="text-center">
+
+              </th>
+            )}
             </tr>
           </thead>
           <tbody className="bg-discord-darkestGray divide-y divide-discord-darkerGray">
-            {paginateData().map((row, index) => (
-              <tr key={index}>
-                {columns.map((column) => (
-                  column.key === primaryKey ? (
-                    <td key={column.key}
-                    className={`px-2 py-[4px] whitespace-nowrap  sticky left-0 z-[99] bg-discord-darkestGray shadow-lg shadow-right`}>
-                    {row[secondaryKey] >= 0 ? (<IconTriangleUp />):(<IconTriangleDown/>) } {row[column.key]}
-                    {/* ${row[secondaryKey] >= 0 ? 'text-discord-softGreen' : row[secondaryKey] < 0 ? 'text-discord-softRed' : ''} */}
-                    </td>
-                  ) : (
-                    <td key={column.key}
-                    className={`px-2 py-[4px] whitespace-nowrap ${isDiff(row, column) ? 'bg-discord-softBlurple2' : ''}`}>
-                      {column.prefix}{row[column.key]}
-                    </td>
-                  )
+            {paginateData().length > 0 ?
+              paginateData().map((row, index) => (
+                <tr key={index}>
+                  {columns.map((column) => (
+                    column.key === primaryKey ? (
+                      <td key={column.key}
+                      className={`px-2 py-[4px] whitespace-nowrap  sticky left-0 z-[99] bg-discord-darkestGray shadow-lg shadow-right`}>
+                      {row[secondaryKey] >= 0 ? (<IconTriangleUp />):(<IconTriangleDown/>) } {row[column.key]}
+                      {/* ${row[secondaryKey] >= 0 ? 'text-discord-softGreen' : row[secondaryKey] < 0 ? 'text-discord-softRed' : ''} */}
+                      </td>
+                    ) : (
+                      <td key={column.key}
+                      className={`px-2 py-[4px] whitespace-nowrap ${isDiff(row, column) ? 'bg-discord-softBlurple2' : ''}`}>
+                        {column.prefix}
+                        {column.prefix === '$' ?
+                          parseFloat(row[column.key]).toFixed(2) :
+                          row[column.key]
+                        }
+                      </td>
+                    )
 
-                ))}
+                  ))}
+                </tr>
+              ))
+             : (
+              <tr key={`empty_${title}_header`} className="p-2 text-center text-lg text-gray-500">
+                No Data.
               </tr>
-            ))}
+
+            )}
           </tbody>
         </table>
         </div>
+        {paginateData().length > 0 ? (
         <Pagination
           totalItems={data.length}
           itemsPerPage={itemsPerPage}
@@ -138,6 +155,7 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
           onPageChange={(page) => setCurrentPage(page)}
           onItemsPerPageChange={(range) => setItemsPerPage(range)}
         />
+        ) : (<></>)}
       </div>
     </>
   );

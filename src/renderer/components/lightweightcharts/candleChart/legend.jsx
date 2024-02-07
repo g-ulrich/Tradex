@@ -77,8 +77,8 @@ export default function ChartLegend({symbolName, candles, chartref, moveindex}) 
           ))}
       </span>
       {
-          candles &&
-          moveindex !== null ? (
+          candles !== null &&
+          moveindex !== null && moveindex >= 0? (
             <>
           <span
             style={{

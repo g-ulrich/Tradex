@@ -33,6 +33,16 @@ export const findObjectByVal = (jsonArray, desiredValue, keyToCheck) => {
   return null; // Return null if no match is found
 }
 
+export const inArray=(array, item)=> {
+  var x = [];
+  array.forEach((i)=>{
+    if (item.toLowerCase() === i.toLowerCase()) {
+      x.push(i);
+    }
+  });
+  return x.length > 0 ? true : false;
+}
+
 export const currentESTTime = () => {
   const dt = new Date();
   return dt.toLocaleTimeString('en-US', {
