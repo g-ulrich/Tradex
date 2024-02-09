@@ -14,12 +14,16 @@ import {
   getDateNDaysAgo,
   currentESTTime } from '../../tools/util';
 import { data as OHLCV } from '../../components/lightweightcharts/exampleData';
-import { csvToJsonArray, getMarketOpenStatus } from '../../components/lightweightcharts/util';
+import { csvToJsonArray,
+  getMarketOpenStatus,
+  formatVolume } from '../../components/lightweightcharts/util';
 import FullChart from '../../components/lightweightcharts/fullChart/fullChart';
 import CandleChart from '../../components/lightweightcharts/candleChart/candleChart';
 
 import SimpleAccountBalanceChart from './simpleAccountBalanceChart';
 import WatchlistTable from '../../components/tables/watchlistTable';
+import OrderForm from './OrderForm';
+
 document.title = 'Tradex | Equities';
 
 const getplStr = (accountBal) =>{
@@ -38,21 +42,41 @@ const friendlyMarketStatus = () => {
 
 export default function Equites() {
   const account = window.ts.account;// new Accounts();
+  const marketData = window.ts.marketData;// new MarketData();
   const [accId, setAccId] = useState(null);
   const [acc, setAcc] = useState(null);
-  const [pauseBalArr, setPauseBalArr] = useState(null);
   const [accountBal, setAccountBal] = useState(null);
   const [prevPositions, setPrevPositions] = useState(null);
   const [positions, setPositions] = useState(null);
-  const [balArray, setBalArray] = useState([]);
-  const [balInterval, setBalInterval] = useState(null);
-  const [newbar, setNewBar] = useState(null);
+  const [chartCallbackData, setChartCallbackData] = useState(null);
+  const [quotes, setQuotes] = useState(null);
+  const preLoadedSymbol = "QQQ"
+   // active symbol
+  const [activeSymbol, setActiveSymbol] = useState(preLoadedSymbol);
+  const [activeSymbolQuote, setActiveSymbolQuote] = useState(null);
+  const [activeSymbolDetails, setActiveSymbolDetails] = useState(null);
 
   useEffect(() => {
-    setPauseBalArr(false);
     account.setAccounts(setAcc, 'Cash');
-    // account.setAccountID(setAccId, 'Cash'); // accountType is defined, so balance doesnt need to be
+    marketData.setQuoteSnapshots(setQuotes, activeSymbol)
   }, []);
+
+  useEffect(() => {
+    marketData.setQuoteSnapshots(setQuotes, activeSymbol)
+    marketData.setSymbolDetails(setActiveSymbolDetails, activeSymbol);
+  }, [activeSymbol]);
+
+  useEffect(() => {
+    if (quotes !== null) {
+      quotes.forEach((q)=>{
+        if (q.Symbol === activeSymbol){
+          setActiveSymbolQuote(q);
+        }
+      });
+    } else {
+      marketData.setQuoteSnapshots(setQuotes, activeSymbol)
+    }
+  }, [quotes]);
 
   useEffect(() => {
     if (acc !== null) {
@@ -81,24 +105,18 @@ export default function Equites() {
   }, [accId]);
 
   useEffect(() => {
-    // check accountBal if the array is populated
     if (positions !== null) {
-        console.log("positions", positions);
-      // if (positions.lenth > 0) {
         setPrevPositions(positions);
-      // }
     }
   }, [positions]);
 
-  useEffect(() => {
-    // check accountBal if the array is populated
-    if (accountBal !== null) {
-      // create the balance for the simpleChart
-      const newbal = {time: Math.floor(new Date()),
-                      value: parseFloat(accountBal.Equity)};
-      setBalArray(prevData => [...prevData.slice(-100), newbal]);
+  const symbolCallback = (chartSymbol) => {
+    if (preLoadedSymbol !== chartSymbol) {
+      if (chartSymbol !== "" || typeof chartSymbol !== 'undefined' || chartSymbol !== null) {
+        setActiveSymbol(chartSymbol);
+      }
     }
-  }, [accountBal]);
+  }
 
   return (
     <>
@@ -136,54 +154,19 @@ export default function Equites() {
             {/* Chart */}
             <div class="col-sm-8 col-md-9 col-xl-10 pr-2 pl-0">
               <CandleChart
-                preloadSymbol={'QQQ'}
+                preloadSymbol={preLoadedSymbol}
                 accountId={accId}
                 options={{
                   interval : '5',
                   unit : 'Minute',
                   barsback : '1000',
                   sessiontemplate : 'USEQ24Hour'
-                }}/>
+                }}
+                symbolCallback={symbolCallback}/>
             </div>
-            {/* Positions */}
+            {/* Order */}
             <div class="col-sm-4 col-md-3 col-xl-2 p-0">
-              <div className=" p-2 rounded bg-discord-darkestGray text-gray-500">
-                  {
-
-                    true ? (
-                      <>
-                        <div className="row px-2">
-                        <div className="col-6 px-3">
-                          <div className="row cursor-pointer bg-discord-blurple hover:bg-discord-softBlurple active:bg-discord-blurple border-2 border-discord-blurple hover:border-discord-softBlurple active:border-discord-blurple text-white rounded">
-                            <div className="col-12 px-1 text-left">
-                              Sell
-                            </div>
-                            <div className="col-6 p-1 rounded-r w-full text-left bg-discord-darkestGray">
-                              <div className="text-lg">58.00</div>
-                              <span className="text-gray-400">Size</span> 1,001
-                            </div>
-                          </div>
-                        </div>
-                        <div className="col-6 px-3">
-                        <div className="row cursor-pointer bg-discord-green hover:bg-discord-softGreen active:bg-discord-green border-2 border-discord-green hover:border-discord-softGreen active:border-discord-green text-white rounded">
-                          <div className="col-12 px-1 text-left">
-                            Buy
-                          </div>
-                          <div className="col-6 p-1 rounded-r w-full text-left bg-discord-darkestGray">
-                            <div className="text-lg">58.00</div>
-                            <span className="text-gray-400">Size</span> 1,001
-                          </div>
-                        </div>
-                        </div>
-                      </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-center">Loading Data...</div>
-                      </>
-                    )
-                  }
-              </div>
+              <OrderForm quote={activeSymbolQuote} details={activeSymbolDetails !== null ? activeSymbolDetails[0] : activeSymbolDetails}/>
             </div>
 
             <div className="col-sm-6 col-md-6 col-lg-4 col-xxl-3 p-0 mt-2">
@@ -211,19 +194,6 @@ export default function Equites() {
             </div>
           </div>
       </div>
-
- {/* {
-        accountBal !== null ? (
-          <SimpleAccountBalanceChart
-            accountClass={account}
-            accountId={accId}
-            pause={pauseBalArr}
-            setPause={setPauseBalArr}
-            accountBal={accountBal}
-            seriesData={balArray}
-            />
-          ) : (<></>)
-        } */}
 
     </>
   );

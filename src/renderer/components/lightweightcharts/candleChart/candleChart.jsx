@@ -57,7 +57,7 @@ import ChartLegend from './legend';
 import InsertChartHeader from './insertChartHeader';
 import axios from 'axios';
 
-export default function CandleChart({ preloadSymbol, accountId, options }) {
+export default function CandleChart({ preloadSymbol, accountId, options, symbolCallback }) {
   const marketData = window.ts.marketData;
   const account = window.ts.account;
   const containerRef = useRef(null);
@@ -65,7 +65,7 @@ export default function CandleChart({ preloadSymbol, accountId, options }) {
   // Chart Component
   const volumeRef = useRef(null);
   const primaryChartRef = useRef(null);
-  const chartHeight = 600;
+  const chartHeight = 400;
   const [chartWidth, setChartWidth] = useState(800);
   const [chartType, setChartType] = useState("candle"); // bar, candle, line, area
   const seriesRef = useRef(null); // tied to specfic series type
@@ -166,6 +166,12 @@ export default function CandleChart({ preloadSymbol, accountId, options }) {
     }
   }, [searchInput]);
 
+  useEffect(() => {
+    if (typeof symbolCallback !== 'undefined'){
+      symbolCallback(symbol);
+    }
+  }, [symbol]);
+
 
   const crosshairAction = (e) => {
     if (primaryChartRef.current) {
@@ -177,6 +183,7 @@ export default function CandleChart({ preloadSymbol, accountId, options }) {
       }
     }
   };
+
 
   return (
     <>

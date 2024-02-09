@@ -24,7 +24,7 @@ export default function InsertChartHeader({chartTypeCallback, chartType, searchI
 
   const setSymbol = () => {
     if (searchRef.current !== null) {
-      setSearchInput(searchRef.current?.value);
+      setSearchInput(searchRef.current?.value.toUpperCase());
     }
   }
 
@@ -41,7 +41,7 @@ export default function InsertChartHeader({chartTypeCallback, chartType, searchI
           <input
             ref={searchRef}
             type="search"
-            className="min-w-[200px] block text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded-l bg-discord-darkerGray hover:bg-discord-darkGray"
+            className="uppercase w-[100px] block text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded-l bg-discord-darkerGray hover:bg-discord-darkGray"
             placeholder={`${marketType} Search`}
 
           />
@@ -59,7 +59,7 @@ export default function InsertChartHeader({chartTypeCallback, chartType, searchI
                 <IconCandleChart /> : chartType === 'line' ?
                 <IconLineChart /> : <IconLineChart />}
             </div>
-            <select value="Candle" ref={selectChartRef} onChange={selectOnChange} className="outline-none focus:border-none active:border-none text-sm border border-none cursor-pointer rounded bg-discord-darkerGray hover:bg-discord-darkGray px-2 py-[3px]">
+            <select ref={selectChartRef} onChange={selectOnChange} className="outline-none focus:border-none active:border-none text-sm border border-none cursor-pointer rounded bg-discord-darkerGray hover:bg-discord-darkGray px-2 py-[3px]">
               <option>Candle</option>
               <option>Area</option>
               <option>Bar</option>
