@@ -4,10 +4,15 @@ import {
  } from '../../components/lightweightcharts/util';
  import {
   IconAngleR,
-  IconAngleL
+  IconAngleL,
+  IconOn,
+  IconOff
 } from '../../api/Icons';
 
-export default function OrderForm({quote, details}) {
+export default function OrderForm({positions, quote, details}) {
+  const [simple, setSimple] = useState(true);
+  const [sell, setSell] =useState("All");
+
   const [action, setAction] = useState('buy');
   const [quantity, setQuantity] = useState('10');
   const [orderType, setOrderType] = useState('limit');
@@ -17,25 +22,28 @@ export default function OrderForm({quote, details}) {
   const routes = ['Intelligent', 'AMEX', 'ARCX', 'BATS', 'BYX', 'CSFB', 'EDGA', 'IEX', 'POV-ALGO', 'TWAP-ALGO', 'VWAP-ALGO', 'SweepPI-ALGO', 'Sweep-ALGO', 'NQBX', 'NSDQ', 'NYSE'];
   const [route, setRoute] = useState('Intelligent');
 
-  console.log("OrderForm", quote, details);
-
-  useEffect(() => {
-    if (action !== null) {
-        console.log("action", action);
-    }
-  }, [action]);
-
-
   const handleQuantity = (val) => {
-    // console.log(typeof val, val);
     var val = parseInt(val) <= 0 ? 1 : val.toString().toLowerCase() === 'nan' ? 1 : val;
     setQuantity(val);
   }
 
+  const getPosisition = () => {
+    if (quote !== null) {
+      const symbol = quote?.Symbol;
+      // console.log()
+    }
+  }
 
   return (
     <>
       <div className=" p-2 rounded bg-discord-darkestGray text-gray-500">
+        {/* <div> */}
+          <label class="text-right relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" onChange={()=>{setSimple(!simple)}} class="sr-only peer" />
+            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            <span class="ms-3 text-sm font-medium text-gray-500">{simple ? 'Simple' : 'Complex'} Order</span>
+          </label>
+        {/* </div> */}
         {
             quote !== null ? (
             <>
@@ -73,12 +81,14 @@ export default function OrderForm({quote, details}) {
               <div className="col-6 px-3">
                 <div onClick={() => {setAction('sell')}} className="row cursor-pointer bg-discord-blurple hover:bg-discord-softBlurple active:bg-discord-blurple border-2 border-discord-blurple hover:border-discord-softBlurple active:border-discord-blurple text-white rounded">
                   <div className="col-12 px-1 text-left">
-                    Sell {
+
+                        Sell {
                         quote !== null ?
                         `@ ${parseFloat(quote.Bid).toFixed(3)}` : ''
-                    }
+                        }
+
                   </div>
-                  <div className="col-6 p-1 rounded-b w-full text-left bg-discord-darkestGray">
+                  <div className={`col-6 ${simple ? 'hidden' : ''} p-1 rounded-b w-full text-left bg-discord-darkestGray`}>
                     <div className="text-lg">
                     {
                         quote !== null ?
@@ -103,14 +113,14 @@ export default function OrderForm({quote, details}) {
                         `@ ${parseFloat(quote.Ask).toFixed(3)}` : ''
                     }
                 </div>
-                <div className="col-6 p-1 rounded-b w-full text-left bg-discord-darkestGray">
-                  <div className="text-lg">
+                <div className={`col-6 ${simple ? 'hidden' : ''} p-1 rounded-b w-full text-left bg-discord-darkestGray`}>
+                  <div className={`text-lg`}>
                     {
                         quote !== null ?
                         parseFloat(quote.Ask).toFixed(3) : '0'
                     }
                   </div>
-                  <span className="text-gray-400 mr-2">Size</span>
+                  <span className={` text-gray-400 mr-2`}>Size</span>
                   <span>
                     {
                         quote !== null ?
@@ -120,10 +130,44 @@ export default function OrderForm({quote, details}) {
                 </div>
               </div>
               </div>
-
-              {/* Order form */}
+              {/* Simple order form */}
               {
-                action !== null ? (
+                simple ? (
+                  <div className="row p-0 m-0 pt-2 mt-1">
+                    {/* simple Quantity */}
+                    <div className="col-6 px-1 text-lg text-white mb-2">
+                      Quantity
+                    </div>
+                    <div className="col-6 px-3 text-lg">
+                      <div className="row rounded">
+                        <span onClick={()=>{handleQuantity(parseInt(quantity)-1)}} className={`col-2 p-0 text-white cursor-pointer rounded text-center active:bg-discord-darkGray`}><IconAngleL/></span>
+                        <input type="text" value={quantity} onChange={(e)=>{handleQuantity(parseInt(e.target.value))}}
+                        className="col-8 outline-none text-white text-center rounded bg-discord-darkGray"/>
+                        <span onClick={()=>{handleQuantity(parseInt(quantity)+1)}} className={`col-2 p-0 text-white cursor-pointer rounded text-center  active:bg-discord-darkGray`}><IconAngleR/></span>
+                      </div>
+                    </div>
+                    {/* simple Sell */}
+                    <div className="col-6 px-1 text-lg text-white mb-2">
+                      Sell
+                    </div>
+                    <div className="col-6 px-3 text-lg text-white">
+                      <div className="row rounded">
+                        <select value={sell} onChange={(e)=>{setSell(e.target.value)}} className=" outline-none focus:border-none active:border-none border border-none cursor-pointer rounded bg-discord-darkerGray hover:bg-discord-darkGray px-2 py-[3px]">
+                            <option>All</option>
+                            <option>10</option>
+                            <option>5</option>
+                            <option>1</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <></>
+                )
+              }
+              {/* complex Order form */}
+              {
+                action !== null && !simple ? (
                   <div className="row p-0 m-0 pt-2 mt-1">
                     {/* Action */}
                     <div className="col-6 px-1 text-lg text-white mb-2">
@@ -135,7 +179,7 @@ export default function OrderForm({quote, details}) {
                         <button  onClick={() => {setAction('buy')}} className={`col-6 ${action === 'buy' ? 'bg-discord-softBlurple text-white' : ''} rounded  cursor-pointer rounded-r py-0 px-2 text-center`}>Buy</button>
                       </div>
                     </div>
-                    {/* Quantity */}
+                    {/* complex Quantity */}
                     <div className="col-6 px-1 text-lg text-white mb-2">
                       Quantity
                     </div>
@@ -163,6 +207,7 @@ export default function OrderForm({quote, details}) {
                       </select>
                       </div>
                     </div>
+
                   {/* Pricing */}
                   <div className={`${orderType === 'Market' ? 'hidden' : ''} col-6 px-1 text-lg text-white mb-1`}>
                       Price
@@ -208,7 +253,7 @@ export default function OrderForm({quote, details}) {
 
                     </div>
                   </div>
-                  <button className="mt-2 col-12 text-lg text-center py-2 user-select-none text-white rounded bg-discord-blurple hover:bg-discord-softBlurple active:bg-discord-blurple cursor-pointer">
+                  <button className={`mt-2 col-12 text-lg text-center py-2 user-select-none text-white rounded ${action === 'sell' ? 'bg-discord-blurple hover:bg-discord-softBlurple active:bg-discord-blurple' : 'bg-discord-softGreen hover:bg-discord-green active:bg-discord-softGreen'} cursor-pointer`}>
                     Execute <b>{action}</b> Order
                   </button>
 

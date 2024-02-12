@@ -21,7 +21,17 @@ import { MarketData } from '../../../api/tradestation/marketData';
 
 export default function InsertCandles({chartRef, candles, orderHistory, chartType, candleKey, visRange}){
   const [markers, setMarkers] = useState([]);
-  const isProfiting = candles[visRange.from][candleKey] <= candles[visRange.to === -1 ? candles.length-1:visRange.to][candleKey];
+  const [isProfiting, setIsProfiting] = useState(true);
+  useEffect(() => {
+    if (candles !== null) {
+      try {
+        var p = candles[visRange.from][candleKey] <= candles[visRange.to === -1 ? candles.length-1:visRange.to][candleKey];
+        setIsProfiting(p);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }, [visRange]);
 
   function findClosestEpochIndex(jsonArray, givenEpoch) {
     var array = [];
@@ -41,11 +51,6 @@ export default function InsertCandles({chartRef, candles, orderHistory, chartTyp
 
   useEffect(() => {
     if (orderHistory !== null || orderHistory.length > 0) {
-      console.log(orderHistory);
-      // get all orders that have been filled.
-      // const orders = orderHistory.map((order)=>{
-      //   if (order?.Status === 'FLL'){return order;}
-      // });
       const legs = orderHistory.map((order)=>{
         try {
           return{...order,

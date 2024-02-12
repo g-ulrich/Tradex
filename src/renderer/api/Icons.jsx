@@ -8,7 +8,23 @@ import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight,
        faPlus, faChartColumn, faChartLine, faInfinity,
        faChartGantt, faChartArea, faMagnifyingGlass,
        faArrowsLeftRightToLine, faWallet, faClock, faPalette,
-       faTriangleExclamation, faPlay, faPause, faCircle } from '@fortawesome/free-solid-svg-icons'
+       faTriangleExclamation, faPlay, faPause, faCircle, faToggleOn, faToggleOff, faHeart, faHeartPulse } from '@fortawesome/free-solid-svg-icons'
+
+export function IconHeart(){
+return(<><FontAwesomeIcon icon={faHeart} /></>);
+}
+
+export function IconHeartPulse(){
+  return(<><FontAwesomeIcon icon={faHeartPulse} /></>);
+  }
+
+export function IconOn(){
+return(<><FontAwesomeIcon icon={faToggleOn} /></>);
+}
+
+export function IconOff(){
+  return(<><FontAwesomeIcon icon={faToggleOff} /></>);
+  }
 
 export function IconDot(){
 return(<><FontAwesomeIcon icon={faCircle} /></>);

@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import * as talib from "../talib";
-// import ChartLegend from './legend';
-import { data as OHLCV } from "../exampleData";
 import { ColorType, CrosshairMode } from "lightweight-charts";
 import {
   Chart,
@@ -32,6 +30,7 @@ import {
   filterJsonArrayByTimestamp,
   getTimestampNMinsAgo,
   getUtcTimestampNMinutesBack,
+  getMarketOpenStatus
 } from "../util";
 import { isStringInArray,
   isSubStr,
@@ -48,16 +47,18 @@ import {
   IconLineChart,
   IconSearch,
   IconWallet,
-  IconX
+  IconX,
+  IconClock
 } from "../../../api/Icons";
 import AreaChartType from './areaChartType';
 import InsertVolume from './insertVolume';
 import InsertCandles from './insertCandles';
 import ChartLegend from './legend';
 import InsertChartHeader from './insertChartHeader';
+import Exthrs from './insertExtHrs';
 import axios from 'axios';
 
-export default function CandleChart({ preloadSymbol, accountId, options, symbolCallback }) {
+export default function CandleChart({ preloadSymbol, accountId, symbolOptions, symbolCallback }) {
   const marketData = window.ts.marketData;
   const account = window.ts.account;
   const containerRef = useRef(null);
@@ -74,7 +75,9 @@ export default function CandleChart({ preloadSymbol, accountId, options, symbolC
   const [data, setData] = useState(null);
   const [candles, setCandles] = useState(null);
   const [newCandle, setNewCandle] = useState(null);
+  // const [extHrs, setExtHrs] = useState(symbolOptions?.sessiontemplate === 'Default' ? true : false);
   // Symbol
+  const [options, setOptions] = useState(symbolOptions);
   const [symbol, setSymbol] = useState(preloadSymbol);
   const [searchInput, setSearchInput] = useState(preloadSymbol);
   const [symbolDetails, setSymbolDetails] = useState(null);
@@ -100,6 +103,9 @@ export default function CandleChart({ preloadSymbol, accountId, options, symbolC
     marketData.setSymbolDetails(setSymbolDetails, symbol);
     marketData.setCandles(setCandles, symbol, options);
     account.setOrdersBySymbol(setOrderHistory, symbol, accountId);
+    if (typeof symbolCallback !== 'undefined'){
+      symbolCallback(symbol);
+    }
     if (accountId != null || accountId !== undefined) {
       if (orderHistoryInterval !== null) {
         clearInterval(orderHistoryInterval);
@@ -117,13 +123,15 @@ export default function CandleChart({ preloadSymbol, accountId, options, symbolC
         clearInterval(orderHistoryInterval);
       }
     }
-  }, [symbol]);
+  }, [symbol, options]);
 
   useEffect(() => {
     if (candles !== null) {
       setData(candles);
       marketData.allStreams = [];
-      marketData.streamBars(setNewCandle, symbol, {...options, barsback:'1'});
+      if (getMarketOpenStatus() !== 'Closed'){
+        marketData.streamBars(setNewCandle, symbol, {...options, barsback:'1'});
+      }
     }
   }, [candles]);
 
@@ -150,9 +158,7 @@ export default function CandleChart({ preloadSymbol, accountId, options, symbolC
     if (data !== null) {
       if (data.length > candles.length) {
         try {
-          console.log("New candles.");
           marketData.setCandles(setCandles, symbol, options);
-          // setCandles(prevCandles=>data);
         } catch (error) {
           console.error(`Setting new candles - ${error}`);
         }
@@ -166,13 +172,6 @@ export default function CandleChart({ preloadSymbol, accountId, options, symbolC
     }
   }, [searchInput]);
 
-  useEffect(() => {
-    if (typeof symbolCallback !== 'undefined'){
-      symbolCallback(symbol);
-    }
-  }, [symbol]);
-
-
   const crosshairAction = (e) => {
     if (primaryChartRef.current) {
       try {
@@ -183,7 +182,6 @@ export default function CandleChart({ preloadSymbol, accountId, options, symbolC
       }
     }
   };
-
 
   return (
     <>
@@ -199,7 +197,8 @@ export default function CandleChart({ preloadSymbol, accountId, options, symbolC
             />
             <ChartLegend
               symbolName={`${symbol}${symbolDetails[0]?.Exchange ? `:${symbolDetails[0]?.Exchange}` : ''}`}
-              candles={data} chartref={primaryChartRef}
+              candles={data}
+              chartref={primaryChartRef}
               moveindex={crosshairIndex}/>
             <Chart
               ref={primaryChartRef}
@@ -213,6 +212,8 @@ export default function CandleChart({ preloadSymbol, accountId, options, symbolC
                 candleKey={'close'}
                 visRange={getVisRange(candles, primaryChartRef)}/>
             </Chart>
+            {/* extHours */}
+            <Exthrs options={options} setOptions={setOptions}/>
             </>
           ) : (
             <span className="text-center">Loading...</span>

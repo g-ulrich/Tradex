@@ -46,8 +46,13 @@ export default function Equites() {
   const [accId, setAccId] = useState(null);
   const [acc, setAcc] = useState(null);
   const [accountBal, setAccountBal] = useState(null);
+  // positions
   const [prevPositions, setPrevPositions] = useState(null);
   const [positions, setPositions] = useState(null);
+  // orders
+  const [prevOrderHistory, setPrevOrderHistory] = useState(null);
+  const [orderHistory, setOrderHistory] = useState([]);
+
   const [chartCallbackData, setChartCallbackData] = useState(null);
   const [quotes, setQuotes] = useState(null);
   const preLoadedSymbol = "QQQ"
@@ -58,7 +63,7 @@ export default function Equites() {
 
   useEffect(() => {
     account.setAccounts(setAcc, 'Cash');
-    marketData.setQuoteSnapshots(setQuotes, activeSymbol)
+    marketData.setQuoteSnapshots(setQuotes, activeSymbol);
   }, []);
 
   useEffect(() => {
@@ -88,12 +93,14 @@ export default function Equites() {
     if (accId != null || accId !== undefined) {
       account.setPostions(setPositions, accId);
       account.setAccountBalances(setAccountBal, accId, 'Cash');
+      account.setHistoricalOrders(setOrderHistory, accId, getDateNDaysAgo(7));
 
       document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
       const interval = setInterval(() => {
         if (accId != null || accId !== undefined) {
           account.setPostions(setPositions, accId);
           account.setAccountBalances(setAccountBal, accId, 'Cash');
+          account.setHistoricalOrders(setOrderHistory, accId, getDateNDaysAgo(7));
         }
         document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
       }, 1000*30);
@@ -104,11 +111,17 @@ export default function Equites() {
     }
   }, [accId]);
 
+
   useEffect(() => {
     if (positions !== null) {
+        console.log("positions", positions);
         setPrevPositions(positions);
     }
   }, [positions]);
+
+  useEffect(() => {
+    setPrevOrderHistory(orderHistory);
+  }, [orderHistory]);
 
   const symbolCallback = (chartSymbol) => {
     if (preLoadedSymbol !== chartSymbol) {
@@ -156,17 +169,20 @@ export default function Equites() {
               <CandleChart
                 preloadSymbol={preLoadedSymbol}
                 accountId={accId}
-                options={{
+                symbolOptions={{
                   interval : '5',
                   unit : 'Minute',
                   barsback : '1000',
-                  sessiontemplate : 'USEQ24Hour'
+                  sessiontemplate : 'Default'
                 }}
                 symbolCallback={symbolCallback}/>
             </div>
             {/* Order */}
             <div class="col-sm-4 col-md-3 col-xl-2 p-0">
-              <OrderForm quote={activeSymbolQuote} details={activeSymbolDetails !== null ? activeSymbolDetails[0] : activeSymbolDetails}/>
+              <OrderForm
+              positions={positions !== null ? positions : []}
+              quote={activeSymbolQuote}
+              details={activeSymbolDetails !== null ? activeSymbolDetails[0] : activeSymbolDetails}/>
             </div>
 
             <div className="col-sm-6 col-md-6 col-lg-4 col-xxl-3 p-0 mt-2">
@@ -187,11 +203,8 @@ export default function Equites() {
                 />
               ):(<>Loading...</>)
             }
-
             </div>
-            <div className="col-6">
 
-            </div>
           </div>
       </div>
 

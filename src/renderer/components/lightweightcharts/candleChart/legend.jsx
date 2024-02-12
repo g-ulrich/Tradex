@@ -36,11 +36,11 @@ export default function ChartLegend({symbolName, candles, chartref, moveindex}) 
     const candleDiff = (candles[index]?.close - candles[index]?.open).toFixed(2);
     const candleCalc = `${candleDiff} (${((candleDiff / candles[index]?.open) * 100).toFixed(2)}%)`;
     const rangeDiff = (candles[range().to === -1 ? candles.length -1 : range().to]?.close - candles[range().from]?.open).toFixed(2);
-    const rangeCalc = `${rangeDiff} (${(
-      (rangeDiff / candles[candles.length - 1]?.close) * 100
-    ).toFixed(2)}%)`;
+    const p = `(${((rangeDiff / candles[candles.length - 1]?.close) * 100 ).toFixed(2)}%)`;
+    const rangeCalc = `${rangeDiff} ${isSubStr(p, 'finit') ? '' : p}`;
     return { candle: candleCalc, range: rangeCalc };
   };
+
 
   const range=()=>{
     const {from, to} = getVisRange(candles, chartref);
@@ -90,7 +90,7 @@ export default function ChartLegend({symbolName, candles, chartref, moveindex}) 
                   : chartColors.discord.blurple,
             }}
             className={`pl-[6px] absolute z-[${zIndexVal}]`}>
-            <IconRangeArrows /> {getLegendVals(moveindex).range}
+            <IconRangeArrows /> {moveindex} {getLegendVals(moveindex).range}
           </span>
           <span style={{margin: `${marginMult(2)}px 0px`}} className={`pl-[6px] absolute z-[${zIndexVal}]`}>
             Vol
@@ -103,11 +103,10 @@ export default function ChartLegend({symbolName, candles, chartref, moveindex}) 
                     ? chartColors.discord.green
                     : chartColors.discord.blurple,
               }}>
-              {formatVolume(candles[moveindex].volume)}
+              {formatVolume(candles[moveindex]?.volume)}
             </span>
           </span>
           </>
-
           ) : (
             ''
           )
