@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 import {currentESTTime} from '../../tools/util';
 import {Accounts} from './accounts';
 import {MarketData} from './marketData';
+import {Orders} from './orders';
 
 
 export class TS {
@@ -14,6 +15,7 @@ export class TS {
     // Nested Classes
     this.account = null;
     this.marketData = null;
+    this.order = null;
   }
 
   info(msg=""){
@@ -29,9 +31,11 @@ export class TS {
     if (this.account === null) {
       this.account = new Accounts(accessToken);
       this.marketData = new MarketData(accessToken);
+      this.order = new Orders(accessToken);
     } else {
       this.account.accessToken = accessToken;
       this.marketData.accessToken = accessToken;
+      this.order.accessToken = accessToken;
     }
   }
 

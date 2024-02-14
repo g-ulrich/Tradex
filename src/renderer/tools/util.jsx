@@ -253,6 +253,18 @@ export const convertJSONArrayToJSON = (jsonArray) => {
   return jsonObject;
 }
 
+export const inJsonArray = (jsonArray, key, value) => {
+  for (let i = 0; i < jsonArray.length; i++) {
+    const obj = jsonArray[i];
+    if (key in obj) {
+      if (obj[key] === value) {
+        return true; // Value exists
+      }
+    }
+  }
+  return false; // Value does not exist
+}
+
 export const jsonArrayToArrayByKey = (jsonArray, key) => {
   const extractedData = [];
   jsonArray.forEach((obj, i) => {
@@ -365,6 +377,23 @@ export const findObjectById = (jsonArray, key, value) => {
     }
   }
   return null; // return null if no match is found
+}
+
+export const removeDupsFromJsonArr = (jsonArray, key) => {
+  if (jsonArray !== null || jsonArray !== undefined) {
+    const uniqueValues = {};
+    for (let i = 0; i < jsonArray.length; i++) {
+      const item = jsonArray[i];
+      const value = item[key];
+      if (!uniqueValues[value]) {
+        uniqueValues[value] = item;
+      }
+    }
+    const uniqueArray = Object.values(uniqueValues);
+    return uniqueArray;
+  } else {
+    return jsonArray;
+  }
 }
 
 export const getDateNDaysAgo = (n) => {

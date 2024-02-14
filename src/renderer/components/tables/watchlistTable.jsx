@@ -41,8 +41,8 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
 
     // Filter data based on search input
     const filteredData = sortedData.filter((item) => {
-      const symbol = item[primaryKey] || ""; // Handle possible undefined symbol
-      return symbol.toLowerCase().includes(searchInput.toLowerCase());
+      const val = item[primaryKey] || ""; // Handle possible undefined symbol
+      return val.toLowerCase().includes(searchInput.toLowerCase());
     });
 
     return filteredData.slice(startIndex, endIndex);
@@ -51,7 +51,7 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
 
   const isDiff = (row, col) => {
-    const prev_row = findObjectByVal(prevData, row.Symbol, 'Symbol');
+    const prev_row = findObjectByVal(prevData, row[primaryKey], primaryKey);
     if (prev_row != null) {
       return prev_row[col.key] != row[col.key] ? true : false;
     } else {
@@ -120,17 +120,24 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
                     column.key === primaryKey ? (
                       <td key={column.key}
                       className={`px-2 py-[4px] whitespace-nowrap  sticky left-0 z-[99] bg-discord-darkestGray shadow-lg shadow-right`}>
-                      {row[secondaryKey] >= 0 ? (<IconTriangleUp />):(<IconTriangleDown/>) } {row[column.key]}
-                      {/* ${row[secondaryKey] >= 0 ? 'text-discord-softGreen' : row[secondaryKey] < 0 ? 'text-discord-softRed' : ''} */}
+
+                     {
+                        !secondaryKey ? '' :
+                         row[secondaryKey] >= 0 ?
+                          (<span className="mr-2"><IconTriangleUp /></span>):
+                          (<span className="mr-2"><IconTriangleDown/></span>)
+                      }
+                      {row[column.key]}
                       </td>
                     ) : (
                       <td key={column.key}
                       className={`px-2 py-[4px] whitespace-nowrap ${isDiff(row, column) ? 'bg-discord-softBlurple2' : ''}`}>
                         {column.prefix}
-                        {column.prefix === '$' ?
+                        {column.prefix === '$' || column?.postfix === '%' ?
                           parseFloat(row[column.key]).toFixed(2) :
                           row[column.key]
                         }
+                        {column?.postfix ? column?.postfix : ''}
                       </td>
                     )
 

@@ -27,13 +27,14 @@
  * - URL: https://api.tradestation.com
  */
 import axios from 'axios';
-import {currentESTTime} from '../../tools/util';
+import {currentESTTime, isSubStr} from '../../tools/util';
 
 export class Accounts {
   constructor(accessToken) {
     this.baseUrl = 'https://api.tradestation.com/v3/brokerage';
     this.accessToken = accessToken;
-
+    // streams
+    this.allStreams = {};
   }
 
   info(msg=""){
@@ -42,6 +43,33 @@ export class Accounts {
 
   error(msg=""){
     console.error(`${currentESTTime()} Accounts [ERROR] - ${msg}`)
+  }
+
+  killAllStreams(){
+    this.info("Killing All Open Streams In MarketData.")
+    for (const key in this.allStreams) {
+      if (this.allStreams?.[key]) {
+        this.allStreams[key].abort();//.cancel();
+        delete this.allStreams[key];
+      }
+    }
+  }
+
+  killAllStreamsById(id){
+    this.info("Killing All Open Streams In MarketData.")
+    for (const key in this.allStreams) {
+      if (isSubStr(key, id)) {
+        this.allStreams[key].abort();//.cancel();
+        delete this.allStreams[key];
+      }
+    }
+  }
+
+  killStreamByKey(key) {
+    if (this.allStreams?.[key]) {
+      this.allStreams[key].abort();//.cancel();
+      delete this.allStreams[key];
+    }
   }
 
   async refreshToken(){
@@ -199,23 +227,42 @@ setAccountBalances(setter, accountIds, type='Cash'){
     });
 }
 
+formatHistoricalOrders(arr){
+  var newArr = [];
+  if (arr !== null) {
+    arr.forEach((obj) => {
+      const legs = obj?.Legs;
+      newArr.push({
+        ...obj,
+        Symbol: legs ? legs[0].Symbol : ' - ',
+        QuantityOrdered: legs ? legs[0].QuantityOrdered : '0',
+        BuyOrSell: legs ? legs[0].BuyOrSell : ' - '
+      });
+    });
+  } else {
+    newArr = [];
+  }
+  // console.log("formated Order hist", newArr);
+  return newArr;
+}
+
 setHistoricalOrders(setter, accounts, since, pageSize, nextToken){
-  (async () => {
-    try {
-      const arr = await this.getHistoricalOrders(accounts, since, pageSize, nextToken);
-      console.log("setHistoricalOrders", typeof arr, arr);
-      setter(arr);
-    } catch (error) {
-      this.error(`setHistoricalOrders() ${error}`);
-    }
-  })();
+  if (accounts !== null) {
+    (async () => {
+      try {
+        const arr = await this.getHistoricalOrders(accounts, since, pageSize, nextToken);
+        setter(this.formatHistoricalOrders(arr));
+      } catch (error) {
+        this.error(`setHistoricalOrders() ${error}`);
+      }
+    })();
+  }
 }
 
 setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken){
   (async () => {
     try {
       const arr = await this.getHistoricalOrders(accounts, since, pageSize, nextToken);
-      // console.log("setHistoricalOrdersBySymbol", typeof arr, arr);
       var filteredOrders = [];
       arr.forEach((obj)=>{
         const legSymbol = obj.Legs[0]?.Symbol;
@@ -281,21 +328,23 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
   }
 
   setOrdersBySymbol(setter, symbol, accounts, pageSize, nextToken){
-    (async () => {
-      try {
-        const arr = await this.getOrders(accounts, pageSize, nextToken);
-        var filteredOrders = [];
-        arr.forEach((obj)=>{
-          const legSymbol = obj.Legs[0]?.Symbol;
-          if (symbol === legSymbol){
-            filteredOrders.push(obj);
-          }
-        });
-        setter(filteredOrders);
-      } catch (error) {
-        this.error(`setOrdersBySymbol() ${error}`);
-      }
-    })();
+    if (accounts !== null) {
+      (async () => {
+        try {
+          const arr = await this.getOrders(accounts, pageSize, nextToken);
+          var filteredOrders = [];
+          arr.forEach((obj)=>{
+            const legSymbol = obj.Legs[0]?.Symbol;
+            if (symbol === legSymbol){
+              filteredOrders.push(obj);
+            }
+          });
+          setter(filteredOrders);
+        } catch (error) {
+          this.error(`setOrdersBySymbol() ${error}`);
+        }
+      })();
+    }
   }
 
  /**
@@ -305,7 +354,6 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
    * @returns {Promise<Array>} - Promise resolving to the list of orders.
    */
  getOrdersByOrderID(accountIds, orderIds) {
-          const id_token = this.ts.getTokenId();
   const url = `${this.baseUrl}/accounts/${accountIds}/orders/${orderIds}`;
 
   return axios.get(url, {
@@ -407,27 +455,83 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
    * @param {string} accountIds - List of valid Account IDs for the authenticated user in comma-separated format.
    * @returns {Promise<Array>} - Promise resolving to the streamed orders.
    */
-   streamOrders(accountIds) {
-          const id_token = this.ts.getTokenId();
-    const url = `${this.baseUrl}/stream/accounts/${accountIds}/orders`;
+  //  streamOrders(accountIds) {
+  //   const url = `${this.baseUrl}/stream/accounts/${accountIds}/orders`;
 
-    return axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-      responseType: 'stream', // To handle streaming response
-    })
-      .then(response => {
-        // Handle the streamed data here
-        response.data.on('data', data => {
-          console.log(data.toString());
-          // Process the streamed data as needed
+  //   return axios.get(url, {
+  //     headers: {
+  //       Authorization: `Bearer ${this.accessToken}`,
+  //     },
+  //     responseType: 'stream', // To handle streaming response
+  //   })
+  //     .then(response => {
+  //       // Handle the streamed data here
+  //       response.data.on('data', data => {
+  //         console.log(data.toString());
+  //         // Process the streamed data as needed
+  //       });
+  //     })
+  //     .catch(error => {
+  //       console.error('Error streaming orders:', error);
+  //       throw error;
+  //     });
+  // }
+
+
+
+  async streamOrders(setter, streamIdPrefix, accountIds){
+    const streamId = `${streamIdPrefix}${accountIds}`;
+    if (!this.allStreams?.[streamId]) {
+      this.refreshToken();
+      try {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        const url = `${this.baseUrl}/stream/accounts/${accountIds}/orders`;
+        const response = await fetch(url, {
+          method: 'get',
+          signal: signal,
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
+          },
         });
-      })
-      .catch(error => {
-        console.error('Error streaming orders:', error);
-        throw error;
-      });
+        const reader = response.body.getReader();
+        this.allStreams[streamId] = controller;
+        // Process the streaming data
+        const processChunks = async () => {
+          while (true) {
+            try {
+              const { done, value } = await reader.read();
+              if (done || !this.allStreams?.[streamId]) {
+                this.info(`Break ${streamIdPrefix}${accountIds}!`);
+                break;
+              }
+              const jsonString = new TextDecoder().decode(value);
+              const jsonData = JSON.parse(jsonString.trim());
+              setter(jsonData);
+            } catch (error) {
+              const msg = error.message.toLowerCase();
+              if (isSubStr(msg, 'network')) {
+                this.info("Network Error");
+                await this.delay(1000 * 5);
+              }else if (isSubStr(msg, 'whitespace')){
+                this.info("None-whitespace Error");
+              } else {
+                this.error(`streamOrders() while ${error}`);
+              }
+            }
+          }
+        };
+        if (this.allStreams?.[streamId]) {
+          processChunks();
+        }else{
+          this.info(`Killed stream for ${streamIdPrefix}${accountIds}.`)
+        }
+      } catch (error) {
+        this.error(`streamOrders() - ${error}`);
+      }
+    } else {
+      this.info(`${streamIdPrefix}${accountIds} is active.`)
+    }
   }
 
 

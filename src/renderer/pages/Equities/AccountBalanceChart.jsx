@@ -15,12 +15,6 @@ import SimpleCardChart from '../../components/lightweightcharts/simpleCardChart'
 
 
 export default function Equites({accountClass, accountId}) {
-  // tradestation init
-  // const ts = new TS();
-  // const token_id = ts.getAccessToken();
-  const account = new Accounts();
-  // const marketData = new MarketData(token_id);
-  // react
   const detailsContainerRef = useRef(null);
   const [accountDetailsWidth, setAccountDetailsWidth] = useState(null);
   const [accountId, setAccountId] = useState(null);
@@ -33,7 +27,7 @@ export default function Equites({accountClass, accountId}) {
 
   useEffect(() => {
     // console.log('dbl success', account.setAccountID())
-    account.setAccountID(setAccountId, 'Cash');
+    window.ts.account.setAccountID(setAccountId, 'Cash');
     // getQuotes("QQQ,SPY,TQQQ");
     // marketData.streamQuoteChanges('SPY,QQQ');
   }, []);
@@ -41,7 +35,7 @@ export default function Equites({accountClass, accountId}) {
 
   useEffect(() => {
     if (accountId != null) {
-      account.setAccountBalances(setAccountBal, accountId, 'Cash');
+      window.ts.account.setAccountBalances(setAccountBal, accountId, 'Cash');
     }
   }, [accountId]);
 
@@ -57,14 +51,12 @@ export default function Equites({accountClass, accountId}) {
   useEffect(() => {
     if (accountId != null) {
       if (pause) {
-        console.log("no");
         if (balInterval !== null) {
           clearInterval(balInterval);
         }
       } else {
         const interval = setInterval(() => {
-          console.log("go");
-          account.setAccountBalances(setAccountBal, accountId, 'Cash');
+          window.ts.account.setAccountBalances(setAccountBal, accountId, 'Cash');
         }, 1000);
         setBalInterval(interval)
       }

@@ -36,9 +36,7 @@ export class MarketData {
     this.baseUrl = 'https://api.tradestation.com/v3/marketdata';
     this.accessToken = accessToken;
     // stream
-    this.allStreams = [];
-    // predefined readers
-    this.streamBarsReader = null;
+    this.allStreams = {};
   }
 
   info(msg=""){
@@ -50,17 +48,30 @@ export class MarketData {
   }
 
   killAllStreams(){
-    this.allStreams = [];
+    this.info("Killing All Open Streams In MarketData.")
+    for (const key in this.allStreams) {
+      if (this.allStreams?.[key]) {
+        this.allStreams[key].abort();//.cancel();
+        delete this.allStreams[key];
+      }
+    }
   }
 
-  killStreamBySymbol(symbol){
-    var updatedStreams = [];
-    this.allStreams.forEach((sym, index)=>{
-        if (symbol.toLowerCase() !== sym.toLowerCase()) {
-          updatedStreams.push(sym);
-        }
-    });
-    this.allStreams = updatedStreams;
+  killAllStreamsById(id){
+    this.info("Killing All Open Streams In MarketData.")
+    for (const key in this.allStreams) {
+      if (isSubStr(key, id)) {
+        this.allStreams[key].abort();//.cancel();
+        delete this.allStreams[key];
+      }
+    }
+  }
+
+  killStreamByKey(key) {
+    if (this.allStreams?.[key]) {
+      this.allStreams[key].abort();//.cancel();
+      delete this.allStreams[key];
+    }
   }
 
   async refreshToken(){
@@ -199,25 +210,41 @@ export class MarketData {
    * @returns {Promise<Stream>} - Promise resolving to the streamed marketdata bars.
    */
 
-    updateCandle(ref, bar){
-      ref.current?.update(this.formatBar(bar));
-    }
-
     updateVolume(ref, bar, upColor, downColor){
       ref.current?.update({
-        time: bar.Epoch,
-        value: bar.TotalVolume,
+        time: bar.time,
+        value: bar.volume,
         color:
-          bar.Open > bar.Close
+          bar.open > bar.close
             ? downColor || '#7289DA'
             : upColor || 'rgb(87,242,135)',
       });
     }
 
-    async streamBars(setter, symbol, options){
-      if (!inArray(this.allStreams, symbol)) {
+    // async streamBars(setter, streamIdPrefix, symbol, options){
+    //   const streamId = `${streamIdPrefix}${symbol}`;
+    //   const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
+    //   fetch(url, {
+    //     method: 'get',
+    //     signal: signal,
+    //     headers: {
+    //       Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
+    //     },
+    //   })
+    //   .then(function(response) {
+    //       console.log(`Fetch complete. (Not aborted)`);
+    //   }).catch(function(err) {
+    //       console.error(` Err: ${err}`);
+    //   });
+    // }
+
+    async streamBars(setter, streamIdPrefix, symbol, options){
+      const streamId = `${streamIdPrefix}${symbol}`;
+      if (!this.allStreams?.[streamId]) {
         this.refreshToken();
         try {
+          const controller = new AbortController();
+          const signal = controller.signal;
           const { interval, unit, barsback, sessiontemplate } = options;
 
           const params = new URLSearchParams({
@@ -228,20 +255,21 @@ export class MarketData {
           }).toString();
 
           const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
-          // console.log(url);
           const response = await fetch(url, {
+            method: 'get',
+            signal: signal,
             headers: {
               Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
             },
           });
-          this.streamBarsReader = response.body.getReader();
-          this.allStreams.push(symbol);
+          const reader = response.body.getReader();
+          this.allStreams[streamId] = controller;
           // Process the streaming data
           const processChunks = async () => {
-            while (true) {
+            while (this.allStreams?.[streamId]) {
               try {
-                const { done, value } = await this.streamBarsReader.read();
-                if (done || !inArray(this.allStreams, symbol)) {
+                const { done, value } = await reader.read();
+                if (done || !this.allStreams?.[streamId]) {
                   this.info(`Breaking stream for ${symbol}...`);
                   break;
                 }
@@ -252,17 +280,17 @@ export class MarketData {
               } catch (error) {
                 const msg = error.message.toLowerCase();
                 if (isSubStr(msg, 'network')) {
-                  console.log("Network Error");
+                  this.info("Network Error");
                   await this.delay(1000 * 5);
                 }else if (isSubStr(msg, 'whitespace')){
-                  console.log("None-whitespace Error");
+                  this.info("None-whitespace Error");
                 } else {
                   this.error(`streamBars() while ${error}`);
                 }
               }
             }
           };
-          if (inArray(this.allStreams, symbol)) {
+          if (this.allStreams?.[streamId]) {
             processChunks();
           }else{
             this.info(`Killed stream for ${symbol}.`)
@@ -535,23 +563,61 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
    * @param {string} symbols - List of valid symbols in a comma-separated format.
    * @returns {Promise<QuoteStream>} - Promise resolving to the streamed Quote changes.
    */
-  streamQuoteChanges(symbols) {
-    const url = `${this.baseUrl}/stream/quotes/${symbols}`;
-    return axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        Accept: 'application/vnd.tradestation.streams.v2+json',
+
+  async streamQuotes(setter, streamIdPrefix, symbols){
+    const streamId = `${streamIdPrefix}${symbols}`;
+    if (!this.allStreams?.[streamId]) {
+      this.refreshToken();
+      try {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        const url = `${this.baseUrl}/stream/quotes/${symbols}`;
+        const response = await fetch(url,
+          {
+            method: 'get',
+            signal: signal,
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
+          },
+        });
+        const reader = response.body.getReader();
+        this.allStreams[streamId] = controller;
+        // Process the streaming data
+        const processChunks = async () => {
+          while (this.allStreams?.[streamId]) {
+            try {
+              const { done, value } = await reader.read();
+              if (done || !this.allStreams?.[streamId]) {
+                this.info(`Break q_${symbols}!`);
+                break;
+              }
+              const jsonString = new TextDecoder().decode(value);
+              const jsonData = JSON.parse(jsonString.trim());
+              setter(jsonData);
+            } catch (error) {
+              const msg = error.message.toLowerCase();
+              if (isSubStr(msg, 'network')) {
+                this.info("Network Error");
+                await this.delay(1000 * 5);
+              }else if (isSubStr(msg, 'whitespace')){
+                this.info("None-whitespace Error");
+              } else {
+                this.error(`streamQuotes() while ${error}`);
+              }
+            }
+          }
+        };
+        if (this.allStreams?.[streamId]) {
+          processChunks();
+        }else{
+          this.info(`Killed stream for ${streamIdPrefix}${symbols}.`)
+        }
+      } catch (error) {
+        this.error(`streamQuotes() - ${error}`);
       }
-    }).then(response => {
-      response.data.on('data', function(data) {
-        console.log(data.toString());
-      }).on('error', function(err) {
-        console.error(err);
-      });
-    })
-    .catch(error => {
-      console.error(error);
-    });
+    } else {
+      this.info(`${streamIdPrefix}${symbols} is active.`)
+    }
   }
 
 

@@ -19,7 +19,7 @@ export default function ExtHrs({options, setOptions}) {
         }
       }
       title={`Session: ${options.sessiontemplate}`}
-      className={` text-lg absolute right-2 bottom-2 ml-2 cursor-pointer ${options.sessiontemplate === 'Default' ? 'text-gray-500' : 'text-discord-blurple'}`}>
+      className={` text-lg cursor-pointer ${options.sessiontemplate === 'Default' ? 'text-gray-500' : 'text-discord-blurple'}`}>
       <IconClock/>
     </span>
   );

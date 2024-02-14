@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 
-
 import {
   IconFlask,
   IconFlaskVial,
@@ -10,65 +9,45 @@ import {
   IconLineChart,
   IconSearch,
   IconWallet,
-  IconHeart,
-  IconHeartPulse,
   IconCog,
   IconClock
 } from "../../../api/Icons";
 
-import {
-  getMarketOpenStatus
-} from "../util";
-
-
 export default function InsertChartHeader({chartTypeCallback, chartType, searchInput, setSearchInput}){
   const marketType = "Equites";
+  const assetType = "STOCK";
   const selectChartRef = useRef(null);
   const searchRef = useRef(null);
-  const [streaming, setStreaming] = useState("");
+  const [symbolCheck, setSymbolCheck] = useState(null);
 
   const selectOnChange = () => {
     chartTypeCallback(selectChartRef.current.value.toLowerCase());
   }
 
-  const setSymbol = () => {
-    if (searchRef.current !== null) {
-      setSearchInput(searchRef.current?.value.toUpperCase());
-    }
-  }
-
   useEffect(() => {
-    console.log("header searchInput", searchInput);
-  }, [searchInput]);
-
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const streams = window.ts.marketData.allStreams;
-      var res = "";
-      if (streams.length > 0 && getMarketOpenStatus() !== 'Closed') {
-        res = "on";
-      } else if (streams.length > 0 && getMarketOpenStatus() === 'Closed') {
-        res = "pulse";
+    if (symbolCheck !== null) {
+      if (symbolCheck[0]?.Symbol && symbolCheck[0]?.AssetType === assetType) {
+        setSearchInput(symbolCheck[0]?.Symbol);
+      }else{
+        console.log("Not a Symbol.");
       }
-      setStreaming(res);
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
     }
-  }, []);
+  }, [symbolCheck]);
 
   const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
-      setSymbol();
+    if (searchRef.current !== null) {
+      const sym = searchRef.current?.value.toUpperCase();
+      if (event.key === 'Enter') {
+        window.ts.marketData.setSymbolDetails(setSymbolCheck, sym);
+      } else if (!event.key){ // on click
+        window.ts.marketData.setSymbolDetails(setSymbolCheck, sym);
+      }
     }
   };
 
   return(
     <>
-
-     <div className="flex gap-2 px-2 pb-[4px]">
+     <div className="flex gap-2 px-2 py-[4px]">
         <div className="flex">
           <input
             ref={searchRef}
@@ -77,7 +56,7 @@ export default function InsertChartHeader({chartTypeCallback, chartType, searchI
             placeholder={`${marketType} Search`}
             onKeyPress={handleKeyPress}
           />
-          <button onClick={() => setSymbol()} className="px-2 bg-discord-softBlurple hover:bg-discord-blurple active:bg-discord-softBlurple rounded-r">
+          <button onClick={handleKeyPress} className="px-2 bg-discord-softBlurple hover:bg-discord-blurple active:bg-discord-softBlurple rounded-r">
             <IconSearch />
           </button>
 
@@ -98,25 +77,6 @@ export default function InsertChartHeader({chartTypeCallback, chartType, searchI
               <option>Line</option>
             </select>
           </div>
-
-
-        </div>
-        <div className={`grow text-right text-lg`}>
-          {
-            streaming === 'on' ? (
-              <span title="Streaming." className="animate-pulse text-discord-red">
-                <IconHeart/>
-              </span>
-            ) : streaming === 'pulse' ? (
-              <span title="Stream Heart Beat." className="animate-pulse text-discord-red">
-                 <IconHeartPulse/>
-              </span>
-            ) : (
-              <span title="Not Streaming." className="text-gray-500">
-                 <IconHeart/>
-              </span>
-            )
-          }
 
         </div>
     </div>

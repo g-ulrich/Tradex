@@ -29,9 +29,30 @@
 const axios = require('axios');
 
 export class Orders {
-  constructor(token) {
+  constructor(accessToken) {
     this.baseUrl = 'https://api.tradestation.com/v3/orderexecution'; // Update with the correct base URL
-    this.token = token;
+    this.accessToken = accessToken;
+  }
+
+  info(msg=""){
+    console.log(`${currentESTTime()} Orders [INFO] - ${msg}`)
+  }
+
+  error(msg=""){
+    console.error(`${currentESTTime()} Orders [ERROR] - ${msg}`)
+  }
+
+  async refreshToken(){
+    window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
+    window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
+      const accessToken = arg.ts?.access_token;
+      if (typeof accessToken === 'string'){
+        if (this.accessToken !== accessToken) {
+          this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+        }
+        this.accessToken = accessToken;
+      }
+    });
   }
 
   /**
@@ -44,7 +65,7 @@ export class Orders {
 
     return axios.post(url, order, {
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.accessToken}`,
         'Content-Type': 'application/json',
       },
     })
@@ -66,7 +87,7 @@ confirmGroupOrder(groupOrder) {
 
   return axios.post(url, groupOrder, {
     headers: {
-      Authorization: `Bearer ${this.token}`,
+      Authorization: `Bearer ${this.accessToken}`,
       'Content-Type': 'application/json',
     },
   })
@@ -88,7 +109,7 @@ placeGroupOrder(groupOrder) {
 
   return axios.post(url, groupOrder, {
     headers: {
-      Authorization: `Bearer ${this.token}`,
+      Authorization: `Bearer ${this.accessToken}`,
       'Content-Type': 'application/json',
     },
   })
@@ -104,20 +125,53 @@ placeGroupOrder(groupOrder) {
    * @param {Object} order - The order details.
    * @returns {Promise<Array>} - Promise resolving to the order responses.
    */
-placeOrder(order) {
-  const url = `${this.baseUrl}/orders`;
 
-  return axios.post(url, order, {
-    headers: {
-      Authorization: `Bearer ${this.token}`,
-      'Content-Type': 'application/json',
-    },
-  })
-    .then(response => response.data.Orders)
-    .catch(error => {
-      console.error('Error placing order:', error);
-      throw error;
-    });
+_simple(accountId, orderType, quantity, symbol, timeInForce, action){
+  if (
+    accountId === undefined ||
+    orderType === undefined ||
+    quantity === undefined ||
+    symbol === undefined ||
+    timeInForce === undefined ||
+    action === undefined
+    ) {
+    return null;
+  }else{
+    const order = {
+      AccountID: accountId,
+      Symbol: symbol,
+      Quantity: quantity.toString(),
+      OrderType: orderType,
+      TradeAction: action.toUpperCase(),
+      TimeInForce:
+      {
+          Duration: timeInForce
+      },
+      // "Route": "Intelligent"
+    }
+    console.log("Order blob", order);
+    return order;
+  }
+}
+
+placeOrder(order) {
+  this.refreshToken();
+  try {
+    const url = `${this.baseUrl}/orders`;
+    return axios.post(url, order, {
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.data.Orders)
+      .catch(error => {
+        console.error('Error placing order:', error);
+        throw error;
+      });
+  } catch (error) {
+    this.error(`placeOrder() - ${error}`)
+  }
 }
 
 /**
@@ -131,7 +185,7 @@ replaceOrder(orderID, replacementOrder) {
 
   return axios.put(url, replacementOrder, {
     headers: {
-      Authorization: `Bearer ${this.token}`,
+      Authorization: `Bearer ${this.accessToken}`,
       'Content-Type': 'application/json',
     },
   })
@@ -151,7 +205,7 @@ getActivationTriggers() {
 
   return axios.get(url, {
     headers: {
-      Authorization: `Bearer ${this.token}`,
+      Authorization: `Bearer ${this.accessToken}`,
     },
   })
     .then(response => response.data.ActivationTriggers)
@@ -170,7 +224,7 @@ getActivationTriggers() {
 
   return axios.get(url, {
     headers: {
-      Authorization: `Bearer ${this.token}`,
+      Authorization: `Bearer ${this.accessToken}`,
     },
   })
     .then(response => response.data.Routes)

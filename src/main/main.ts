@@ -16,6 +16,7 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import {TSAuthentication} from './tradestation/authentication';
+const sound = require("sound-play");
 
 const tsAuth = new TSAuthentication();
 
@@ -31,6 +32,16 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 let loginWindow: BrowserWindow | null = null;
+
+
+ipcMain.on('playDing', async (event, _) => {
+  try {
+    const filePath = path.join(__dirname, "sounds/ding.wav");
+    await sound.play(filePath);
+  } catch (error) {
+    console.error(`Play ding - ${error}`);
+  }
+});
 
 
 ipcMain.on('getRefreshToken', async (event, _) => {

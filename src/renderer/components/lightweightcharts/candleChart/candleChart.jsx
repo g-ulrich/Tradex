@@ -37,7 +37,9 @@ import { isStringInArray,
   getAllFunctions,
   getRandomRGB,
   findObjectById,
-  inArray } from "../../../tools/util";
+  inArray,
+  removeDupsFromJsonArr,
+  inJsonArray } from "../../../tools/util";
 import {
   IconFlask,
   IconFlaskVial,
@@ -50,19 +52,17 @@ import {
   IconX,
   IconClock
 } from "../../../api/Icons";
+import IsStreaming from '../../../pages/Equities/isStreaming';
 import AreaChartType from './areaChartType';
 import InsertVolume from './insertVolume';
 import InsertCandles from './insertCandles';
 import ChartLegend from './legend';
 import InsertChartHeader from './insertChartHeader';
 import Exthrs from './insertExtHrs';
-import axios from 'axios';
+
 
 export default function CandleChart({ preloadSymbol, accountId, symbolOptions, symbolCallback }) {
-  const marketData = window.ts.marketData;
-  const account = window.ts.account;
   const containerRef = useRef(null);
-
   // Chart Component
   const volumeRef = useRef(null);
   const primaryChartRef = useRef(null);
@@ -72,23 +72,31 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
   const seriesRef = useRef(null); // tied to specfic series type
   const [crosshairIndex, setCrosshairIndex] = useState(0);
   // SeriesData
-  const [data, setData] = useState(null);
+  // const [data, setData] = useState(null);
   const [candles, setCandles] = useState(null);
-  const [newCandle, setNewCandle] = useState(null);
+  // const [newCandle, setNewCandle] = useState(null); // accumulated candle from bar data
+  const [newBar, setNewBar] = useState(null); // incoming unformated bar
+  const streamId = "e_"
   // const [extHrs, setExtHrs] = useState(symbolOptions?.sessiontemplate === 'Default' ? true : false);
   // Symbol
   const [options, setOptions] = useState(symbolOptions);
+  const [prevSymbol, setPrevSymbol] = useState(null);
   const [symbol, setSymbol] = useState(preloadSymbol);
   const [searchInput, setSearchInput] = useState(preloadSymbol);
   const [symbolDetails, setSymbolDetails] = useState(null);
   // for daily markers
+  const [streamOrders, setStreamOrders] = useState(null);
   const [orderHistory, setOrderHistory] = useState([]);
   const [orderHistoryInterval, setOrderHistoryInterval] = useState(null);
 
   useEffect(() => {
+    if (accountId !== null) {
+      window.ts.account.streamOrders(setStreamOrders, streamId, accountId)
+    }
+
     const resizeWidth = () => {
       if (containerRef.current) {
-        setChartWidth(containerRef.current.clientWidth);
+        setChartWidth(containerRef.current.clientWidth - 20);
       }
     };
     resizeWidth();
@@ -96,81 +104,105 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
     return () => {
       window.removeEventListener("resize", resizeWidth);
     };
+    return()=>{
+      window.ts.account.killAllStreamsById(streamId);
+    }
   }, []);
 
+
   useEffect(() => {
-    marketData.allStreams = [];
-    marketData.setSymbolDetails(setSymbolDetails, symbol);
-    marketData.setCandles(setCandles, symbol, options);
-    account.setOrdersBySymbol(setOrderHistory, symbol, accountId);
-    if (typeof symbolCallback !== 'undefined'){
-      symbolCallback(symbol);
+    if (streamOrders !== null){
+      console.log("candleChart stream orders", streamOrders);
     }
-    if (accountId != null || accountId !== undefined) {
+  }, [streamOrders]);
+
+  useEffect(() => {
+    if (prevSymbol !== null) {
+      window.ts.marketData.killStreamByKey(`${streamId}${prevSymbol}`);
+    }
+    setNewBar(null);
+    if (getMarketOpenStatus() !== 'Closed'){
+      window.ts.marketData.streamBars(setNewBar, streamId, symbol, {...options, barsback:'1'});
+    }
+  }, [symbol]);
+
+
+  useEffect(() => {
+    const newSymbol = searchInput;
+
+    if (symbolCallback){
+      // for main equities page
+      symbolCallback(newSymbol);
+    }
+
+    // setup candles for new symbol
+    window.ts.marketData.setSymbolDetails(setSymbolDetails, symbol);
+    window.ts.marketData.setCandles(setCandles, newSymbol, options);
+
+    // Poll order history by symbol for day
+    if (accountId) {
       if (orderHistoryInterval !== null) {
         clearInterval(orderHistoryInterval);
       }
-      account.setOrdersBySymbol(setOrderHistory, symbol, accountId);
+      window.ts.account.setOrdersBySymbol(setOrderHistory, newSymbol, accountId);
       const interval = setInterval(() => {
-        if (accountId != null || accountId !== undefined) {
-          account.setOrdersBySymbol(setOrderHistory, symbol, accountId);
+        if (accountId) {
+          window.ts.account.setOrdersBySymbol(setOrderHistory, newSymbol, accountId);
         }
       }, 30000);
       setOrderHistoryInterval(interval);
     }
+
+    // set new symbol and prev and remove streamBar - newBar
+    setPrevSymbol(symbol);
+    setSymbol(newSymbol);
+    setNewBar(null);
+
     return () => {
       if (orderHistoryInterval !== null) {
         clearInterval(orderHistoryInterval);
       }
     }
-  }, [symbol, options]);
+  }, [searchInput, options]);
+
 
   useEffect(() => {
-    if (candles !== null) {
-      setData(candles);
-      marketData.allStreams = [];
-      if (getMarketOpenStatus() !== 'Closed'){
-        marketData.streamBars(setNewCandle, symbol, {...options, barsback:'1'});
-      }
-    }
-  }, [candles]);
-
-  useEffect(() => {
-    if (newCandle !== null && candles !== null && seriesRef?.current){
-      if (typeof newCandle?.Heartbeat === 'undefined') {
-        const bar = newCandle;
+    if (newBar !== null && candles !== null && seriesRef?.current){
+      if (typeof newBar?.Heartbeat === 'undefined') {
         try {
-            marketData.updateCandle(seriesRef, newCandle);
-            // marketData.updateVolume(volumeRef, newCandle, chartColors.softGreen, chartColors.softBlurple);
-            setData(prevData =>
-              prevData[prevData.length-1].time !== marketData.formatBar(newCandle).time ?
-              [...prevData, marketData.formatBar(newCandle)] : [...prevData]);
+            const formatedBar = window.ts.marketData.formatBar(newBar);
+            if (symbol !== prevSymbol){
+              // var updatedCandle = {};
+              // if (newCandle !== null){
+              //   updatedCandle = {...newCandle,...formatedBar};
+              // } else {
+              //   updatedCandle = formatedBar;
+              // }
+              // setNewCandle(updatedCandle);
+              seriesRef.current?.update(formatedBar);
+              // marketData.updateVolume(volumeRef, formatedBar, chartColors.softGreen, chartColors.softBlurple);
+              if (candles[candles.length-1].time < formatedBar.time){
+                console.log("updating candles oldbar", candles[candles.length-1],"update bar", formatedBar);
+                // setCandles((prev)=>[...prev, updatedCandle]);
+                const candleCallback = (data) =>{
+                  setCandles(prev=>removeDupsFromJsonArr(data, 'time'));
+                }
+                window.ts.marketData.setCandles(candleCallback, symbol, options);
+
+                // setNewCandle(null);
+              }
+            }else {
+              // setNewCandle(null);
+            }
           } catch (error) {
-          console.error(error);
+          console.error("newBar", error);
         }
       } else{
-        console.log("Stream heartbeat", newCandle?.Heartbeat);
+        console.log("Stream heartbeat", newBar?.Heartbeat);
       }
     }
-  }, [newCandle]);
+  }, [newBar]);
 
-  useEffect(() => {
-    if (data !== null) {
-      if (data.length > candles.length) {
-        try {
-          marketData.setCandles(setCandles, symbol, options);
-        } catch (error) {
-          console.error(`Setting new candles - ${error}`);
-        }
-      }
-    }
-  }, [data]);
-
-  useEffect(() => {
-    if (searchInput !== null  || searchInput.trim() !== "") {
-      setSymbol(searchInput);
-    }
-  }, [searchInput]);
 
   const crosshairAction = (e) => {
     if (primaryChartRef.current) {
@@ -185,35 +217,46 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
 
   return (
     <>
-      <div ref={containerRef} className="grow relative min-w-[300px] sm:w-[100%]">
-        <div className={`w-full h-[${chartHeight}px] bg-discord-darkestGray rounded py-2`}>
+      <div ref={containerRef} className="row relative p-0 m-0">
+        <div className={`col-12 p-0 m-0 h-[${chartHeight}px] bg-discord-darkestGray rounded border border-discord-black`}>
         {candles !== null && containerRef.current && symbolDetails !== null ? (
           <>
+            <div className="absolute right-2 top-2 text-lg ">
+              <IsStreaming symbol={symbol} streamId={streamId}/>
+            </div>
             <InsertChartHeader
             chartTypeCallback={setChartType}
             chartType={chartType}
             searchInput={searchInput}
             setSearchInput={setSearchInput}
             />
-            <ChartLegend
-              symbolName={`${symbol}${symbolDetails[0]?.Exchange ? `:${symbolDetails[0]?.Exchange}` : ''}`}
-              candles={data}
-              chartref={primaryChartRef}
-              moveindex={crosshairIndex}/>
+            {
+              candles !== null ? (
+              <>
+              <ChartLegend
+                symbolName={`${symbol}${symbolDetails[0]?.Exchange ? `:${symbolDetails[0]?.Exchange}` : ''}`}
+                candles={removeDupsFromJsonArr(candles, 'time')}
+                chartref={primaryChartRef}
+                moveindex={crosshairIndex}/>
+              </>
+              ) : (<></>)
+            }
             <Chart
               ref={primaryChartRef}
               onCrosshairMove={crosshairAction}
               {...defaultChartOptions({ width: chartWidth, height: chartHeight - 40 })}>
               <InsertVolume volumeRef={volumeRef} candles={candles}/>
               <InsertCandles chartRef={seriesRef}
-                candles={candles}
+                candles={removeDupsFromJsonArr(candles, "time")}
                 orderHistory={orderHistory}
                 chartType={chartType}
                 candleKey={'close'}
                 visRange={getVisRange(candles, primaryChartRef)}/>
             </Chart>
             {/* extHours */}
-            <Exthrs options={options} setOptions={setOptions}/>
+            <div className="float-right absolute bottom-0 right-2">
+              <Exthrs options={options} setOptions={setOptions}/>
+            </div>
             </>
           ) : (
             <span className="text-center">Loading...</span>

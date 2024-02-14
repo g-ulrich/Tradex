@@ -22,6 +22,7 @@ import { MarketData } from '../../../api/tradestation/marketData';
 export default function InsertCandles({chartRef, candles, orderHistory, chartType, candleKey, visRange}){
   const [markers, setMarkers] = useState([]);
   const [isProfiting, setIsProfiting] = useState(true);
+
   useEffect(() => {
     if (candles !== null) {
       try {
@@ -50,6 +51,7 @@ export default function InsertCandles({chartRef, candles, orderHistory, chartTyp
   }
 
   useEffect(() => {
+    console.log("Order history", orderHistory);
     if (orderHistory !== null || orderHistory.length > 0) {
       const legs = orderHistory.map((order)=>{
         try {
@@ -85,6 +87,8 @@ export default function InsertCandles({chartRef, candles, orderHistory, chartTyp
       setMarkers(newMarkersArray);
     }
   }, [orderHistory]);
+
+
 
 
   return(

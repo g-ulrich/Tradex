@@ -25,6 +25,7 @@ export default function ChartLegend({symbolName, candles, chartref, moveindex}) 
   const [showOpenStatus, setShowOpenStatus] = useState(false);
   const zIndexVal = '999';
 
+
   const marginMult=(n=0)=>{
     const mainMargin=0;
     const spacing=20;

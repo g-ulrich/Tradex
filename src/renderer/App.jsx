@@ -15,13 +15,25 @@ export default function App() {
       setToken(window.ts.token)
     }, 1000);
     setIntervalItem(interval);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    }
   }, []);
 
 
   useEffect(() => {
+    const refreshTokenInterval = setInterval(() => {
+      window.ts.refreshToken();
+    }, 60000*5);
+
+    //
     if (intervalItem !== null && token !== null){
       clearInterval(intervalItem);
+    }
+
+    return () => {
+      console.log("Clearing refreshTokenInterval...");
+      clearInterval(refreshTokenInterval);
     }
   }, [token]);
 
