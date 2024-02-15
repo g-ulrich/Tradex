@@ -118,7 +118,7 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
 
   useEffect(() => {
     if (prevSymbol !== null) {
-      window.ts.marketData.killStreamByKey(`${streamId}${prevSymbol}`);
+      window.ts.marketData.killAllStreamsById(streamId);
     }
     setNewBar(null);
     if (getMarketOpenStatus() !== 'Closed'){
@@ -149,7 +149,7 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
         if (accountId) {
           window.ts.account.setOrdersBySymbol(setOrderHistory, newSymbol, accountId);
         }
-      }, 30000);
+      }, 10000);
       setOrderHistoryInterval(interval);
     }
 
@@ -219,7 +219,7 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
     <>
       <div ref={containerRef} className="row relative p-0 m-0">
         <div className={`col-12 p-0 m-0 h-[${chartHeight}px] bg-discord-darkestGray rounded border border-discord-black`}>
-        {candles !== null && containerRef.current && symbolDetails !== null ? (
+        {candles !== null && containerRef.current && symbolDetails !== null && prevSymbol !== symbol ? (
           <>
             <div className="absolute right-2 top-2 text-lg ">
               <IsStreaming symbol={symbol} streamId={streamId}/>

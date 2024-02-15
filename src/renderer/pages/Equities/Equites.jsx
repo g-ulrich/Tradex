@@ -37,14 +37,25 @@ const getplStr = (accountBal) =>{
   return '';
 }
 
+const checkDing = (soundPlayed) => {
+  const currentTime = new Date();
+  if (
+    (currentTime.getHours() === 16 && currentTime.getSeconds() === 0) ||
+    (currentTime.getHours() === 9 && currentTime.getMinutes() === 30 && currentTime.getSeconds() === 0)
+  ) {
+    if (!soundPlayed) {
+      window.electron.ipcRenderer.sendMessage('playDing', '');
+      soundPlayed = true;
+    }
+  } else {
+    soundPlayed = false;
+  }
+  return soundPlayed;
+}
+
 const friendlyMarketStatus = () => {
   var marketStatus = getMarketOpenStatus();
   return`${marketStatus}${marketStatus !== 'Closed' ? '-Market': ''}`;
-}
-
-
-const playDing = () => {
-  window.electron.ipcRenderer.sendMessage('playDing', '');
 }
 
 export default function Equites() {
@@ -58,7 +69,8 @@ export default function Equites() {
   // orders
   const [prevOrderHistory, setPrevOrderHistory] = useState(null);
   const [orderHistory, setOrderHistory] = useState([]);
-  const [todaysOrderHistory, setTodaysOrderHistory] = useState([]);
+  const [streamOrders, setStreamOrders] = useState(null);
+  const streamId = "eo_";
 
   const [chartCallbackData, setChartCallbackData] = useState(null);
   const preLoadedSymbol = "QQQ"
@@ -67,13 +79,17 @@ export default function Equites() {
 
 
   useEffect(() => {
-    playDing();
+    let soundPlayed = false; // Flag variable to track if the sound has been played
+    const interval = setInterval(() => {
+      soundPlayed = checkDing(soundPlayed);
+    }, 1000);
+
     window.ts.account.setAccounts(setAcc, 'Cash');
     return () => {
+      clearInterval(interval);
       window.ts.marketData.killAllStreams();
     }
   }, []);
-
 
   useEffect(() => {
     if (acc !== null) {
@@ -85,33 +101,27 @@ export default function Equites() {
     window.ts.account.setPostions(setPositions, accId);
     window.ts.account.setAccountBalances(setAccountBal, accId, 'Cash');
     window.ts.account.setHistoricalOrders(setOrderHistory, accId, getDateNDaysAgo(7));
-    if (activeSymbol !== null) {
-      window.ts.account.setOrdersBySymbol(setTodaysOrderHistory, activeSymbol, accId);
-    }
   }
 
   useEffect(() => {
+    let interval;
     if (accId != null || accId !== undefined) {
+      window.ts.account.streamOrders(setStreamOrders, streamId, accId)
       onAccIdChange();
-      document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
       const interval = setInterval(() => {
-          console.log("Streams: MarketDara", window.ts.marketData.allStreams, "Account", window.ts.account.allStreams);
         if (accId != null || accId !== undefined) {
           onAccIdChange();
         }
-        document.title = `Tradex | Equites - ${friendlyMarketStatus()}`;
       }, 1000*10);
-
-      return () => {
-        clearInterval(interval);
-      }
+    }
+    return () => {
+      clearInterval(interval);
+      window.ts.account.killAllStreamsById(streamId);
     }
   }, [accId]);
 
-
   useEffect(() => {
     if (positions !== null) {
-        console.log("positions", positions);
         setPrevPositions(positions);
     }
   }, [positions]);
@@ -119,6 +129,13 @@ export default function Equites() {
   useEffect(() => {
     setPrevOrderHistory(orderHistory);
   }, [orderHistory]);
+
+  useEffect(() => {
+    // if (streamOrders !== null) {
+      console.log(streamOrders);
+      // setOrderHistory(prev => [...prev, streamOrders]);
+    // }
+  }, [streamOrders]);
 
   const symbolCallback = (chartSymbol) => {
     setActiveSymbol(chartSymbol);
@@ -183,8 +200,10 @@ export default function Equites() {
             </div>
           </div>
 
+
           <div className="row">
           <div className="col-sm-6 col-md-6 col-lg-6 col-xxl-3 p-1  m-0">
+
             {orderHistory !== null ? (
               <WatchlistTable
                 title={'Order History'}

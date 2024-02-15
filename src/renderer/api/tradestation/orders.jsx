@@ -32,6 +32,7 @@ export class Orders {
   constructor(accessToken) {
     this.baseUrl = 'https://api.tradestation.com/v3/orderexecution'; // Update with the correct base URL
     this.accessToken = accessToken;
+    this.isRefreshingToken = false;
   }
 
   info(msg=""){
@@ -43,16 +44,20 @@ export class Orders {
   }
 
   async refreshToken(){
-    window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
-    window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
-      const accessToken = arg.ts?.access_token;
-      if (typeof accessToken === 'string'){
-        if (this.accessToken !== accessToken) {
-          this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+    if (!this.isRefreshingToken) {
+      this.isRefreshingToken = true;
+      window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
+      window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
+        const accessToken = arg.ts?.access_token;
+        if (typeof accessToken === 'string'){
+          if (this.accessToken !== accessToken) {
+            this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+          }
+          this.accessToken = accessToken;
         }
-        this.accessToken = accessToken;
-      }
-    });
+        this.isRefreshingToken = false;
+      });
+    }
   }
 
   /**

@@ -98,7 +98,7 @@ export default function OrderForm({symbol, accountID, positions}) {
   }
 
   useEffect(() => {
-    if (positions !== null && quote !== null) {
+    if (positions && positions !== null && quote !== null) {
       positions.forEach((p)=>{
         if (p.Symbol === quote.Symbol){
           setPosition(p);
@@ -163,11 +163,31 @@ export default function OrderForm({symbol, accountID, positions}) {
                   ) : (<></>)
                 }
               </div>
+              {
+                simple ? (
+                  <div className="row p-0 m-0">
+                    {/* simple Quantity */}
+                    <div className="col-6 px-1 text-lg text-white mb-2">
+                      Quantity
+                    </div>
+                    <div className="col-6  text-lg">
+                      <div className="row rounded">
+                        <span onClick={()=>{handleQuantity(parseInt(quantity)-1)}} className={`col-2 p-0 text-white cursor-pointer rounded text-center active:bg-discord-darkGray`}><IconAngleL/></span>
+                        <input type="text" value={quantity} onChange={(e)=>{handleQuantity(parseInt(e.target.value))}}
+                        className="col-8 outline-none text-white text-center rounded bg-discord-darkGray"/>
+                        <span onClick={()=>{handleQuantity(parseInt(quantity)+1)}} className={`col-2 p-0 text-white cursor-pointer rounded text-center  active:bg-discord-darkGray`}><IconAngleR/></span>
+                      </div>
+                    </div>
 
+                  </div>
+                ) : (
+                  <></>
+                )
+              }
               <div className={`${position?.Symbol ? 'col-6 pr-4' : 'col-12'} text-lg`}>
               <div onClick={() => {handleAction('buy')}} className="row cursor-pointer bg-discord-green hover:bg-discord-softGreen active:bg-discord-green border-2 border-discord-green hover:border-discord-softGreen active:border-discord-green text-white rounded">
                 <div className={`col-12 px-1 ${position?.Symbol ? 'text-left' : 'text-center'}`}>
-                  Buy {
+                  Buy ({quantity}) {
                         quote !== null ?
                         `@ ${parseFloat(quote.Ask).toFixed(3)}` : ''
                     }
@@ -193,7 +213,7 @@ export default function OrderForm({symbol, accountID, positions}) {
                 <div onClick={() => {handleAction('sell')}}
                 className="row cursor-pointer bg-discord-blurple hover:bg-discord-softBlurple active:bg-discord-blurple border-2 border-discord-blurple hover:border-discord-softBlurple active:border-discord-blurple text-white rounded">
                   <div className="col-12 px-1 text-left">
-                        Sell {
+                        Sell ({quantity}) {
                         quote !== null ?
                         `@ ${parseFloat(quote.Bid).toFixed(3)}` : ''
                         }
@@ -216,27 +236,7 @@ export default function OrderForm({symbol, accountID, positions}) {
                 </div>
               </div>
               {/* Simple order form */}
-              {
-                simple ? (
-                  <div className="row p-0 m-0 pt-2 mt-1">
-                    {/* simple Quantity */}
-                    <div className="col-6 px-1 text-lg text-white mb-2">
-                      Quantity
-                    </div>
-                    <div className="col-6  text-lg">
-                      <div className="row rounded">
-                        <span onClick={()=>{handleQuantity(parseInt(quantity)-1)}} className={`col-2 p-0 text-white cursor-pointer rounded text-center active:bg-discord-darkGray`}><IconAngleL/></span>
-                        <input type="text" value={quantity} onChange={(e)=>{handleQuantity(parseInt(e.target.value))}}
-                        className="col-8 outline-none text-white text-center rounded bg-discord-darkGray"/>
-                        <span onClick={()=>{handleQuantity(parseInt(quantity)+1)}} className={`col-2 p-0 text-white cursor-pointer rounded text-center  active:bg-discord-darkGray`}><IconAngleR/></span>
-                      </div>
-                    </div>
 
-                  </div>
-                ) : (
-                  <></>
-                )
-              }
               {/* complex Order form */}
               {
                 action !== null && !simple ? (

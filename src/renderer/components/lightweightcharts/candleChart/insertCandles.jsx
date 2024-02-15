@@ -51,7 +51,6 @@ export default function InsertCandles({chartRef, candles, orderHistory, chartTyp
   }
 
   useEffect(() => {
-    console.log("Order history", orderHistory);
     if (orderHistory !== null || orderHistory.length > 0) {
       const legs = orderHistory.map((order)=>{
         try {

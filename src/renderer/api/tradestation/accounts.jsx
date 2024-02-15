@@ -33,6 +33,7 @@ export class Accounts {
   constructor(accessToken) {
     this.baseUrl = 'https://api.tradestation.com/v3/brokerage';
     this.accessToken = accessToken;
+    this.isRefreshingToken = false;
     // streams
     this.allStreams = {};
   }
@@ -73,16 +74,20 @@ export class Accounts {
   }
 
   async refreshToken(){
-    window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
-    window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
-      const accessToken = arg.ts?.access_token;
-      if (typeof accessToken === 'string'){
-        if (this.accessToken !== accessToken) {
-          this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+    if (!this.isRefreshingToken) {
+      this.isRefreshingToken = true;
+      window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
+      window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
+        const accessToken = arg.ts?.access_token;
+        if (typeof accessToken === 'string'){
+          if (this.accessToken !== accessToken) {
+            this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+          }
+          this.accessToken = accessToken;
         }
-        this.accessToken = accessToken;
-      }
-    });
+        this.isRefreshingToken = false;
+      });
+    }
   }
 
   /**
@@ -144,18 +149,20 @@ export class Accounts {
    * @param {string} accountIds - List of valid Account IDs for the authenticated user in comma-separated format.
    * @returns {Promise<Array>} - Promise resolving to the list of account balances.
    */
-  async getAccountBalances(accountIds) {
+  async getAccountBalances(accounts) {
     this.refreshToken();
-    const url = `${this.baseUrl}/accounts/${accountIds}/balances`;
-    return axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-    })
-    .then(response => response.data.Balances)
-    .catch(error => {
-      this.error(`getAccountBalances() ${error}`);
-    });
+    if (accounts !== null) {
+      const url = `${this.baseUrl}/accounts/${accounts}/balances`;
+      return axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+      })
+      .then(response => response.data.Balances)
+      .catch(error => {
+        this.error(`getAccountBalances() ${error}`);
+      });
+    }
 }
 
 setAccountBalances(setter, accountIds, type='Cash'){
@@ -166,12 +173,16 @@ setAccountBalances(setter, accountIds, type='Cash'){
         if (type === '') {
           setter(arr[0]);
         } else {
-          arr.forEach((obj, index)=>{
-            if (obj.AccountType === type) {
-              setter(obj);
-              // break;
-            }
-          });
+          if (arr) {
+            arr.forEach((obj, index)=>{
+              if (obj.AccountType === type) {
+                setter(obj);
+                // break;
+              }
+            });
+          } else {
+            // setter(arr);
+          }
         }
       } catch (error) {
         this.error(`setAccountBalances() ${error}`);
@@ -310,21 +321,23 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
    */
   getOrders(accounts, pageSize, nextToken) {
     this.refreshToken();
-    const url = `${this.baseUrl}/accounts/${accounts}/orders`;
-    const params = {
-      pageSize,
-      nextToken,
-    };
-    return axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-      params,
-    })
-      .then(response => response.data.Orders)
-      .catch(error => {
-        console.error('Error fetching orders:', error);
-      });
+    if (accounts !== null) {
+      const url = `${this.baseUrl}/accounts/${accounts}/orders`;
+      const params = {
+        pageSize,
+        nextToken,
+      };
+      return axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+        params,
+      })
+        .then(response => response.data.Orders)
+        .catch(error => {
+          console.error('Error fetching orders:', error);
+        });
+    }
   }
 
   setOrdersBySymbol(setter, symbol, accounts, pageSize, nextToken){
@@ -377,22 +390,24 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
    */
   getPositions(accounts, symbol) {
     this.refreshToken();
-    const url = `${this.baseUrl}/accounts/${accounts}/positions`;
+    if (accounts !== null) {
+      const url = `${this.baseUrl}/accounts/${accounts}/positions`;
 
-    // Optional query parameter for symbol
-    const params = symbol ? { symbol } : {};
+      // Optional query parameter for symbol
+      const params = symbol ? { symbol } : {};
 
-    return axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-      params,
-    })
-      .then(response => response.data.Positions)
-      .catch(error => {
-        console.error('Error fetching positions:', error);
-        throw error;
-      });
+      return axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+        params,
+      })
+        .then(response => response.data.Positions)
+        .catch(error => {
+          console.error('Error fetching positions:', error);
+          throw error;
+        });
+    }
   }
 
   setPostions(setter, accounts, symbol){
@@ -481,6 +496,8 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
 
   async streamOrders(setter, streamIdPrefix, accountIds){
     const streamId = `${streamIdPrefix}${accountIds}`;
+    console.log("in order stream func", streamId);
+
     if (!this.allStreams?.[streamId]) {
       this.refreshToken();
       try {
@@ -498,7 +515,8 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
         this.allStreams[streamId] = controller;
         // Process the streaming data
         const processChunks = async () => {
-          while (true) {
+          while (!this.allStreams?.[streamId]) {
+            console.log("in order stream loop");
             try {
               const { done, value } = await reader.read();
               if (done || !this.allStreams?.[streamId]) {

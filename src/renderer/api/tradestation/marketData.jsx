@@ -35,6 +35,7 @@ export class MarketData {
     this.ts = window.ts;
     this.baseUrl = 'https://api.tradestation.com/v3/marketdata';
     this.accessToken = accessToken;
+    this.isRefreshingToken = false;
     // stream
     this.allStreams = {};
   }
@@ -75,16 +76,20 @@ export class MarketData {
   }
 
   async refreshToken(){
-    window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
-    window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
-      const accessToken = arg.ts?.access_token;
-      if (typeof accessToken === 'string'){
-        if (this.accessToken !== accessToken) {
-          this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+    if (!this.isRefreshingToken) {
+      this.isRefreshingToken = true;
+      window.electron.ipcRenderer.sendMessage('getRefreshToken', '');
+      window.electron.ipcRenderer.once('sendRefreshToken', (arg) => {
+        const accessToken = arg.ts?.access_token;
+        if (typeof accessToken === 'string'){
+          if (this.accessToken !== accessToken) {
+            this.info(`new refreshToken() length: ${accessToken.length}, Token: ${accessToken.slice(0, 5)}...${accessToken.slice(-5)})`);
+          }
+          this.accessToken = accessToken;
         }
-        this.accessToken = accessToken;
-      }
-    });
+        this.isRefreshingToken = false;
+      });
+    }
   }
 
   async delay(ms) {
