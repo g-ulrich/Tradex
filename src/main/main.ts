@@ -13,7 +13,7 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { setupTitlebar, attachTitlebarToWindow } from "custom-electron-titlebar/main";
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import MenuBuilder from './menu';
+// import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import {TSAuthentication} from './tradestation/authentication';
 const sound = require("sound-play");
@@ -96,8 +96,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1500,
+    height: 800,
     icon: getAssetPath('icon.png'),
     backgroundColor: '#36393E',
     //frame: false, // needed if process.versions.electron < 14

@@ -57,7 +57,7 @@ export default function SimpleChart({title, watermarkText, seriesData}) {
             </div>
           ) : (
 
-            <div className="h-[150px] p-2 text-center rounded border border-discord-black bg-discord-darkestGray w-full">
+            <div className="h-[150px] p-2 text-center rounded bg-discord-darkestGray w-full">
               Loading...
             </div>
           )

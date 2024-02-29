@@ -552,11 +552,13 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
     });
   }
 
+
   setQuoteSnapshots(setter, symbols){
     (async () => {
       try {
         const arr = await this.getQuoteSnapshots(symbols);
-        setter(arr);
+        this.info(`setQuoteSnapshots() hit`);
+        setter(prev=>arr);
       } catch (error) {
         this.error(`setQuoteSnapshots() ${error}`);
       }
@@ -569,6 +571,70 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
    * @returns {Promise<QuoteStream>} - Promise resolving to the streamed Quote changes.
    */
 
+  // async streamQuotes(setter, streamIdPrefix, symbols) {
+
+  //     this.refreshToken();
+  //     try {
+  //       const url = `${this.baseUrl}/stream/quotes/${symbols}`;
+  //       const headers = new Headers({
+  //         'Authorization': `Bearer ${this.accessToken}`
+  //       });
+  //       fetch(url, { method: 'GET', headers: headers })
+  //         .then(response => {
+  //           if (!response.ok) {
+  //             throw new Error(`HTTP error! status: ${response.status}`);
+  //           }
+  //           return response.body;
+  //         })
+  //         .then(stream => {
+  //           const reader = stream.getReader();
+  //           return new ReadableStream({
+  //             start(controller) {
+  //               function push() {
+  //                 reader.read().then(({ done, value }) => {
+  //                   if (done) {
+  //                     controller.close();
+  //                     return;
+  //                   }
+  //                   controller.enqueue(value);
+  //                   push();
+  //                 });
+  //               }
+  //               push();
+  //             }
+  //           });
+  //         })
+  //         .then(stream => {
+  //           // Here you can process the stream data
+  //           const reader = stream.getReader();
+  //           // while (true){
+  //             reader.read().then(function process({ done, value }) {
+  //               if (done) {
+  //                 console.log('Stream complete');
+  //                 return;
+  //               }
+
+  //               try {
+  //                 const decoder = new TextDecoder();
+  //                 const jsonString = decoder.decode(value);
+  //                 const jsonObject = JSON.parse(jsonString);
+  //                 setter(jsonObject);
+  //                 return jsonObject;
+  //               } catch (error) {
+  //                 console.log(`streamQuotes ${error}`);
+  //                 return;
+  //               }
+  //             });
+  //           // }
+  //         })
+  //         .catch(err => {
+  //           this.error(`streamQuotes ${err}`);
+  //         });
+  //     } catch (error) {
+  //       this.error(`streamQuotes ${error}`);
+  //     }
+
+  // }
   async streamQuotes(setter, streamIdPrefix, symbols){
     const streamId = `${streamIdPrefix}${symbols}`;
     if (!this.allStreams?.[streamId]) {
@@ -585,6 +651,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
             Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
           },
         });
+
         const reader = response.body.getReader();
         this.allStreams[streamId] = controller;
         // Process the streaming data
@@ -605,10 +672,11 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
                 this.info("Network Error");
                 await this.delay(1000 * 5);
               }else if (isSubStr(msg, 'whitespace')){
-                this.info("None-whitespace Error");
+                // this.info("None-whitespace Error");
               } else {
                 this.error(`streamQuotes() while ${error}`);
               }
+
             }
           }
         };

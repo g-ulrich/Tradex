@@ -37,16 +37,16 @@ export default function App() {
     }
   }, [token]);
 
-  document.body.classList.add('bg-discord-darkerGray', 'text-discord-white');
+  document.body.classList.add('bg-discord-darkestGray', 'text-discord-white');
   return (
     <>
       {
         token !== null ? (
-          <div className={`bg-discord-darkerGray`}>
+          <div>
             <Routing/>
           </div>
         ) : (
-          <div className="rounded m-2 bg-discord-darkestGray p-2">
+          <div className="rounded m-2 p-2">
             Loading Tokens...
           </div>
         )

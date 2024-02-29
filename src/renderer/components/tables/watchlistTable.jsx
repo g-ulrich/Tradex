@@ -19,7 +19,7 @@ import {findObjectByVal} from '../../tools/util';
 
 
 const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryKey }) => {
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
   const [searchInput, setSearchInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -62,7 +62,7 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
 
   return (
     <>
-      <div className="w-full  bg-discord-darkestGray border border-discord-black rounded shadow-lg">
+      <div className=" bg-discord-darkestGray rounded-sm">
         <div className="flex p-2 items-center justify-between">
           <h5 className="text-xl font-bold leading-none text-discord-white">{title}</h5>
 
@@ -89,7 +89,9 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
                 columns.map((column) => (
                   <th
                     key={column.key}
-                    className="px-2 py-[4px] text-left text-xs font-medium text-gray-500 tracking-wider cursor-pointer"
+                    className={`
+                    ${column.key === primaryKey ? 'sticky left-0 z-[99] shadow-lg shadow-right bg-discord-darkestGray' : ''}
+                    px-2 py-[4px] text-left text-xs font-medium text-gray-500 tracking-wider cursor-pointer`}
                     onClick={() => requestSort(column.key)}
                   >
                     {column.label}
@@ -119,15 +121,16 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
                   {columns.map((column) => (
                     column.key === primaryKey ? (
                       <td key={column.key}
-                      className={`px-2 py-[4px] whitespace-nowrap  sticky left-0 z-[99] bg-discord-darkestGray shadow-lg shadow-right`}>
-
-                     {
-                        !secondaryKey ? '' :
-                         row[secondaryKey] >= 0 ?
-                          (<span className="mr-2"><IconTriangleUp /></span>):
-                          (<span className="mr-2"><IconTriangleDown/></span>)
-                      }
-                      {row[column.key]}
+                        className={`
+                        ${!secondaryKey ? 'bg-discord-darkestGray' : row[secondaryKey] >= 0 ? 'bg-discord-darkerGray text-discord-softGreen' : 'bg-discord-darkGray text-discord-softBlurple'}
+                        px-2 py-[4px] whitespace-nowrap  sticky left-0 z-[99] shadow-lg shadow-right`}>
+                        {
+                          !secondaryKey ? '' :
+                          row[secondaryKey] >= 0 ?
+                            (<span className="mr-2"><IconTriangleUp /></span>):
+                            (<span className="mr-2"><IconTriangleDown/></span>)
+                        }
+                        {row[column.key]}
                       </td>
                     ) : (
                       <td key={column.key}
@@ -153,15 +156,15 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
           </tbody>
         </table>
         </div>
-        {paginateData().length > 0 ? (
-        <Pagination
-          totalItems={data.length}
-          itemsPerPage={itemsPerPage}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => setCurrentPage(page)}
-          onItemsPerPageChange={(range) => setItemsPerPage(range)}
-        />
+        {paginateData().length > 0? (
+          <Pagination
+            totalItems={data.length}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+            onItemsPerPageChange={(range) => setItemsPerPage(range)}
+          />
         ) : (<></>)}
       </div>
     </>

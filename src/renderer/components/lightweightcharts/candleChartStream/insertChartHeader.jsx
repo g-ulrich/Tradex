@@ -52,7 +52,7 @@ export default function InsertChartHeader({chartTypeCallback, chartType, searchI
           <input
             ref={searchRef}
             type="search"
-            className="uppercase w-[100px] block text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded-l bg-discord-darkerGray hover:bg-discord-darkGray"
+            className="uppercase w-[200px] block text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded-l bg-discord-darkerGray hover:bg-discord-darkGray"
             placeholder={`${marketType} Search`}
             onKeyPress={handleKeyPress}
           />

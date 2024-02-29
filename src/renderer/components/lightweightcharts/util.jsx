@@ -1,4 +1,5 @@
 import {isSubStr, renameKey, jsonArrayToArrayByKey} from '../../tools/util';
+import * as talib from './talib';
 
 export const bollingerbandsToLineSeriesJsonArr = (stockJsonArray, bollingerJsonArray) => {
   const timestamp = jsonArrayToArrayByKey(stockJsonArray, 'time').reverse();
@@ -121,24 +122,22 @@ export const formatVolume = (number) => {
 }
 
 
-export const getVisRange = (candles, primaryChartRef) => {
-  try {
-    if (primaryChartRef.current !== null) {
-      const chartRange = primaryChartRef.current.timeScale().getVisibleRange();
+export const getVisRange = (candles, chartRef) => {
+  if (chartRef.current) {
+    const chartRange = chartRef.current.timeScale().getVisibleRange();
+    if (chartRange){
       const fromIndex = candles.findIndex(
         (item) => item["time"] === chartRange.from
       );
       const toIndex = candles.findIndex(
         (item) => item["time"] === chartRange.to
       );
-      return { from: fromIndex, to: toIndex };
+      return { from: fromIndex, to: toIndex};
     }
-  } catch (error){
-    console.error(error);
   }
-return { from: 0, to: 1 };
-
+  return { from: 0, to: 1 };
 };
+
 
 export const getVisRangeTimestamps = (candles, primaryChartRef) => {
   if (primaryChartRef.current !== null) {
@@ -190,3 +189,61 @@ export const getUtcTimestampNMinutesBack = (n, currentTimestamp) => {
   var utcTimestamp = Math.floor(nMinutesAgo.getTime() / 1000); // Convert milliseconds to seconds
   return utcTimestamp;
 }
+
+
+export const getWaterMark = (txt) => {
+  return {
+      visible: true,
+      fontSize: 60,
+      horzAlign: 'center',
+      vertAlign: 'center',
+      color: 'rgba(255, 255, 255, 0.05)',
+      text: txt,
+  }
+}
+
+
+export const getFullSymbolName = (symbol, details) => {
+  if (details) {
+    return `${symbol}:${details[0]?.Exchange}`;
+  }else{
+    return `${symbol}`;
+  }
+}
+
+
+export const crosshairAction = (setter, chartRef, candles, e) => {
+  if (chartRef.current) {
+    try {
+      const currentIndex = candles.findIndex(obj => obj.time === e.time || obj.time === candles[candles.length-1].time);
+      setter(currentIndex);
+    } catch (error) {
+      console.error(`Setting Crosshair Index - ${error}`);
+    }
+  }
+};
+
+export const addStudyCallback = (setter, candles, obj, RGBcolor, inputValues) => {
+  obj.id = `${obj.name}_${parseInt(RGBcolor)}`;
+  obj.color = RGBcolor; // update color from the rgbcolor val
+  obj.variables = obj.parameters
+  .filter((p) => p.var !== "obj")
+  .map((p) =>{
+  var n = document.getElementById(`${obj.name}_${p.var}`).value;
+  return isSubStr(n, '.') ? parseFloat(n) : parseInt(n);}
+  );
+  obj.hidden = false;
+  // if (isSubStr(obj.name, 'getBollingerBands')) {
+  //   obj.data = bollingerbandsToLineSeriesJsonArr(candles,
+  //     talib[obj.name](candles, ...obj.variables));
+  // } else if (isSubStr(obj.name, 'getIchimokucloud')) {
+  //   obj.data = ichimokucToAreaLineJsonArr(candles,
+  //     talib[obj.name](candles, ...obj.variables));
+  // } else {
+    obj.data = indicatorToLineChart(
+      candles,
+      talib[obj.name](candles, ...obj.variables)
+    );
+  // }
+  setter(prev => [...prev, obj]);
+};

@@ -37,6 +37,44 @@ export const chartColors = {
   }
 
 
+const CHART_LAYOUTS = {
+  common: {
+    textColor: chartColors.white,
+    background: {
+        color: chartColors.discord.darkestGray,
+        type: ColorType.Solid,
+    },
+    fontSize: 12,
+  }
+};
+
+const CHART_PRICE_SCALES = {
+  common_right: {
+    scaleMargins: { top: 0.2, bottom: 0.2 },
+  }
+};
+
+const CHART_CROSSHAIR = {
+  common: {
+    mode: CrosshairMode.FinanceChart,
+    vertLine: {
+        labelBackgroundColor: chartColors.discord.darkerGray,
+    },
+    horzLine: {
+        labelBackgroundColor: chartColors.discord.darkerGray,
+    },
+  }
+};
+
+
+const CHART_GRID = {
+  common: {
+    vertLines: {visible: true, color: chartColors.softDarkGray },
+    horzLines: {visible: true, color: chartColors.softDarkGray },
+  }
+};
+
+
 export const CHART_THEMES = {
   defaultSeries : {
     lineWidth: .5,
@@ -54,14 +92,7 @@ export const CHART_THEMES = {
     lineVisible: false
   },
   simpleChart : {
-    layout: {
-      textColor: chartColors.white,
-      background: {
-          color: chartColors.discord.darkestGray,
-          type: ColorType.Solid,
-      },
-      fontSize: 12,
-    },
+    layout: CHART_LAYOUTS.common,
     rightPriceScale: { visible: false},
     timeScale: {visible: false},
     crosshair: {
@@ -70,37 +101,16 @@ export const CHART_THEMES = {
       vertLine: {visible: false },
       horzLine: {visible: false },
   },
-    grid: {vertLines: {visible: false}, horzLines: {visible: false}},
+  grid: {vertLines: {visible: false}, horzLines: {visible: false}},
     handleScroll: false,
     handleScale: false
   },
   defaultChart : {
-    layout: {
-      textColor: chartColors.white,
-      background: {
-          color: chartColors.discord.darkestGray,
-          type: ColorType.Solid,
-      },
-      fontSize: 12,
-    },
-    rightPriceScale: {
-      visible: true,
-      scaleMargins: { top: 0.2, bottom: 0.2 },
-    },
+    layout: CHART_LAYOUTS.common,
+    rightPriceScale: CHART_PRICE_SCALES.common_right,
     timeScale: { timeVisible: true, secondsVisible: true },
-    crosshair: {
-      mode: CrosshairMode.FinanceChart,
-      vertLine: {
-          labelBackgroundColor: chartColors.discord.darkerGray,
-      },
-      horzLine: {
-          labelBackgroundColor: chartColors.discord.darkerGray,
-      },
-    },
-    grid: {
-      vertLines: {visible: true, color: chartColors.softDarkGray },
-      horzLines: {visible: true, color: chartColors.softDarkGray },
-    },
+    crosshair: CHART_CROSSHAIR.common,
+    grid: CHART_GRID.common,
     handleScroll: { vertTouchDrag: true },
   }
 };
@@ -109,14 +119,7 @@ export const defaultSimpleChartOptions = (opts) => {
   return {
     width: opts?.width || 500,
     height: opts?.height || 500,
-    layout: {
-        textColor: chartColors.white,
-        background: {
-            color: chartColors.discord.darkestGray,
-            type: ColorType.Solid,
-        },
-        fontSize: 12,
-    },
+    layout: CHART_LAYOUTS.common,
     rightPriceScale: { visible: opts?.rightPriceScale?.visible || false},
     timeScale: { visible: opts?.timeScale?.visible || false},
     crosshair: {
@@ -125,10 +128,7 @@ export const defaultSimpleChartOptions = (opts) => {
         vertLine: {visible: opts?.crosshair?.visible || false },
         horzLine: {visible: opts?.crosshair?.visible || false },
     },
-    grid: {
-        vertLines: { visible: false,color: chartColors.softDarkGray },
-        horzLines: { visible: false,color: chartColors.softDarkGray },
-    },
+    grid: CHART_GRID.common,
     handleScroll: opts?.handleScroll || true,
     handleScale: opts?.handleScale || true,
   }
@@ -137,32 +137,25 @@ export const defaultSimpleChartOptions = (opts) => {
 export const defaultChartOptions = (opts) => {
   return {width: opts?.width || 500,
     height: opts?.height || 500,
-    layout: {
-        textColor: chartColors.white,
-        background: {
-            color: chartColors.discord.darkestGray,
-            type: ColorType.Solid,
-        },
-        fontSize: 12,
-    },
-    rightPriceScale: {
-        scaleMargins: { top: 0.2, bottom: 0.2 },
-    },
-    timeScale: { timeVisible: true, secondsVisible: false },
-    crosshair: {
-        mode: CrosshairMode.FinanceChart,
-        vertLine: {
-            labelBackgroundColor: chartColors.discord.darkerGray,
-        },
-        horzLine: {
-            labelBackgroundColor: chartColors.discord.darkerGray,
-        },
-    },
-    grid: {
-        vertLines: { color: chartColors.softDarkGray },
-        horzLines: { color: chartColors.softDarkGray },
-    },
+    layout: CHART_LAYOUTS.common,
+    rightPriceScale:  CHART_PRICE_SCALES.common_right,
+    timeScale: { timeVisible: opts?.timeVisible || true, secondsVisible: false },
+    crosshair: CHART_CROSSHAIR.common,
+    grid: CHART_GRID.common,
     handleScroll: { vertTouchDrag: true },
   }
 };
+
+
+export const grpChartOptions = (opts) => {
+  return {width: opts?.width || 500,
+    height: opts?.height || 500,
+    layout: CHART_LAYOUTS.common,
+    rightPriceScale:  CHART_PRICE_SCALES.common_right,
+    timeScale: { visible: opts?.timeVisible, timeVisible: true, secondsVisible: false },
+    crosshair: CHART_CROSSHAIR.common,
+    grid: CHART_GRID.common,
+    handleScroll: { vertTouchDrag: true },
+  }
+}
 

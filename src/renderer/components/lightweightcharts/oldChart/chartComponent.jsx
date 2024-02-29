@@ -133,7 +133,7 @@ function Chart({jsonArray}) {
 
   return (
     <>
-      <div className="py-2 bg-discord-darkestGray border border-discord-black rounded shadow-lg"
+      <div className="py-2 bg-discord-darkestGray rounded shadow-lg"
         ref={containerRef}>
         <div ref={chartHeaderRef} className="mx-2 pb-2 border-b border-discord-black">
           <button className={`border-b-2 border-[${showStudy ? 'discord-white' : 'rgba(0,0,0,0.0)'}] hover:border-discord-blurple hover:text-discord-blurple px-2 py-[4px]`} onClick={toggleStudies}><IconFlask/></button>

@@ -110,7 +110,7 @@ export default function OrderForm({symbol, accountID, positions}) {
 
   return (
     <>
-      <div className="   rounded bg-discord-darkestGray text-gray-500 border border-discord-black">
+      <div className="  bg-discord-darkestGray text-gray-500 ">
 
 
           {

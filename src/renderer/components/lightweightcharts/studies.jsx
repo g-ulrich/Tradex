@@ -88,96 +88,100 @@ export const StudiesList = ({ showStudy, addStudyCallback, toggleStudies }) => {
     }));
   };
 
+
   return (
     <>
-     <Fade in={showStudy} timeout={800} easing="ease">
-    <div className={`${showStudy ? '' : 'hidden'}  flex items-center justify-center absolute z-[999]  w-full h-full`}>
-      <div onClick={toggleStudies} className={`${showStudy ? '' : 'hidden'} absolute z-[998] bg-discord-black bg-opacity-50 w-full h-full`}></div>
-      <div className="absolute z-[999] mt-2 text-white p-2 rounded border-discord-black border shadow-2xl bg-discord-black max-h-[300px] min-h-[100px] scroll-container overflow-y-auto w-[300px]">
-      <div className="text-lg items-center bg-discord-black border-b border-discord-darkestGray shadow-lg" style={{ position: "sticky", top: -8 }}>
-        <div className="flex mb-2 z-[9999]">
-          <div className="flex text-left text-2xl">
-            <span>Indicators</span>
-          </div>
-          <div className="grow text-right">
-            <span className="px-2 py-[4px] rounded cursor-pointer hover:bg-discord-darkestGray" onClick={toggleStudies}>
-              <IconX/>
-            </span>
-          </div>
-        </div>
-        <div className="absolute  text-sm flex items-center ps-2 pt-[6px] pointer-events-none">
-          <IconSearch />
-        </div>
-        <input
-          type="search"
-          placeholder={`Search...`}
-          className="block w-full ps-8 mb-[4px] text-discord-white outline-none  py-[4px] px-2 text-sm border border-none rounded bg-discord-darkerGray hover:bg-discord-darkGray"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}/>
-      </div>
+    <div className={`
+       bg-discord-darkGray shadow-lg rounded
+      absolute z-[9999] left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center
+        ${!showStudy ? 'hidden':''}`}>
 
-        {talibFuncs.map((obj, i) => {
-          if (isSubStr(obj.name, 'get') && isSubStr(obj.name, searchQuery)) {
-            return (
-              <div key={i} className="flex flex-wrap hover:bg-discord-darkestGray border-b border-gray-600 items-center">
-                <div className="flex items-center justify-start">
-                  <button
-                    onClick={() => {addStudyCallback(obj, colorVal); setColorVal(getRandomRGB());}}
-                    className="mr-2 my-[4px] px-2 py-[4px] border border-discord-softGreen hover:bg-discord-softGreen rounded text-discord-softGreen hover:text-discord-white">
-                    <IconAdd />
-                  </button>
-                  {obj.name.replace('get', '')}
+          {/* <Fade in={showStudy} timeout={800} easing="ease"> */}
+
+            <div className="  text-white p-2 rounded  bg-discord-black max-h-[300px] min-h-[100px] scroll-container overflow-y-auto w-[300px]">
+            <div className="text-lg items-center bg-discord-black border-b border-discord-darkestGray shadow-lg" style={{ position: "sticky", top: -8 }}>
+              <div className="flex mb-2 z-[9999]">
+                <div className="flex">
+                  <span>Indicators</span>
                 </div>
                 <div className="grow text-right">
-                  <span title="View/Edit Params" className="mr-[2px] px-2 py-[4px] rounded cursor-pointer hover:bg-discord-black"
-                  onClick={() => toggleParam(obj)}>{typeof hideParam?.name !== 'undefined' && obj.name === hideParam.name ? <IconArrowUp/> : <IconArrowDown/>}</span>
-                </div>
-                <div className={`rounded bg-discord-black p-2 w-full ${typeof hideParam?.name !== 'undefined' && obj.name === hideParam.name ? '' : 'hidden'}`}>
-                    <div>
-                    <div className="mb-[4px] flex justify-center">
-                      <button onClick={() => setToggleColorPicker(!toggleColorPicker)} style={{background: colorVal}} className="border-2 hover:border-white text-center px-2 rounded">
-                        <IconColor/> Color Picker {toggleColorPicker ? <IconArrowUp/> : <IconArrowDown/>}</button>
-                    </div>
-                    <div className="w-full relative">
-                      <Fade in={toggleColorPicker} timeout={1000} easing="ease">
-                        <div className={`${toggleColorPicker ? '' : 'hidden'} mb-[4px] shadow-lg absolute w-full flex items-center justify-center`}>
-                              <CompactPicker style={{background: colorVal}} color={colorVal} onChange={handleColorChange} />
-                        </div>
-                      </Fade>
-                    </div>
-                  {obj.parameters.map((item, j) => {
-                    if (item.var !== 'obj') {
-                      return (
-                        <div key={j} className="grid grid-cols-2">
-                          <div>{item.var}</div>
-                          <div>
-                            <input
-                              id={`${obj.name}_${item.var}`}
-                              value={inputValues[`${obj.name}_${item.var}`] || `${item.val}`}
-                              type="number"
-                              className="m-[2px] border border-transparent outline-none bg-discord-darkerGray hover:bg-discord-darkGray hover:border-discord-black shadow-md px-[4px] rounded w-50"
-                              step={isSubStr(item.val, '.') ? '.01' : '1'}
-                              min={isSubStr(item.val, '.') ? '.01' : '1'}
-                              max="500"
-                              onChange={(e) => handleInputChange(e, obj, item)}
-                            />
-                          </div>
-                        </div>
-                      );
-                    }
-                  })}
-                  </div>
+                  <span className="px-2 py-[4px] rounded cursor-pointer hover:bg-discord-darkestGray" onClick={toggleStudies}>
+                    <IconX/>
+                  </span>
                 </div>
               </div>
 
-            );
-          } else {
-            return null;
-          }
-        })}
-      </div>
+              <input
+                type="search"
+                className="block text-discord-white outline-none w-full py-[4px] px-2 text-sm border border-none rounded bg-discord-darkerGray"
+                placeholder={`Search...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}/>
+              </div>
+
+              {talibFuncs.map((obj, i) => {
+                if (isSubStr(obj.name, 'get') && isSubStr(obj.name.toLowerCase(), searchQuery)) {
+                  return (
+                    <div key={i} className="flex flex-wrap hover:bg-discord-darkestGray border-b border-gray-600 items-center">
+                      <div className="flex items-center justify-start">
+                        <button
+                          onClick={() => {addStudyCallback(obj, colorVal); setColorVal(getRandomRGB());}}
+                          className="mr-2 my-[4px] px-2 py-[4px] border border-discord-softGreen hover:bg-discord-softGreen rounded text-discord-softGreen hover:text-discord-white">
+                          <IconAdd />
+                        </button>
+                        {obj.name.replace('get', '')}
+                      </div>
+                      <div className="grow text-right">
+                        <span title="View/Edit Params" className="mr-[2px] px-2 py-[4px] rounded cursor-pointer hover:bg-discord-black"
+                        onClick={() => toggleParam(obj)}>{typeof hideParam?.name !== 'undefined' && obj.name === hideParam.name ? <IconArrowUp/> : <IconArrowDown/>}</span>
+                      </div>
+                      <div className={`rounded bg-discord-black p-2 w-full ${typeof hideParam?.name !== 'undefined' && obj.name === hideParam.name ? '' : 'hidden'}`}>
+                          <div>
+                          <div className="mb-[4px] flex justify-center">
+                            <button onClick={() => setToggleColorPicker(!toggleColorPicker)} style={{background: colorVal}} className="border-2 hover:border-white text-center px-2 rounded">
+                              <IconColor/> Color Picker {toggleColorPicker ? <IconArrowUp/> : <IconArrowDown/>}</button>
+                          </div>
+                          <div className="w-full relative">
+                            <Fade in={toggleColorPicker} timeout={1000} easing="ease">
+                              <div className={`${toggleColorPicker ? '' : 'hidden'} mb-[4px] shadow-lg absolute w-full flex items-center justify-center`}>
+                                    <CompactPicker style={{background: colorVal}} color={colorVal} onChange={handleColorChange} />
+                              </div>
+                            </Fade>
+                          </div>
+                        {obj.parameters.map((item, j) => {
+                          if (item.var !== 'obj') {
+                            return (
+                              <div key={j} className="grid grid-cols-2">
+                                <div>{item.var}</div>
+                                <div>
+                                  <input
+                                    id={`${obj.name}_${item.var}`}
+                                    value={inputValues[`${obj.name}_${item.var}`] || `${item.val}`}
+                                    type="number"
+                                    className="m-[2px] border border-transparent outline-none bg-discord-darkerGray hover:bg-discord-darkGray hover:border-discord-black shadow-md px-[4px] rounded w-50"
+                                    step={isSubStr(item.val, '.') ? '.01' : '1'}
+                                    min={isSubStr(item.val, '.') ? '.01' : '1'}
+                                    max="500"
+                                    onChange={(e) => handleInputChange(e, obj, item)}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          }
+                        })}
+                        </div>
+                      </div>
+                    </div>
+
+                  );
+                } else {
+                  return null;
+                }
+              })}
+            </div>
+
     </div>
-    </Fade>
+    {/* </Fade> */}
     </>
   );
 }

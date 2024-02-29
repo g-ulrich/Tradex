@@ -18,22 +18,22 @@ function Routing() {
 
     return (
       <>
-        <div className="container-fluid">
-            <div className="row">
-                <div className="col-menu m-0 p-0 bg-discord-black" style={{'height': `calc(100vh - ${titleBarheight()}px)`}}>
-                  {links.map((obj, i) => (
-                      <div onClick={() => {handlePageChange(obj.title)}}
-                        key={`${obj.title}_routing`}
-                        className="block text-center my-[4px] hover:bg-discord-blurple cursor-pointer">
-                          <span title={obj.title}
-                          className={`${obj.extraClasses} px-[5px] py-[4px] text-lg `}>
-                          {obj.icon}</span>
-                      </div>
-                  ))}
-                  {/* <SettingsLinkDialog /> */}
+<div className="shadow-lg w-full px-2 py-[4px] bg-discord-black sticky top-0 z-[9999]">
+        {links.map((obj, i) => (
+            <span onClick={() => {handlePageChange(obj.title)}}
+              key={`${obj.title}_routing`}
+              className="text-lg px-2  rounded-sm text-center hover:bg-discord-blurple cursor-pointer"
+              title={obj.title}>
+                {obj.icon} {obj.title}
+            </span>
+        ))}
+        {/* <SettingsLinkDialog /> */}
 
-                </div>
-                <div className="col scrollable overflow-y-auto p-2" style={{'height': `calc(100vh - ${titleBarheight()}px)`}}>
+      </div>
+        <div className="container-fluid ">
+            <div className="row " style={{'height': `calc(100vh - ${titleBarheight()}px)`}}>
+
+                <div className="col-12 p-2 scrollable overflow-y-auto ">
                     <MainView selectedPage={page}/>
                 </div>
             </div>

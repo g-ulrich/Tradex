@@ -5,7 +5,7 @@ https://github.com/anandanand84/technicalindicators
 // Import Statements
 import {convertJSONArrayToJSON} from '../../tools/util';
 import {
-  volumeprofile, bollingerbands, ema, sma, wema, wma, vwap, trix, williamsr, ichimokucloud
+  volumeprofile, bollingerbands, ema, sma, wema, wma, vwap, trix, williamsr, ichimokucloud, rsi
   // ADL, ADX, ATR, AverageGain, AverageLoss, AwesomeOscillator, BollingerBands, CCI, CandleData, CandleList, ChandelierExit, ChandelierExitInput, ChandelierExitOutput, CrossDown, CrossUp, EMA, FixedSizeLinkedList, ForceIndex, HeikinAshi, Highest, IchimokuCloud, KST, KeltnerChannels, KeltnerChannelsInput, KeltnerChannelsOutput, Lowest, MACD, MFI, OBV, PSAR, ROC, RSI, SD, SMA, Stochastic, StochasticRSI, Sum, TRIX, TrueRange, VWAP, VolumeProfile, WEMA, WMA, WilliamsR, abandonedbaby, adl, adx, atr, averagegain, averageloss, awesomeoscillator, bearish, bearishengulfingpattern, bearishhammerstick, bearishharami, bearishharamicross, bearishinvertedhammerstick, bearishmarubozu, bearishspinningtop, bollingerbands, bullish, bullishengulfingpattern, bullishhammerstick, bullishharami, bullishharamicross, bullishinvertedhammerstick, bullishmarubozu, bullishspinningtop, cci, chandelierexit, crossDown, crossUp, darkcloudcover, doji, downsidetasukigap, dragonflydoji, ema, eveningdojistar, eveningstar, fibonacciretracement, forceindex, getConfig, gravestonedoji, hammerpattern, hammerpatternunconfirmed, hangingman, hangingmanunconfirmed, heikinashi, highest, ichimokucloud, keltnerchannels, kst, lowest, macd, mfi, morningdojistar, morningstar, obv, piercingline, psar, renko, roc, rsi, sd, setConfig, shootingstar, shootingstarunconfirmed, sma, stochastic, stochasticrsi, sum, threeblackcrows, threewhitesoldiers, trix, truerange, tweezerbottom, tweezertop, volumeprofile, vwap, wema, williamsr, wma
 } from 'technicalindicators';
 
@@ -104,23 +104,32 @@ export const getWMA = (obj, length=5) => {
 multiple array return for chart
 */
 
-// bollinger bands
-export const getBollingerBands = (obj, length=20, stdDev=2) => {
-  // {middle: 217.0, upper: 234.0, lower: 201.0, pb: 0.53}
+// // bollinger bands
+// export const getBollingerBands = (obj, length=20, stdDev=2) => {
+//   // {middle: 217.0, upper: 234.0, lower: 201.0, pb: 0.53}
+//   const data = transformIncomeData(obj);
+//   return bollingerbands({ values: data.close, period: length, stdDev: stdDev });
+// }
+
+// // Ichimokucloud
+// export const getIchimokucloud = (obj, conversionLength=9, baseLength=26, spanLength=52, displacement=26) => {
+//   const data = transformIncomeData(obj);
+//   let input = {
+//     high  : data.high,
+//     low   :  data.low,
+//     conversionPeriod: conversionLength,
+//     basePeriod: baseLength,
+//     spanPeriod: spanLength,
+//     displacement: displacement
+//   }
+//   return ichimokucloud(input);
+// }
+
+
+//oscillators
+
+export const getRSI = (obj, length=14) => {
   const data = transformIncomeData(obj);
-  return bollingerbands({ values: data.close, period: length, stdDev: stdDev });
+  return rsi({ values: data.close, period: length});
 }
 
-// Ichimokucloud
-export const getIchimokucloud = (obj, conversionLength=9, baseLength=26, spanLength=52, displacement=26) => {
-  const data = transformIncomeData(obj);
-  let input = {
-    high  : data.high,
-    low   :  data.low,
-    conversionPeriod: conversionLength,
-    basePeriod: baseLength,
-    spanPeriod: spanLength,
-    displacement: displacement
-  }
-  return ichimokucloud(input);
-}

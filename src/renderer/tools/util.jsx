@@ -415,3 +415,33 @@ export const convertDatetimeToEpoch = (datetimeString) => {
 
   return epochTime / 1000;
 }
+
+
+export const getRandomAlphaNum = (length) => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomString = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomString += characters.charAt(randomIndex);
+  }
+
+  return randomString;
+}
+
+
+export const checkDing = (soundPlayed) => {
+  const currentTime = new Date();
+  if (
+    (currentTime.getHours() === 16 && currentTime.getSeconds() === 0) ||
+    (currentTime.getHours() === 9 && currentTime.getMinutes() === 30 && currentTime.getSeconds() === 0)
+  ) {
+    if (!soundPlayed) {
+      window.electron.ipcRenderer.sendMessage('playDing', '');
+      soundPlayed = true;
+    }
+  } else {
+    soundPlayed = false;
+  }
+  return soundPlayed;
+}

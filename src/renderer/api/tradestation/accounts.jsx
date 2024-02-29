@@ -394,13 +394,13 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
       const url = `${this.baseUrl}/accounts/${accounts}/positions`;
 
       // Optional query parameter for symbol
-      const params = symbol ? { symbol } : {};
+      // const params = symbol ? { symbol } : {};
 
       return axios.get(url, {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
         },
-        params,
+        // params,
       })
         .then(response => response.data.Positions)
         .catch(error => {
@@ -410,10 +410,10 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
     }
   }
 
-  setPostions(setter, accounts, symbol){
+  setPostions(setter, accounts){
     (async () => {
       try {
-        const arr = await this.getPositions(accounts, symbol);
+        const arr = await this.getPositions(accounts);
         setter(arr);
       } catch (error) {
         this.error(`setPostions() ${error}`);
@@ -515,8 +515,7 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
         this.allStreams[streamId] = controller;
         // Process the streaming data
         const processChunks = async () => {
-          while (!this.allStreams?.[streamId]) {
-            console.log("in order stream loop");
+          while (this.allStreams?.[streamId]) {
             try {
               const { done, value } = await reader.read();
               if (done || !this.allStreams?.[streamId]) {

@@ -54,7 +54,9 @@ function Code() {
   return (
     <div>
       <div className="mb-2 p-2 rounded bg-discord-darkGray">
-        <div className="text-lg"><IconCode/> Code</div>
+        <div className="text-lg">
+          <IconCode/> Code
+        </div>
         <ul className="ml-5">
           {info.map((obj, index) => (
             <li key={index}><strong>{obj.key}: </strong>{obj.value}</li>
@@ -63,21 +65,43 @@ function Code() {
       </div>
 
       <div className="p-2 rounded bg-discord-darkGray">
-      <div className="text-lg"><IconCog/> Get Refresh Token (Last refresh: {lastTimestamp})</div>
+      <div className="text-lg">
+        <IconCog/> Get Refresh Token (Last refresh: {lastTimestamp})
+      </div>
       <div className="ml-5">
-        <p className="text-gray-500">Checking the tokens will fetch the latest time the id token was refreshed.</p>
-        <button className="mb-2 px-2 rounded border-none hover:bg-discord-green bg-discord-softGreen active:bg-discord-softGreen" onClick={getCheckRefresh}>Check Tokens <IconAngleR/></button>
-        <p className="text-gray-500">Showing the tokens will reveal all tokens in the tsToken.json file.</p>
-        <button className="mb-2 px-2 rounded border-none hover:bg-discord-green bg-discord-softGreen active:bg-discord-softGreen" onClick={()=>{setRevealTokens(!revealTokens)}}>{revealTokens ? 'Hide ' : 'Show '}Tokens <IconAngleR/></button>
+        <p className="text-gray-500">
+          Checking the tokens will fetch the latest time the id token was refreshed.
+        </p>
+        <button className="mb-2 px-2 rounded border-none hover:bg-discord-green bg-discord-softGreen active:bg-discord-softGreen"
+        onClick={getCheckRefresh}>
+          Check Tokens <IconAngleR/>
+        </button>
+        <p className="text-gray-500">
+          Showing the tokens will reveal all tokens in the tsToken.json file.
+        </p>
+        <button className="mb-2 px-2 rounded border-none hover:bg-discord-green bg-discord-softGreen active:bg-discord-softGreen"
+        onClick={()=>{setRevealTokens(!revealTokens)}}>
+          {revealTokens ? 'Hide ' : 'Show '}Tokens <IconAngleR/>
+        </button>
         <div className={`${revealTokens ? '' : 'hidden'} my-2 p-2 rounded bg-discord-black text-white overflow-x-auto`}>
-          <pre>{JSON.stringify(ts.getTokenObj(), null, 2)}</pre>
+          <pre>{JSON.stringify(ts.token, null, 2)}</pre>
         </div>
 
-        <p className="text-gray-500">Getting a new access token will trigger the getNewAccessToken method without checking if its expired.</p>
-        <button className="px-2 rounded border-none hover:bg-discord-red bg-discord-softRed active:bg-discord-softRed" onClick={getAccessToken}><IconWarning/> {tokenLoading ? 'Loading...' : 'Get New Access Token'} <IconAngleR/></button>
+        <p className="text-gray-500">
+          Getting a new access token will trigger the getNewAccessToken method without checking if its expired.
+        </p>
+        <button className="px-2 rounded border-none hover:bg-discord-red bg-discord-softRed active:bg-discord-softRed"
+        onClick={getAccessToken}>
+          <IconWarning/> {tokenLoading ? 'Loading...' : 'Get New Access Token'} <IconAngleR/>
+        </button>
 
-        <p className="text-gray-500">Getting a new refresh token will open a new login window to the Tradestation authorize endpoint.</p>
-        <button className="px-2 rounded border-none hover:bg-discord-red bg-discord-softRed active:bg-discord-softRed" onClick={getAuthCode}><IconWarning/> {tokenLoading ? 'Loading...' : 'Get New Refresh Token'} <IconAngleR/></button>
+        <p className="text-gray-500">
+          Getting a new refresh token will open a new login window to the Tradestation authorize endpoint.
+        </p>
+        <button className="px-2 rounded border-none hover:bg-discord-red bg-discord-softRed active:bg-discord-softRed"
+        onClick={getAuthCode}>
+          <IconWarning/> {tokenLoading ? 'Loading...' : 'Get New Refresh Token'} <IconAngleR/>
+        </button>
         {
           tokenMsg !== null ? (
             <p class={`${isSubStr(tokenMsg, 'code') ? 'text-discord-green' : 'text-discord-red'}`}>

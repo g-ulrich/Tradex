@@ -1,5 +1,4 @@
 import Equites from '../Equities/Equites';
-import Trade from '../Trade';
 import Code from '../Code';
 
 export default function MainView(props) {
@@ -9,8 +8,6 @@ export default function MainView(props) {
       {
         page == 'equites' ? (
           <Equites />
-        ) : (page == 'trade') ? (
-          <Trade />
         ) : (page == 'code') ? (
           <Code />
         ) : (
