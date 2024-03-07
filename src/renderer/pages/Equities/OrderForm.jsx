@@ -184,7 +184,8 @@ export default function OrderForm({symbol, accountID, positions}) {
                   <></>
                 )
               }
-              <div className={`${position?.Symbol ? 'col-6 pr-4' : 'col-12'} text-lg`}>
+              {/* ${position?.Symbol ? 'col-6 pr-4' : 'col-12'} */}
+              <div className={`col-6 pr-4 text-lg`}>
               <div onClick={() => {handleAction('buy')}} className="row cursor-pointer bg-discord-green hover:bg-discord-softGreen active:bg-discord-green border-2 border-discord-green hover:border-discord-softGreen active:border-discord-green text-white rounded">
                 <div className={`col-12 px-1 ${position?.Symbol ? 'text-left' : 'text-center'}`}>
                   Buy ({quantity}) {
@@ -209,7 +210,8 @@ export default function OrderForm({symbol, accountID, positions}) {
                 </div>
               </div>
               </div>
-              <div className={`${position?.Symbol ? '' : 'hidden'} col-6 text-lg`}>
+              {/* ${position?.Symbol ? '' : 'hidden'} */}
+              <div className={` col-6 text-lg`}>
                 <div onClick={() => {handleAction('sell')}}
                 className="row cursor-pointer bg-discord-blurple hover:bg-discord-softBlurple active:bg-discord-blurple border-2 border-discord-blurple hover:border-discord-softBlurple active:border-discord-blurple text-white rounded">
                   <div className="col-12 px-1 text-left">

@@ -44,7 +44,7 @@ const CHART_LAYOUTS = {
         color: chartColors.discord.darkestGray,
         type: ColorType.Solid,
     },
-    fontSize: 12,
+    fontSize: 10,
   }
 };
 

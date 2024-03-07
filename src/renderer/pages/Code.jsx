@@ -1,10 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import {refreshToken, isSubStr} from '../tools/util';
 import {IconWarning, IconAngleR, IconCog, IconCode} from '../api/Icons';
-import {TS} from '../api/tradestation/main';
 
 function Code() {
-  const ts = new TS();
+  const ts = window.ts;
 
   const [lastTimestamp, setLastTimestamp] = useState('');
   const [tokenMsg, setTokenMsg] = useState(null);
@@ -38,12 +37,11 @@ function Code() {
     });
   }
 
-  const getCheckRefresh = () =>{
-    const obj = ts.getTokenObj();
+  const getCheckRefresh = () => {
+    const obj = ts.token;
     if (typeof obj?.timeStamp !== 'undefined') {
       const dt = new Date(obj.timeStamp);
       setLastTimestamp(dt.toLocaleString());
-      return dt.toLocaleString();
     }
   }
 

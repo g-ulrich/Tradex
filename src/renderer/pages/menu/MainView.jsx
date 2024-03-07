@@ -1,4 +1,5 @@
 import Equites from '../Equities/Equites';
+import LiveTrade from '../LiveTrade/livetrade';
 import Code from '../Code';
 
 export default function MainView(props) {
@@ -8,6 +9,8 @@ export default function MainView(props) {
       {
         page == 'equites' ? (
           <Equites />
+        ) : (page == 'liveTrade') ? (
+          <LiveTrade />
         ) : (page == 'code') ? (
           <Code />
         ) : (

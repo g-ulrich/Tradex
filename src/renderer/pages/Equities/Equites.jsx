@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import WatchlistTable from '../../components/tables/watchlistTable';
 import CandleChart from '../../components/lightweightcharts/candleChartPoll/chart';
+import OrderForm from './OrderForm';
 
 document.title = 'Tradex | Equities';
 
@@ -84,9 +85,10 @@ export default function Equites() {
         </div>
         <div className="col-3 p-0 bg-discord-softBlurple">
           <div className="p-1">
-
+              <OrderForm symbol={symbol} accountID={accId} positions={[]}/>
           </div>
         </div>
+
 
         </div>
       </div>

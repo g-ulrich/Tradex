@@ -226,22 +226,71 @@ export class MarketData {
       });
     }
 
-    // async streamBars(setter, streamIdPrefix, symbol, options){
-    //   const streamId = `${streamIdPrefix}${symbol}`;
-    //   const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
-    //   fetch(url, {
-    //     method: 'get',
-    //     signal: signal,
-    //     headers: {
-    //       Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
-    //     },
-    //   })
-    //   .then(function(response) {
-    //       console.log(`Fetch complete. (Not aborted)`);
-    //   }).catch(function(err) {
-    //       console.error(` Err: ${err}`);
-    //   });
+    // async streamBarsAlgo(setter, id, symbol, strategyFunc, options){
+    //   const streamId = `${id}${symbol}`;
+    //   if (!this.allStreams?.[streamId]) {
+    //     this.refreshToken();
+    //     try {
+    //       const controller = new AbortController();
+    //       const signal = controller.signal;
+    //       const { interval, unit, barsback, sessiontemplate } = options;
+
+    //       const params = new URLSearchParams({
+    //         interval: String(interval),
+    //         unit: String(unit),
+    //         barsback: String(barsback),
+    //         sessiontemplate: String(sessiontemplate),
+    //       }).toString();
+
+    //       const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
+    //       const response = await fetch(url, {
+    //         method: 'get',
+    //         signal: signal,
+    //         headers: {
+    //           Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
+    //         },
+    //       });
+    //       const reader = response.body.getReader();
+    //       this.allStreams[streamId] = controller;
+    //       // Process the streaming data
+    //       const processChunks = async () => {
+    //         while (this.allStreams?.[streamId]) {
+    //           try {
+    //             const { done, value } = await reader.read();
+    //             if (done || !this.allStreams?.[streamId]) {
+    //               this.info(`Breaking stream for ${symbol}...`);
+    //               break;
+    //             }
+    //             const jsonString = new TextDecoder().decode(value);
+    //             const jsonData = JSON.parse(jsonString.trim());
+    //             const newBar = this.fixBar(jsonData);
+    //             setter(newBar);
+    //           } catch (error) {
+    //             const msg = error.message.toLowerCase();
+    //             if (isSubStr(msg, 'network')) {
+    //               this.info("Network Error");
+    //               await this.delay(1000 * 5);
+    //             }else if (isSubStr(msg, 'whitespace')){
+    //               this.info("None-whitespace Error");
+    //             } else {
+    //               this.error(`streamBars() while ${error}`);
+    //             }
+    //           }
+    //         }
+    //       };
+    //       if (this.allStreams?.[streamId]) {
+    //         processChunks();
+    //       }else{
+    //         this.info(`Killed stream for ${symbol}.`)
+    //       }
+    //     } catch (error) {
+    //       this.error(`streamBars() - ${error}`);
+    //     }
+    //   } else {
+    //     this.info(`${symbol} stream already active.`)
+    //   }
     // }
+
 
     async streamBars(setter, streamIdPrefix, symbol, options){
       const streamId = `${streamIdPrefix}${symbol}`;
@@ -267,6 +316,7 @@ export class MarketData {
               Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
             },
           });
+          console.log(response);
           const reader = response.body.getReader();
           this.allStreams[streamId] = controller;
           // Process the streaming data
@@ -279,9 +329,11 @@ export class MarketData {
                   break;
                 }
                 const jsonString = new TextDecoder().decode(value);
+                this.info(`symbol ${symbol}`);
                 const jsonData = JSON.parse(jsonString.trim());
                 const newBar = this.fixBar(jsonData);
                 setter(newBar);
+
               } catch (error) {
                 const msg = error.message.toLowerCase();
                 if (isSubStr(msg, 'network')) {

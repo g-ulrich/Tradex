@@ -59,6 +59,7 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
 
 
   useEffect(()=>{
+    setChartStudies(prev=>[]);
     window.ts.marketData.setSymbolDetails(setSymbolDetails, symbol);
     window.ts.account.setOrdersBySymbol(setTodaysOrderHistory, symbol, accountId);
     window.ts.account.setHistoricalOrders(setAllOrderHistory, accountId, getDateNDaysAgo(7));
@@ -80,15 +81,15 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
 
 
 
-  useEffect(() => {
-    if (timeScalerange && candles.length > 0){
-        const chartRange1 = chart2Ref.current.timeScale();
-        chartRange1.setVisibleRange(timeScalerange);
-        const chartRange2 = chart1Ref.current.timeScale();
-        chartRange2.setVisibleRange(timeScalerange);
+  // useEffect(() => {
+  //   if (timeScalerange && candles.length > 0){
+  //       const chartRange1 = chart2Ref.current.timeScale();
+  //       chartRange1.setVisibleRange(timeScalerange);
+  //       const chartRange2 = chart1Ref.current.timeScale();
+  //       chartRange2.setVisibleRange(timeScalerange);
 
-    }
-   }, [timeScalerange]);
+  //   }
+  //  }, [timeScalerange]);
 
 
   const extHrsBtn = () => {
@@ -105,9 +106,9 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
 
 
 
-  useEffect(() => {
-    console.log(chartStudies);
-  }, [chartStudies]);
+  // useEffect(() => {
+  //   console.log(chartStudies);
+  // }, [chartStudies]);
 
 
 
@@ -167,7 +168,7 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
           candles={candles}
           chartref={chart2Ref}
           moveindex={index1}/> */}
-        <Chart
+        {/* <Chart
           watermark={getWaterMark(getFullSymbolName(symbol, symbolDetails))}
           ref={chart2Ref}
           onCrosshairMove={(e)=>{crosshairAction(setIndex1, chart2Ref, candles, e)}}
@@ -179,7 +180,7 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
               candleKey={'close'}
               isProfiting={isProfiting}/>
 
-        </Chart>
+        </Chart> */}
       </div>
     </>
   );

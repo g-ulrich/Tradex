@@ -38,7 +38,7 @@ class Enums {
     QPOST: 'USEQPost',
     QPREANDPOST: 'USEQPreAndPost',
     Q24HOUR: 'USEQ24Hour',
-    DEFAULT: 'default'
+    DEFAULT: 'Default'
   }
 
   /**

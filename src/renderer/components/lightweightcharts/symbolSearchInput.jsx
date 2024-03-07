@@ -38,7 +38,7 @@ export default function SymbolSearchInput({ setSymbol, marketType, assetType}) {
       <input
         ref={searchRef}
          type="search"
-         className={`uppercase block text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded-l bg-discord-darkerGray hover:bg-discord-darkGray`}
+         className={`uppercase block w-[6em] text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded-l bg-discord-darkerGray hover:bg-discord-darkGray`}
          placeholder={`${market}Search`}
          onKeyPress={handleKeyPress}
        />

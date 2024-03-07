@@ -6,7 +6,7 @@ export default function ResizeChartWidth(containerRef, initialWidth) {
   useEffect(() => {
      const resizeWidth = () => {
        if (containerRef.current) {
-         setChartWidth(containerRef.current.clientWidth);
+         setChartWidth(containerRef.current.clientWidth-3);
        }
      };
      resizeWidth();

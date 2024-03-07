@@ -191,10 +191,10 @@ export const getUtcTimestampNMinutesBack = (n, currentTimestamp) => {
 }
 
 
-export const getWaterMark = (txt) => {
+export const getWaterMark = (txt, size=60) => {
   return {
       visible: true,
-      fontSize: 60,
+      fontSize: size,
       horzAlign: 'center',
       vertAlign: 'center',
       color: 'rgba(255, 255, 255, 0.05)',

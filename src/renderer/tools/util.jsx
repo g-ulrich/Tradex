@@ -445,3 +445,14 @@ export const checkDing = (soundPlayed) => {
   }
   return soundPlayed;
 }
+
+
+export const extractValuesById = (jsonArray, id) => {
+  const valuesArray = [];
+  jsonArray.forEach((obj) => {
+      valuesArray.push(obj?.[id]);
+  });
+  return valuesArray;
+
+}
+

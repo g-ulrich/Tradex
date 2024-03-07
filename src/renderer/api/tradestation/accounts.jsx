@@ -114,6 +114,7 @@ export class Accounts {
       try {
         const arr = await this.getAccounts();
         if (type === '') {
+          console.log("type", type);
           setter(arr);
         } else {
           arr.forEach((i)=>{

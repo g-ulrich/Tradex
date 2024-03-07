@@ -8,7 +8,12 @@ import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight,
        faPlus, faChartColumn, faChartLine, faInfinity,
        faChartGantt, faChartArea, faMagnifyingGlass,
        faArrowsLeftRightToLine, faWallet, faClock, faPalette,
-       faTriangleExclamation, faPlay, faPause, faCircle, faToggleOn, faToggleOff, faHeart, faHeartPulse } from '@fortawesome/free-solid-svg-icons'
+       faTriangleExclamation, faPlay, faPause, faCircle,
+       faToggleOn, faToggleOff, faHeart, faHeartPulse, faSpinner } from '@fortawesome/free-solid-svg-icons'
+
+export function IconSpinner(){
+  return(<><FontAwesomeIcon icon={faSpinner} /></>);
+}
 
 export function IconHeart(){
 return(<><FontAwesomeIcon icon={faHeart} /></>);

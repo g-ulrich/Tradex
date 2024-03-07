@@ -16,7 +16,6 @@ export default function FrequencySelection({ options, setOptions }){
     <div className="flex">
         <select ref={selectFreqRef}
         onChange={()=>{
-          console.log("interval", selectFreqRef.current.value.toLowerCase());
           setOptions({...options,
             interval: selectFreqRef.current.value.toLowerCase()});
         }}
