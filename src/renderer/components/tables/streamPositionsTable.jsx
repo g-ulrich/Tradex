@@ -4,6 +4,9 @@ import { orderBy } from 'lodash';
 import Pagination from './pagination'; // Adjust the path based on your project structure
 import { IconRefresh, IconTriangleDown, IconTriangleUp } from '../../api/Icons';
 import {findObjectByVal} from '../../tools/util';
+import {
+  getMarketOpenStatus
+ } from '../lightweightcharts/util';
 
 //  const columns = [
 //     { key: 'Symbol', label: 'Symbol', prefix: '' },
@@ -18,7 +21,7 @@ import {findObjectByVal} from '../../tools/util';
 //   ];
 
 
-const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryKey }) => {
+const StreamPositionsTable = ({ data, prevData, columns, title, primaryKey, secondaryKey }) => {
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [searchInput, setSearchInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,6 +66,29 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
     }
   }
 
+  const handleAction = (txt, row) => {
+    if (txt.toLowerCase() === 'buy' || txt.toLowerCase() === 'sell') {
+      const status = getMarketOpenStatus();
+      const payLoad = window.ts.order._simple(
+        row.AccountID,
+        status === 'Reg' ? "Market" : "Limit", // ordertype
+        row.Quantity,
+        row.Symbol,
+        status === 'Reg' ? "DAY" : "DYP",
+        txt.toUpperCase()
+      );
+      if (status === 'Reg'){
+        window.ts.order.placeOrder(payLoad);
+      } else {
+        const lp =  txt.toUpperCase() === 'BUY' ? row.Ask : txt.toUpperCase() === 'SELL' ? row.Bid : row.Last;
+        window.ts.order.placeOrder({
+          ...payLoad,
+          LimitPrice: lp.toString(),
+        });
+      }
+    }
+  }
+
 
   return (
     <>
@@ -89,6 +115,9 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
         <table className="w-full divide-y divide-discord-darkerGray">
           <thead className="bg-discord-darkestGray">
             <tr>
+            <th className="px-2 py-[4px] text-left text-xs font-medium text-gray-500 tracking-wider ">
+                Action
+            </th>
             {paginateData().length > 0 ?
                 columns.map((column) => (
                   <th
@@ -116,12 +145,27 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
 
               </th>
             )}
+
             </tr>
           </thead>
           <tbody className="bg-discord-darkestGray divide-y divide-discord-darkerGray">
             {paginateData().length > 0 ?
               paginateData().map((row, index) => (
                 <tr key={index}>
+                  <td className="flex px-2 py-[4px] whitespace-nowrap">
+                    <button
+                    onClick={() => {handleAction('buy', {...row, Quantity:
+                    `${parseInt(row?.Quantity) >= 5 ? parseInt(parseInt(row?.Quantity) *.2) : row?.Quantity}`
+                    })}}
+                    className="flex px-1 mr-2 rounded-sm bg-discord-softGreen active:bg-discord-green">
+                      B({parseInt(row?.Quantity) >= 5 ? parseInt(parseInt(row?.Quantity) *.2) : row?.Quantity})
+                    </button>
+                    <button
+                    onClick={() => {handleAction('sell', row)}}
+                    className="flex px-1 rounded-sm bg-discord-softBlurple active:bg-discord-blurple">
+                      S({row?.Quantity})
+                    </button>
+                  </td>
                   {columns.map((column) => (
                     column.key === primaryKey ? (
                       <td key={column.key}
@@ -149,6 +193,7 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
                     )
 
                   ))}
+
                 </tr>
               ))
              : (
@@ -175,4 +220,4 @@ const WatchlistTable = ({ data, prevData, columns, title, primaryKey, secondaryK
   );
 };
 
-export default WatchlistTable;
+export default StreamPositionsTable;

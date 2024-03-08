@@ -18,6 +18,7 @@ import ResizeChartWidth from '../../components/lightweightcharts/resizeChartWidt
 import HoursSelect from './hoursSelect';
 
 
+
 export default function CreateAlgo() {
   const [btnToggle, setBtnToggle] = useState(true);
   const [form, setForm] = useState({});
@@ -40,7 +41,22 @@ export default function CreateAlgo() {
     if (symbolRef.current) {
       symbolRef.current.value = 'TQQQ';
     }
-  });
+  },[]);
+
+
+  useEffect(()=>{
+    if (btnToggle) {
+      symbolRef.current.value = form?.symbol || 'TQQQ';
+      setForm(prev=>{});
+      setCandles(prev=>[]);
+      setSymbolDetails(prev=>"");
+      setIndex(prev=>0);
+    }else{
+      if (form?.account) {
+          //  execute code when form starts
+      }
+    }
+  },[btnToggle]);
 
 
   const start = () => {
@@ -56,6 +72,7 @@ export default function CreateAlgo() {
         barsback: 300,
         sessiontemplate: session
       };
+
       setForm(prev=>{
         return {
           ...prev,
@@ -71,54 +88,47 @@ export default function CreateAlgo() {
     setBtnToggle(!btnToggle);
   }
 
+
   return (
     <>
     <div>
         <div className="row m-0 gap-2 p-1 overflow-x-auto">
           <div className="col p-0">
-          <div className="flex gap-2">
+            <div className="flex gap-2">
 
-            <button
-              onClick={start}
-              className={`w-full
-                px-3 py-[3px] rounded text-sm
-                ${btnToggle ? ' bg-discord-softGreen active:bg-discord-softGreen' : 'grow animate-pulse bg-discord-softRed active:bg-discord-softRed'}`}>
-              {btnToggle ? 'Start' : `Stop ${getFullSymbolName(form?.symbol, symbolDetails)}`}
-            </button>
+              <button
+                onClick={start}
+                className={`w-full
+                  px-3 py-[3px] rounded text-sm
+                  ${btnToggle ? 'flex bg-discord-softGreen active:bg-discord-softGreen' : 'grow animate-pulse bg-discord-softRed active:bg-discord-softRed'}`}>
+                {btnToggle ? 'Start' : `Stop ${getFullSymbolName(form?.symbol, symbolDetails)}`}
+              </button>
+            </div>
           </div>
-          </div>
-          {
-            btnToggle ? (
-              <>
-               {/* Account */}
-              <div className="col p-0">
-              <AccountSelect selectRef={accountRef}/>
-              </div>
-              {/* Symbol */}
-              <div className="col p-0">
-                <input
-                  ref={symbolRef}
-                  type="text"
-                  className={`uppercase block w-full text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded bg-discord-darkerGray hover:bg-discord-darkGray`}
-                />
-              </div>
-              {/* Frequency */}
-              <div className="col p-0">
-              <FrequencySelect selectRef={freqRef}/>
-              </div>
-              {/* Strategy */}
-              <div className="col p-0">
-              <StrategySelect selectRef={stratRef}/>
-              </div>
-              {/* Market Hours */}
-              <div className="col p-0">
-              <HoursSelect selectRef={sessionRef}/>
-              </div>
-              </>
-            ) : (<></>)
-          }
-
-
+          {/* Account */}
+        <div  className={`${!btnToggle ? 'hidden' : ''} col p-0`}>
+        <AccountSelect selectRef={accountRef}/>
+        </div>
+        {/* Symbol */}
+        <div className={`${!btnToggle ? 'hidden' : ''} col p-0`}>
+          <input
+            ref={symbolRef}
+            type="text"
+            className={`uppercase block w-full min-w-[62px] text-discord-white outline-none px-2 py-[3px] text-sm border border-none rounded bg-discord-darkerGray hover:bg-discord-darkGray`}
+          />
+        </div>
+        {/* Frequency */}
+        <div className={`${!btnToggle ? 'hidden' : ''} col p-0`}>
+        <FrequencySelect selectRef={freqRef}/>
+        </div>
+        {/* Strategy */}
+        <div className={`${!btnToggle ? 'hidden' : ''} col p-0`}>
+        <StrategySelect selectRef={stratRef}/>
+        </div>
+        {/* Market Hours */}
+        <div className={`${!btnToggle ? 'hidden' : ''} col p-0`}>
+        <HoursSelect selectRef={sessionRef}/>
+        </div>
 
         </div>
         <div ref={containerRef} className="mt-2">
@@ -135,6 +145,9 @@ export default function CreateAlgo() {
             </Chart>
             ) : (<></>)
           }
+        </div>
+        <div className={`mt-2`}>
+
         </div>
     </div>
     </>

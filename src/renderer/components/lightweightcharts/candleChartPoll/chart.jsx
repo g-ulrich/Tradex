@@ -17,7 +17,8 @@ import {currentESTTime,
   getDateNDaysAgo,
   isSubStr,
   isFloat,
-  getRandomRGB} from '../../../tools/util';
+  getRandomRGB,
+removeDupsFromJsonArr} from '../../../tools/util';
 import {grpChartOptions} from '../options';
 import ResizeChartWidth from '../resizeChartWidth';
 import GetChartRange from '../getChartRange';
@@ -135,11 +136,11 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
         <Chart
           watermark={getWaterMark(getFullSymbolName(symbol, symbolDetails))}
           ref={chart1Ref}
-          onCrosshairMove={(e)=>{crosshairAction(setIndex1, chart1Ref, candles, e)}}
+          onCrosshairMove={(e)=>{crosshairAction(setIndex1, chart1Ref, removeDupsFromJsonArr(candles, 'time'), e)}}
           {...grpChartOptions({ width: chartWidth, height: chartHeight, timeVisible: false})}>
-            <InsertVolume volumeRef={vol1Ref} candles={candles}/>
+            <InsertVolume volumeRef={vol1Ref} candles={removeDupsFromJsonArr(candles, 'time')}/>
             <InsertCandles chartRef={candlesRef}
-              candles={candles}
+              candles={removeDupsFromJsonArr(candles, 'time')}
               orderHistory={allOrderHistory.concat(todaysOrderHistory)}
               chartType={chartType}
               candleKey={'close'}
@@ -152,7 +153,7 @@ export default function CandleChart({ preloadSymbol, accountId, symbolOptions, s
                       chartStudies.map((obj, i) => (
                         <LineSeries
                           key={i} // It's important to provide a unique key for each child in a list
-                          data={obj.data}
+                          data={removeDupsFromJsonArr(obj.data, 'time')}
                           color={obj.color}
                           lineWidth={2}
                         />

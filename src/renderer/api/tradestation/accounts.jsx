@@ -46,6 +46,10 @@ export class Accounts {
     console.error(`${currentESTTime()} Accounts [ERROR] - ${msg}`)
   }
 
+  timestamp_UTC2EST(timestamp){
+    return new Date(timestamp).toLocaleString("en-US", {timeZone: "America/New_York"});
+  }
+
   killAllStreams(){
     this.info("Killing All Open Streams In MarketData.")
     for (const key in this.allStreams) {
@@ -246,6 +250,7 @@ formatHistoricalOrders(arr){
       const legs = obj?.Legs;
       newArr.push({
         ...obj,
+        OpenedDateTime: this.timestamp_UTC2EST(obj?.OpenedDateTime),
         Symbol: legs ? legs[0].Symbol : ' - ',
         QuantityOrdered: legs ? legs[0].QuantityOrdered : '0',
         BuyOrSell: legs ? legs[0].BuyOrSell : ' - '
@@ -254,7 +259,8 @@ formatHistoricalOrders(arr){
   } else {
     newArr = [];
   }
-  // console.log("formated Order hist", newArr);
+  newArr.sort((a, b) => parseInt(a.OrderID) - parseInt(b.OrderID))
+  newArr.reverse();
   return newArr;
 }
 
@@ -262,8 +268,10 @@ setHistoricalOrders(setter, accounts, since, pageSize, nextToken){
   if (accounts !== null) {
     (async () => {
       try {
-        const arr = await this.getHistoricalOrders(accounts, since, pageSize, nextToken);
-        setter(this.formatHistoricalOrders(arr));
+        const past = await this.getHistoricalOrders(accounts, since, pageSize, nextToken);
+        const today = await this.getOrders(accounts, pageSize, nextToken);
+        const array = [...past, ...today];
+        setter(this.formatHistoricalOrders(array));
       } catch (error) {
         this.error(`setHistoricalOrders() ${error}`);
       }
@@ -338,6 +346,19 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
         .catch(error => {
           console.error('Error fetching orders:', error);
         });
+    }
+  }
+
+  setOrders(setter, accounts, pageSize, nextToken){
+    if (accounts !== null) {
+      (async () => {
+        try {
+          const arr = await this.getOrders(accounts, pageSize, nextToken);
+          setter(this.formatHistoricalOrders(arr));
+        } catch (error) {
+          this.error(`setOrdersBySymbol() ${error}`);
+        }
+      })();
     }
   }
 
@@ -525,12 +546,13 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
               }
               const jsonString = new TextDecoder().decode(value);
               const jsonData = JSON.parse(jsonString.trim());
-              setter(jsonData);
+              console.log("jsonData", typeof jsonData, jsonData);
+
+              // setter(jsonData);
             } catch (error) {
               const msg = error.message.toLowerCase();
               if (isSubStr(msg, 'network')) {
                 this.info("Network Error");
-                await this.delay(1000 * 5);
               }else if (isSubStr(msg, 'whitespace')){
                 this.info("None-whitespace Error");
               } else {
@@ -582,23 +604,68 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
    * @param {boolean} [changes=false] - A boolean value that specifies whether or not position updates are streamed as changes.
    * @returns {Promise<Array>} - Promise resolving to the streamed positions.
    */
-  streamPositions(accountIds, changes = false) {
-          const id_token = this.ts.getTokenId();
-    const url = `${this.baseUrl}/stream/accounts/${accountIds}/positions`;
+  async streamPositions(setter, streamIdPrefix, accountIds, changes = false) {
+    const streamId = `${streamIdPrefix}${accountIds}`;
+    if (!this.allStreams?.[streamId]) {
+      this.refreshToken();
+      try {
+        const controller = new AbortController();
+        const signal = controller.signal;
 
-    return axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-      params: {
-        changes,
-      },
-    })
-      .then(response => response.data)
-      .catch(error => {
-        console.error('Error streaming positions:', error);
-        throw error;
-      });
+        const params = new URLSearchParams({
+          changes: String(changes),
+        }).toString();
+
+        const url = `${this.baseUrl}/stream/accounts/${accountIds}/positions?${params}`;
+        const response = await fetch(url, {
+          method: 'get',
+          signal: signal,
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        });
+
+          const reader = response.body.getReader();
+          this.allStreams[streamId] = controller;
+          const processChunks = async () => {
+            while (this.allStreams?.[streamId]) {
+              try {
+                const { done, value } = await reader.read();
+                if (done || !this.allStreams?.[streamId]) {
+                  this.info(`Breaking stream for ${streamId}...`);
+                  break;
+                }
+                const jsonString = new TextDecoder().decode(value);
+                const jsonData = JSON.parse(jsonString.trim());
+                if (jsonData?.Symbol) {;
+                  setter(prev=>jsonData);
+                }
+
+              } catch (error) {
+                const msg = error.message.toLowerCase();
+                if (isSubStr(msg, 'network')) {
+                  this.info("Network Error");
+                  await this.delay(1000 * 5);
+                }else if (isSubStr(msg, 'whitespace')){
+                  this.info("None-whitespace Error");
+                } else {
+                  this.error(`streamPositions() while ${error}`);
+                }
+              }
+            }
+          };
+
+          if (this.allStreams?.[streamId]) {
+            processChunks();
+          }else{
+            this.info(`Killed stream for ${symbol}.`)
+          }
+      } catch (error) {
+        this.error(`streamBars() - ${error}`);
+      }
+    } else {
+      this.info(`${symbol} stream already active.`)
+    }
   }
 
 

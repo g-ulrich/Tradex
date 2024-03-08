@@ -20,7 +20,7 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, totalPages, onPageC
           <option value="50">50</option>
           <option value="100">100</option>
         </select>
-        {currentESTTime()}
+        {totalItems >= itemsPerPage ? currentESTTime() : (<div className="grow text-right">{currentESTTime()}</div>)}
         {
           totalItems >= itemsPerPage ? (
         <div className="grow flex justify-end space-x-2">

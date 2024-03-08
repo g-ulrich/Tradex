@@ -9,7 +9,17 @@ import { faCaretDown, faCaretUp, faEllipsis, faAnglesRight,
        faChartGantt, faChartArea, faMagnifyingGlass,
        faArrowsLeftRightToLine, faWallet, faClock, faPalette,
        faTriangleExclamation, faPlay, faPause, faCircle,
-       faToggleOn, faToggleOff, faHeart, faHeartPulse, faSpinner } from '@fortawesome/free-solid-svg-icons'
+       faToggleOn, faToggleOff, faHeart, faHeartPulse, faSpinner,
+       faUpRightAndDownLeftFromCenter,
+       faDownLeftAndUpRightToCenter } from '@fortawesome/free-solid-svg-icons'
+
+export function IconExpand(){
+  return(<><FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} /></>);
+}
+
+export function IconMinimize(){
+  return(<><FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} /></>);
+}
 
 export function IconSpinner(){
   return(<><FontAwesomeIcon icon={faSpinner} /></>);
